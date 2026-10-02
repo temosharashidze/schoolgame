@@ -1,186 +1,1366 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ka">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BlockWorld 4</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#111;color:#fff;font-family:Arial,sans-serif}
-canvas{display:block;width:100%;height:100%}
-#menu{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(#0b1220dd,#071018ee);z-index:10}
-.card{width:min(440px,92vw);padding:28px;border-radius:20px;background:#182231;border:1px solid #ffffff20;box-shadow:0 20px 60px #0008}
-h1{margin:0 0 8px;font-size:38px}.sub{color:#b9c5d6;line-height:1.5}
-input,button{width:100%;padding:13px 14px;margin-top:10px;border-radius:10px;border:1px solid #ffffff22;font-size:16px}
-input{background:#0d1520;color:white}.row{display:flex;gap:10px}.row>*{flex:1}
-button{background:#4caf50;color:white;border:0;font-weight:700;cursor:pointer}.secondary{background:#263447}
-#hud{position:fixed;inset:0;pointer-events:none;z-index:4}
-#top{margin:14px;padding:10px 14px;background:#0008;border-radius:12px;width:max-content}
-#cross{position:absolute;left:50%;top:50%;width:20px;height:20px;transform:translate(-50%,-50%)}
-#cross:before,#cross:after{content:"";position:absolute;background:#fff;box-shadow:0 0 3px #000}
-#cross:before{width:20px;height:2px;top:9px}#cross:after{height:20px;width:2px;left:9px}
-#hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 13px;background:#0008;border-radius:10px;color:#ddd;font-size:13px}
-#status{position:absolute;right:14px;top:14px;background:#0008;border-radius:12px;padding:10px 14px;text-align:right}
-#error{color:#ff8e8e;margin-top:10px;min-height:20px}
+*{
+    box-sizing:border-box;
+    user-select:none;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#78b9e8;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+}
+
+#menu{
+    position:fixed;
+    inset:0;
+    z-index:20;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+        radial-gradient(circle at 50% 20%,#3e7bb0,#101820 75%);
+}
+
+.panel{
+    width:min(460px,92%);
+    padding:30px;
+    border-radius:22px;
+    background:#18222c;
+    color:white;
+    text-align:center;
+    box-shadow:0 25px 80px #0009;
+    border:1px solid #ffffff20;
+}
+
+.panel h1{
+    margin:0 0 8px;
+    font-size:42px;
+}
+
+.panel p{
+    color:#c9d3dc;
+    line-height:1.5;
+}
+
+.panel button{
+    width:100%;
+    margin-top:12px;
+    padding:15px;
+    border:0;
+    border-radius:12px;
+    background:#45a83b;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.panel button:hover{
+    background:#58c54b;
+}
+
+#hud{
+    position:fixed;
+    inset:0;
+    z-index:10;
+    pointer-events:none;
+    color:white;
+}
+
+#top{
+    position:absolute;
+    left:15px;
+    top:15px;
+    padding:11px 15px;
+    background:#0008;
+    border-radius:12px;
+    font-size:15px;
+}
+
+#help{
+    position:absolute;
+    bottom:15px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#0009;
+    padding:10px 16px;
+    border-radius:12px;
+    white-space:nowrap;
+}
+
+#crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:20px;
+    height:20px;
+    transform:translate(-50%,-50%);
+}
+
+#crosshair:before{
+    content:"";
+    position:absolute;
+    left:9px;
+    top:2px;
+    width:2px;
+    height:16px;
+    background:white;
+}
+
+#crosshair:after{
+    content:"";
+    position:absolute;
+    left:2px;
+    top:9px;
+    width:16px;
+    height:2px;
+    background:white;
+}
+
+#blocks{
+    position:absolute;
+    right:15px;
+    top:15px;
+    background:#0008;
+    border-radius:12px;
+    padding:10px 14px;
+}
+
+#selected{
+    font-weight:bold;
+    color:#7dff69;
+}
+
+#message{
+    position:absolute;
+    left:50%;
+    top:18%;
+    transform:translateX(-50%);
+    font-size:25px;
+    font-weight:bold;
+    text-shadow:0 3px 8px #000;
+    opacity:0;
+    transition:.2s;
+}
 </style>
 </head>
+
 <body>
-<div id="menu"><div class="card">
-<h1>🧱 BlockWorld 4</h1>
-<div class="sub">Minecraft-ის მსგავსი ორიგინალური 3D სამყარო. ითამაშე მეგობრებთან ერთად ერთ ოთახში.</div>
-<input id="name" maxlength="14" placeholder="შენი სახელი">
-<div class="row"><button id="create">ოთახის შექმნა</button><button id="join" class="secondary">ოთახში შესვლა</button></div>
-<input id="room" maxlength="6" placeholder="ოთახის კოდი (მაგ. ABC123)">
-<div id="error"></div>
-</div></div>
+
+<div id="menu">
+    <div class="panel">
+        <h1>🧱 BlockWorld 4</h1>
+
+        <p>
+            პატარა 3D ბლოკური სამყარო.<br>
+            ააშენე, მოტეხე ბლოკები და გამოიკვლიე რუკა.
+        </p>
+
+        <button id="startButton">
+            🎮 თამაშის დაწყება
+        </button>
+    </div>
+</div>
+
 <canvas id="game"></canvas>
-<div id="hud"><div id="top">🌍 BlockWorld 4 · ოთახი: <b id="roomLabel">—</b> · მოთამაშეები: <b id="count">0</b>/4</div>
-<div id="status">🧱 ბლოკი: <b id="selected">grass</b><br>1–5 არჩევა</div>
-<div id="cross"></div><div id="hint">WASD · Mouse · მარცხენა: მოტეხე · მარჯვენა: დადე · 1-5 ბლოკი · ESC მენიუ</div></div>
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 
-const canvas=document.getElementById('game');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=true; renderer.outputColorSpace=THREE.SRGBColorSpace;
-const scene=new THREE.Scene(); scene.background=new THREE.Color(0x8fc8f0); scene.fog=new THREE.Fog(0x8fc8f0,28,75);
-const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.05,100);
-scene.add(new THREE.HemisphereLight(0xcfe8ff,0x53603e,1.8));
-const sun=new THREE.DirectionalLight(0xffffff,2.0); sun.position.set(20,30,10); sun.castShadow=true; scene.add(sun);
+<div id="hud">
 
-const worldGroup=new THREE.Group(); scene.add(worldGroup);
-const playersGroup=new THREE.Group(); scene.add(playersGroup);
-const blockMats={
- grass:new THREE.MeshLambertMaterial({color:0x55a83b}),
- dirt:new THREE.MeshLambertMaterial({color:0x8b5a36}),
- stone:new THREE.MeshLambertMaterial({color:0x7c8088}),
- wood:new THREE.MeshLambertMaterial({color:0x9b633b}),
- sand:new THREE.MeshLambertMaterial({color:0xd9c27a}),
+    <div id="top">
+        🌍 BlockWorld 4
+    </div>
+
+    <div id="blocks">
+        ბლოკი:
+        <span id="selected">ბალახი</span>
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="message"></div>
+
+    <div id="help">
+        WASD — მოძრაობა &nbsp; | &nbsp;
+        მაუსი — ხედვა &nbsp; | &nbsp;
+        მარცხენა — მოტეხვა &nbsp; | &nbsp;
+        მარჯვენა — დადება &nbsp; | &nbsp;
+        1-5 — ბლოკი
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   BLOCKWORLD 4
+   დამოუკიდებელი ვერსია
+   server.js არ სჭირდება
+   ========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = innerWidth;
+let H = innerHeight;
+
+function resize(){
+    W = innerWidth;
+    H = innerHeight;
+
+    canvas.width = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+    );
+}
+
+resize();
+addEventListener("resize",resize);
+
+
+/* =========================================================
+   MENU
+   ========================================================= */
+
+const menu = document.getElementById("menu");
+const startButton = document.getElementById("startButton");
+
+let started = false;
+
+startButton.onclick = () => {
+
+    started = true;
+
+    menu.style.display = "none";
+
+    canvas.requestPointerLock?.();
+
+    showMessage("კეთილი იყოს შენი მობრძანება! 🧱");
 };
-const blockNames=['grass','dirt','stone','wood','sand'];
-let blocks=new Map(), meshes=new Map(), selected='grass';
 
-function key(x,y,z){return `${x},${y},${z}`}
-function addBlock(x,y,z,type,local=true){
-  const k=key(x,y,z); if(blocks.has(k)) return;
-  blocks.set(k,type);
-  const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),blockMats[type]||blockMats.grass);
-  m.position.set(x+.5,y+.5,z+.5); m.castShadow=true;m.receiveShadow=true;
-  worldGroup.add(m); meshes.set(k,m);
-}
-function removeBlock(x,y,z){
-  const k=key(x,y,z),m=meshes.get(k); if(!m)return;
-  worldGroup.remove(m);meshes.delete(k);blocks.delete(k);
-}
-function buildInitialWorld(){
-  for(let x=-14;x<14;x++)for(let z=-14;z<14;z++){
-    addBlock(x,0,z,'grass');
-    if((x*x+z*z)%19===0)addBlock(x,1,z,'dirt');
-  }
-  for(let i=0;i<30;i++){
-    const x=Math.floor(Math.random()*24)-12,z=Math.floor(Math.random()*24)-12;
-    if(Math.abs(x)<4&&Math.abs(z)<4)continue;
-    const h=2+Math.floor(Math.random()*3);
-    for(let y=1;y<=h;y++)addBlock(x,y,z,'wood');
-    addBlock(x,y=h+1,z,'grass'); addBlock(x+1,h+1,z,'grass'); addBlock(x-1,h+1,z,'grass');
-    addBlock(x,h+1,z+1,'grass'); addBlock(x,h+1,z-1,'grass');
-  }
-}
-buildInitialWorld();
 
-const player={x:0.5,y:1.01,z:0.5,yaw:0,pitch:0};
-const keys={w:false,a:false,s:false,d:false};
-let socket=null, roomCode='', myId='', locked=false;
-const remote=new Map();
-const ray=new THREE.Raycaster();
+/* =========================================================
+   WORLD
+   ========================================================= */
 
-function makeAvatar(name,color){
- const g=new THREE.Group();
- const mat=new THREE.MeshLambertMaterial({color});
- const body=new THREE.Mesh(new THREE.BoxGeometry(.65,.85,.38),mat);body.position.y=1.15;g.add(body);
- const head=new THREE.Mesh(new THREE.BoxGeometry(.52,.52,.52),new THREE.MeshLambertMaterial({color:0xd89a70}));head.position.y=1.83;g.add(head);
- const l=new THREE.Mesh(new THREE.BoxGeometry(.22,.7,.22),mat);l.position.set(-.2,.43,0);g.add(l);
- const r=new THREE.Mesh(new THREE.BoxGeometry(.22,.7,.22),mat);r.position.set(.2,.43,0);g.add(r);
- g.userData.name=name; return g;
-}
-const colors=[0x3f8cff,0xff5a5a,0xffc83d,0xa86bff];
-function setRemote(p){
- let g=remote.get(p.id); if(!g){g=makeAvatar(p.name,colors[p.slot%4]);playersGroup.add(g);remote.set(p.id,g)}
- g.position.set(p.x,p.y,p.z);g.rotation.y=p.yaw;
-}
-function removeRemote(id){const g=remote.get(id);if(g){playersGroup.remove(g);remote.delete(id)}}
+const SIZE = 32;
 
-function send(obj){if(socket&&socket.readyState===1)socket.send(JSON.stringify(obj))}
-function connect(mode,code){
- socket=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
- socket.onopen=()=>send({type:mode,name:(document.getElementById('name').value.trim()||'Player'),room:code});
- socket.onmessage=e=>{
-   const m=JSON.parse(e.data);
-   if(m.type==='created'||m.type==='joined'){roomCode=m.room;myId=m.id;roomLabel.textContent=roomCode;menu.style.display='none';canvas.requestPointerLock()}
-   if(m.type==='state'){count.textContent=m.players.length;for(const p of m.players)if(p.id!==myId)setRemote(p);for(const [id] of remote)if(!m.players.some(p=>p.id===id))removeRemote(id)}
-   if(m.type==='world'){for(const b of m.added||[])addBlock(b.x,b.y,b.z,b.type);for(const b of m.removed||[])removeBlock(b.x,b.y,b.z)}
-   if(m.type==='error'){error.textContent=m.message}
- };
- socket.onclose=()=>{if(myId)error.textContent='სერვერთან კავშირი გაითიშა';};
-}
-create.onclick=()=>connect('create','');
-join.onclick=()=>{const c=room.value.trim().toUpperCase();if(c)connect('join',c);else error.textContent='ჩაწერე ოთახის კოდი';};
+const world = [];
 
-function solidAt(x,y,z){return blocks.has(key(Math.floor(x),Math.floor(y),Math.floor(z)))}
-function move(dx,dz){
- const nx=player.x+dx,nz=player.z+dz;
- const r=.28;
- const checks=[[nx-r,player.y,nz-r],[nx+r,player.y,nz-r],[nx-r,player.y,nz+r],[nx+r,player.y,nz+r]];
- if(!checks.some(q=>solidAt(q[0],q[1],q[2])||solidAt(q[0],q[1]+.75,q[2])))player.x=nx;
- const checks2=[[player.x-r,player.y,nz-r],[player.x+r,player.y,nz-r],[player.x-r,player.y,nz+r],[player.x+r,player.y,nz+r]];
- if(!checks2.some(q=>solidAt(q[0],q[1],q[2])||solidAt(q[0],q[1]+.75,q[2])))player.z=nz;
+for(let x=0;x<SIZE;x++){
+
+    world[x]=[];
+
+    for(let z=0;z<SIZE;z++){
+
+        let height = 1;
+
+        const distance =
+            Math.hypot(
+                x-SIZE/2,
+                z-SIZE/2
+            );
+
+        if(distance > 10){
+            height = 1;
+        }
+
+        if(
+            Math.random() < .06 &&
+            distance > 5
+        ){
+            height = 2;
+        }
+
+        world[x][z] = height;
+    }
 }
 
-function targetBlock(){
- ray.setFromCamera({x:0,y:0},camera);
- const hits=ray.intersectObjects(worldGroup.children,false);
- return hits.length&&hits[0].distance<7?hits[0]:null;
-}
-function mine(){
- const h=targetBlock();if(!h)return;
- const p=h.object.position.clone().sub(h.face); // cube center to hit-side direction
- const x=Math.floor(p.x),y=Math.floor(p.y),z=Math.floor(p.z);
- if(y<=0)return;
- send({type:'remove',x,y,z});
-}
-function place(){
- const h=targetBlock();if(!h)return;
- const p=h.object.position.clone().add(h.face);
- const x=Math.floor(p.x),y=Math.floor(p.y),z=Math.floor(p.z);
- if(y<0||y>10)return;
- if(Math.hypot(x+.5-player.x,z+.5-player.z)<1)return;
- send({type:'add',x,y,z,block:selected});
+
+/* =========================================================
+   TREES
+   ========================================================= */
+
+const trees = [];
+
+function makeTree(x,z){
+
+    if(x<2 || z<2 || x>SIZE-3 || z>SIZE-3)
+        return;
+
+    const h = world[x][z];
+
+    trees.push({
+        x,
+        z,
+        h
+    });
 }
 
-document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
-document.addEventListener('mousemove',e=>{if(!locked)return;player.yaw-=e.movementX*.0024;player.pitch-=e.movementY*.0022;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch))});
-document.addEventListener('mousedown',e=>{if(!locked)return;if(e.button===0)mine();if(e.button===2)place()});
-document.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('keydown',e=>{
- const k=e.key.toLowerCase();if(k in keys)keys[k]=true;
- if('12345'.includes(k)){selected=blockNames[+k-1];document.getElementById('selected').textContent=selected}
- if(k==='escape'&&locked)document.exitPointerLock();
+for(let i=0;i<18;i++){
+
+    const x =
+        2 +
+        Math.floor(
+            Math.random()*(SIZE-4)
+        );
+
+    const z =
+        2 +
+        Math.floor(
+            Math.random()*(SIZE-4)
+        );
+
+    if(
+        Math.abs(x-16)<5 &&
+        Math.abs(z-16)<5
+    ) continue;
+
+    makeTree(x,z);
+}
+
+
+/* =========================================================
+   BLOCK TYPES
+   ========================================================= */
+
+const blocks = [
+
+    {
+        name:"ბალახი",
+        color:"#59a63a",
+        top:"#75c14d",
+        side:"#4b8b31"
+    },
+
+    {
+        name:"მიწა",
+        color:"#87552f",
+        top:"#9b6539",
+        side:"#704325"
+    },
+
+    {
+        name:"ქვა",
+        color:"#858b91",
+        top:"#a0a6aa",
+        side:"#686d72"
+    },
+
+    {
+        name:"ხე",
+        color:"#8d5b34",
+        top:"#ad7848",
+        side:"#704324"
+    },
+
+    {
+        name:"ქვიშა",
+        color:"#d7bd73",
+        top:"#edd48d",
+        side:"#b79d5e"
+    }
+
+];
+
+let selectedBlock = 0;
+
+
+/* =========================================================
+   PLAYER
+   ========================================================= */
+
+const player = {
+
+    x:16,
+    y:1,
+    z:16,
+
+    angle:0,
+
+    speed:5,
+
+    pitch:0
+};
+
+
+/* =========================================================
+   FRIENDS
+   ========================================================= */
+
+const friends = [
+
+    {
+        name:"PLAYER 2",
+        x:13,
+        z:14,
+        color:"#e74c3c",
+        angle:0
+    },
+
+    {
+        name:"PLAYER 3",
+        x:19,
+        z:14,
+        color:"#3498db",
+        angle:Math.PI
+    },
+
+    {
+        name:"PLAYER 4",
+        x:16,
+        z:20,
+        color:"#f1c40f",
+        angle:Math.PI
+    }
+
+];
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+
+    keys[e.key.toLowerCase()] = true;
+
+    if(
+        ["1","2","3","4","5"]
+        .includes(e.key)
+    ){
+
+        selectedBlock =
+            Number(e.key)-1;
+
+        document.getElementById("selected")
+            .textContent =
+            blocks[selectedBlock].name;
+    }
+
 });
-document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k in keys)keys[k]=false});
 
-let last=performance.now();
-function loop(t){
- requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000);last=t;
- if(locked){
-   let x=(keys.d?1:0)-(keys.a?1:0),z=(keys.s?1:0)-(keys.w?1:0),l=Math.hypot(x,z)||1;x/=l;z/=l;
-   const f=new THREE.Vector3(Math.sin(player.yaw),0,-Math.cos(player.yaw));
-   const r=new THREE.Vector3(Math.cos(player.yaw),0,Math.sin(player.yaw));
-   move((f.x*z+r.x*x)*4*dt,(f.z*z+r.z*x)*4*dt);
-   send({type:'input',x:player.x,y:player.y,z:player.z,yaw:player.yaw});
- }
- camera.position.set(player.x,2.05,player.z);camera.rotation.order='YXZ';camera.rotation.y=player.yaw;camera.rotation.x=player.pitch;
- renderer.render(scene,camera);
+document.addEventListener("keyup",e=>{
+
+    keys[e.key.toLowerCase()] = false;
+
+});
+
+
+/* =========================================================
+   MOUSE
+   ========================================================= */
+
+let mouseDX = 0;
+
+document.addEventListener("mousemove",e=>{
+
+    if(
+        started &&
+        document.pointerLockElement === canvas
+    ){
+
+        mouseDX += e.movementX;
+
+    }
+
+});
+
+document.addEventListener("mousedown",e=>{
+
+    if(!started) return;
+
+    if(
+        document.pointerLockElement !== canvas
+    ){
+
+        canvas.requestPointerLock?.();
+
+        return;
+    }
+
+    if(e.button===0){
+
+        breakBlock();
+
+    }
+
+    if(e.button===2){
+
+        placeBlock();
+
+    }
+
+});
+
+document.addEventListener("contextmenu",e=>{
+    e.preventDefault();
+});
+
+
+/* =========================================================
+   WORLD COLLISION
+   ========================================================= */
+
+function isInside(x,z){
+
+    return (
+        x>=0 &&
+        z>=0 &&
+        x<SIZE &&
+        z<SIZE
+    );
 }
+
+function getHeight(x,z){
+
+    x=Math.floor(x);
+    z=Math.floor(z);
+
+    if(!isInside(x,z))
+        return 3;
+
+    return world[x][z];
+}
+
+function canMove(x,z){
+
+    if(
+        x<1 ||
+        z<1 ||
+        x>SIZE-2 ||
+        z>SIZE-2
+    ){
+        return false;
+    }
+
+    return getHeight(x,z)<=2;
+}
+
+
+/* =========================================================
+   MOVE
+   ========================================================= */
+
+function updatePlayer(dt){
+
+    if(!started) return;
+
+    player.angle -= mouseDX * 0.0025;
+
+    mouseDX = 0;
+
+    let forward = 0;
+    let strafe = 0;
+
+    if(keys["w"]) forward++;
+    if(keys["s"]) forward--;
+
+    if(keys["d"]) strafe++;
+    if(keys["a"]) strafe--;
+
+    let len =
+        Math.hypot(
+            forward,
+            strafe
+        );
+
+    if(len>0){
+
+        forward/=len;
+        strafe/=len;
+
+        const sin =
+            Math.sin(player.angle);
+
+        const cos =
+            Math.cos(player.angle);
+
+        let dx =
+            (
+                sin*forward +
+                cos*strafe
+            ) *
+            player.speed *
+            dt;
+
+        let dz =
+            (
+                -cos*forward +
+                sin*strafe
+            ) *
+            player.speed *
+            dt;
+
+        if(
+            canMove(
+                player.x+dx,
+                player.z
+            )
+        ){
+            player.x+=dx;
+        }
+
+        if(
+            canMove(
+                player.x,
+                player.z+dz
+            )
+        ){
+            player.z+=dz;
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   FRIEND AI
+   ========================================================= */
+
+function updateFriends(dt){
+
+    friends.forEach((f,index)=>{
+
+        const dx =
+            player.x-f.x;
+
+        const dz =
+            player.z-f.z;
+
+        const distance =
+            Math.hypot(dx,dz);
+
+        f.angle =
+            Math.atan2(dx,dz);
+
+        if(distance>4){
+
+            const speed =
+                0.5 + index*.08;
+
+            const nx =
+                f.x +
+                Math.sin(f.angle) *
+                speed *
+                dt;
+
+            const nz =
+                f.z +
+                Math.cos(f.angle) *
+                speed *
+                dt;
+
+            if(canMove(nx,f.z))
+                f.x=nx;
+
+            if(canMove(f.x,nz))
+                f.z=nz;
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   BLOCK EDITING
+   ========================================================= */
+
+function getTargetBlock(){
+
+    const angle =
+        player.angle;
+
+    let best = null;
+    let bestDistance = 5;
+
+    for(let d=.5;d<5;d+=.12){
+
+        const x =
+            player.x +
+            Math.sin(angle)*d;
+
+        const z =
+            player.z -
+            Math.cos(angle)*d;
+
+        const bx=Math.floor(x);
+        const bz=Math.floor(z);
+
+        if(!isInside(bx,bz))
+            continue;
+
+        const h=world[bx][bz];
+
+        if(
+            Math.abs(
+                h-player.y
+            ) < 2
+        ){
+
+            best={
+                x:bx,
+                z:bz,
+                distance:d
+            };
+
+            bestDistance=d;
+
+            break;
+        }
+    }
+
+    return best;
+}
+
+
+function breakBlock(){
+
+    const target =
+        getTargetBlock();
+
+    if(!target) return;
+
+    if(
+        target.x===Math.floor(player.x) &&
+        target.z===Math.floor(player.z)
+    )
+        return;
+
+    if(
+        world[target.x][target.z] > 1
+    ){
+
+        world[target.x][target.z]--;
+
+        showMessage("ბლოკი მოიტეხა ⛏️");
+
+    }
+
+}
+
+
+function placeBlock(){
+
+    const target =
+        getTargetBlock();
+
+    if(!target) return;
+
+    const x=target.x;
+    const z=target.z;
+
+    if(
+        Math.hypot(
+            x+.5-player.x,
+            z+.5-player.z
+        )>5
+    ) return;
+
+    if(
+        world[x][z] < 4
+    ){
+
+        world[x][z]++;
+
+        showMessage(
+            blocks[selectedBlock].name+
+            " დაემატა 🧱"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CAMERA / 3D PROJECTION
+   ========================================================= */
+
+function project(x,y,z){
+
+    const dx =
+        x-player.x;
+
+    const dz =
+        z-player.z;
+
+    const sin =
+        Math.sin(player.angle);
+
+    const cos =
+        Math.cos(player.angle);
+
+    const rx =
+        dx*cos -
+        dz*sin;
+
+    const rz =
+        dx*sin +
+        dz*cos;
+
+    const depth =
+        -rz;
+
+    if(depth<=.1)
+        return null;
+
+    const scale =
+        620/depth;
+
+    return {
+
+        x:
+            W/2 +
+            rx*scale,
+
+        y:
+            H/2 -
+            (y-player.y)*scale,
+
+        scale,
+        depth
+    };
+
+}
+
+
+/* =========================================================
+   DRAW BLOCK
+   ========================================================= */
+
+function drawCube(x,y,z,size,type){
+
+    const b=blocks[type%blocks.length];
+
+    const p=project(x,y,z);
+
+    if(!p) return;
+
+    const p2=project(
+        x+size,
+        y,
+        z
+    );
+
+    if(!p2) return;
+
+    const width =
+        Math.abs(
+            p2.x-p.x
+        );
+
+    if(width<2)
+        return;
+
+    const h=width;
+
+    const topH =
+        width*.45;
+
+    const sx=p.x;
+    const sy=p.y;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        sx,
+        sy
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy-topH*.45
+    );
+
+    ctx.lineTo(
+        sx+width,
+        sy
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy+topH*.45
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle=b.top;
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        sx,
+        sy
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy+topH*.45
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy+h
+    );
+
+    ctx.lineTo(
+        sx,
+        sy+h-topH*.1
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle=b.side;
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        sx+width,
+        sy
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy+topH*.45
+    );
+
+    ctx.lineTo(
+        sx+width*.5,
+        sy+h
+    );
+
+    ctx.lineTo(
+        sx+width,
+        sy+h-topH*.1
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle=b.color;
+    ctx.fill();
+
+}
+
+
+/* =========================================================
+   DRAW WORLD
+   ========================================================= */
+
+function drawWorld(){
+
+    ctx.fillStyle="#7bbde9";
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    /*
+       ცა
+    */
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    gradient.addColorStop(
+        0,
+        "#5da8d8"
+    );
+
+    gradient.addColorStop(
+        .55,
+        "#a9daf5"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#d9edc8"
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /*
+       ბლოკები.
+       შორიდან ახლოს.
+    */
+
+    const visible=[];
+
+    for(
+        let x=0;
+        x<SIZE;
+        x++
+    ){
+
+        for(
+            let z=0;
+            z<SIZE;
+            z++
+        ){
+
+            const d=
+                Math.hypot(
+                    x-player.x,
+                    z-player.z
+                );
+
+            if(d<20){
+
+                visible.push({
+                    x,
+                    z,
+                    h:world[x][z],
+                    d
+                });
+
+            }
+
+        }
+
+    }
+
+    visible.sort(
+        (a,b)=>b.d-a.d
+    );
+
+    visible.forEach(v=>{
+
+        for(
+            let y=0;
+            y<v.h;
+            y++
+        ){
+
+            drawCube(
+                v.x,
+                y,
+                v.z,
+                1,
+                y===v.h-1
+                    ?0
+                    :1
+            );
+
+        }
+
+    });
+
+
+    /*
+       ხეები
+    */
+
+    trees.forEach(tree=>{
+
+        const d=
+            Math.hypot(
+                tree.x-player.x,
+                tree.z-player.z
+            );
+
+        if(d>20)
+            return;
+
+        for(let y=1;y<=3;y++){
+
+            drawCube(
+                tree.x,
+                tree.h+y,
+                tree.z,
+                1,
+                3
+            );
+
+        }
+
+        for(
+            let ox=-1;
+            ox<=1;
+            ox++
+        ){
+
+            for(
+                let oz=-1;
+                oz<=1;
+                oz++
+            ){
+
+                if(
+                    Math.abs(ox)+
+                    Math.abs(oz)<=2
+                ){
+
+                    drawCube(
+                        tree.x+ox,
+                        tree.h+4,
+                        tree.z+oz,
+                        1,
+                        0
+                    );
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   DRAW FRIEND
+   ========================================================= */
+
+function drawFriend(f){
+
+    const p=
+        project(
+            f.x,
+            1,
+            f.z
+        );
+
+    if(!p) return;
+
+    if(p.depth>25)
+        return;
+
+    const size=
+        Math.max(
+            8,
+            p.scale*.9
+        );
+
+    /*
+       ფეხები
+    */
+
+    ctx.fillStyle="#20252a";
+
+    ctx.fillRect(
+        p.x-size*.18,
+        p.y,
+        size*.15,
+        size*.55
+    );
+
+    ctx.fillRect(
+        p.x+size*.03,
+        p.y,
+        size*.15,
+        size*.55
+    );
+
+
+    /*
+       ტანი
+    */
+
+    ctx.fillStyle=f.color;
+
+    ctx.fillRect(
+        p.x-size*.3,
+        p.y-size*.9,
+        size*.6,
+        size*.9
+    );
+
+
+    /*
+       თავი
+    */
+
+    ctx.fillStyle="#d9986c";
+
+    ctx.fillRect(
+        p.x-size*.27,
+        p.y-size*1.35,
+        size*.54,
+        size*.48
+    );
+
+
+    /*
+       სახელი
+    */
+
+    ctx.font=
+        Math.max(
+            10,
+            size*.25
+        )+
+        "px Arial";
+
+    ctx.textAlign="center";
+
+    ctx.fillStyle="white";
+
+    ctx.fillText(
+        f.name,
+        p.x,
+        p.y-size*1.48
+    );
+
+}
+
+
+/* =========================================================
+   HUD MESSAGE
+   ========================================================= */
+
+let messageTimer=0;
+
+function showMessage(text){
+
+    const el=
+        document.getElementById(
+            "message"
+        );
+
+    el.textContent=text;
+    el.style.opacity="1";
+
+    messageTimer=1.4;
+}
+
+
+/* =========================================================
+   GAME LOOP
+   ========================================================= */
+
+let last=
+    performance.now();
+
+function loop(now){
+
+    const dt=
+        Math.min(
+            .05,
+            (now-last)/1000
+        );
+
+    last=now;
+
+    updatePlayer(dt);
+    updateFriends(dt);
+
+    drawWorld();
+
+    /*
+       მეგობრების დახატვა
+    */
+
+    friends
+        .slice()
+        .sort(
+            (a,b)=>{
+
+                const da=
+                    Math.hypot(
+                        a.x-player.x,
+                        a.z-player.z
+                    );
+
+                const db=
+                    Math.hypot(
+                        b.x-player.x,
+                        b.z-player.z
+                    );
+
+                return db-da;
+            }
+        )
+        .forEach(drawFriend);
+
+
+    if(messageTimer>0){
+
+        messageTimer-=dt;
+
+        if(messageTimer<=0){
+
+            document.getElementById(
+                "message"
+            ).style.opacity="0";
+
+        }
+
+    }
+
+    requestAnimationFrame(loop);
+}
+
 requestAnimationFrame(loop);
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+
+/* =========================================================
+   ESC
+   ========================================================= */
+
+document.addEventListener(
+    "pointerlockchange",
+    ()=>{
+        if(
+            started &&
+            document.pointerLockElement!==canvas
+        ){
+            /*
+               თამაშის შეჩერება არ ხდება.
+               უბრალოდ მაუსის კონტროლი თავისუფლდება.
+            */
+        }
+    }
+);
+
 </script>
-</body></html>
+
+</body>
+</html>
