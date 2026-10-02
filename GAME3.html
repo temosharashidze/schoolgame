@@ -23,10 +23,12 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+
     font-family:
         Arial,
         Helvetica,
         sans-serif;
+
     background: #05070b;
     color: white;
 }
@@ -34,6 +36,11 @@ body {
 body {
     user-select: none;
 }
+
+
+/* =========================================
+   MAIN MENU
+========================================= */
 
 #menu {
     position: fixed;
@@ -153,6 +160,32 @@ button.secondary {
     background: #151d2c;
 }
 
+button.botButton {
+    background:
+        linear-gradient(
+            135deg,
+            #7b35ff,
+            #4d1685
+        );
+
+    border:
+        1px solid #a86cff;
+
+    box-shadow:
+        0 0 25px
+        rgba(139, 70, 255, .22);
+}
+
+button.copyButton {
+    background: #151d2c;
+}
+
+button.backButton {
+    background: #111722;
+
+    border: 1px solid #2b374c;
+}
+
 #status {
     min-height: 22px;
 
@@ -162,6 +195,119 @@ button.secondary {
 
     color: #ff6579;
 }
+
+
+/* =========================================
+   LOBBY
+========================================= */
+
+#lobby {
+    display: none;
+
+    text-align: center;
+}
+
+.lobbyTitle {
+    font-size: 30px;
+
+    font-weight: 900;
+
+    margin-bottom: 10px;
+}
+
+.lobbySubtitle {
+    color: #8290a8;
+
+    margin-bottom: 25px;
+}
+
+.roomCodeBox {
+    padding: 20px;
+
+    margin-bottom: 18px;
+
+    border-radius: 14px;
+
+    border: 1px solid #39465e;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111927,
+            #080c14
+        );
+}
+
+.roomLabel {
+    color: #8290a8;
+
+    font-size: 13px;
+
+    margin-bottom: 8px;
+}
+
+.roomCode {
+    font-size: 42px;
+
+    font-weight: 900;
+
+    letter-spacing: 8px;
+
+    color: #ff334d;
+
+    text-shadow:
+        0 0 18px
+        rgba(255,51,77,.35);
+}
+
+.playersStatus {
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border-radius: 12px;
+
+    background: #080c14;
+
+    border: 1px solid #263249;
+
+    font-size: 17px;
+
+    font-weight: 800;
+}
+
+.playersStatus.waiting {
+    color: #ffca58;
+}
+
+.playersStatus.ready {
+    color: #42ef8a;
+}
+
+.lobbyHint {
+    color: #6f7c92;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    margin-top: 18px;
+}
+
+.small {
+    color: #8290a8;
+
+    font-size: 13px;
+
+    margin-top: 20px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   GAME
+========================================= */
 
 #game {
     position: fixed;
@@ -212,7 +358,8 @@ button.secondary {
     border: 2px solid #1b2537;
 
     box-shadow:
-        inset 0 0 150px rgba(0,0,0,.6);
+        inset 0 0 150px
+        rgba(0,0,0,.6);
 }
 
 .wall {
@@ -264,6 +411,7 @@ button.secondary {
     top: 18px;
 
     display: flex;
+
     justify-content: space-between;
 
     pointer-events: none;
@@ -323,7 +471,8 @@ button.secondary {
     width: 30px;
     height: 30px;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     pointer-events: none;
 
@@ -366,7 +515,8 @@ button.secondary {
 
     border-radius: 50%;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     z-index: 10;
 
@@ -417,7 +567,8 @@ button.secondary {
     left: 50%;
     top: -12px;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
     width: 65px;
     height: 6px;
@@ -436,7 +587,8 @@ button.secondary {
 
     background: #32e875;
 
-    transition: width .15s;
+    transition:
+        width .15s;
 }
 
 .name {
@@ -445,7 +597,8 @@ button.secondary {
     left: 50%;
     top: 53px;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
     white-space: nowrap;
 
@@ -465,7 +618,8 @@ button.secondary {
 
     border-radius: 50%;
 
-    transform: translate(-50%, -50%);
+    transform:
+        translate(-50%, -50%);
 
     background: #fff;
 
@@ -493,7 +647,8 @@ button.secondary {
     background:
         rgba(5,8,14,.92);
 
-    border: 1px solid #334158;
+    border:
+        1px solid #334158;
 
     font-size: 18px;
 
@@ -529,7 +684,8 @@ button.secondary {
     background:
         rgba(0,0,0,.72);
 
-    backdrop-filter: blur(8px);
+    backdrop-filter:
+        blur(8px);
 
     z-index: 100;
 }
@@ -554,70 +710,152 @@ button.secondary {
     margin: 0 0 15px;
 }
 
-.small {
-    color: #8290a8;
-
-    font-size: 13px;
-
-    margin-top: 20px;
-
-    line-height: 1.5;
-}
-
 </style>
 
 </head>
 
 <body>
 
+
+<!-- =========================================
+     MENU + LOBBY
+========================================= -->
+
 <div id="menu">
 
     <div class="menuBox">
 
-        <div class="logo">
-            RI<span>V</span>ALS
+        <!-- MAIN MENU -->
+
+        <div id="mainMenu">
+
+            <div class="logo">
+                RI<span>V</span>ALS
+            </div>
+
+            <div class="subtitle">
+                schoolgame multiplayer arena
+            </div>
+
+            <input
+                id="name"
+                maxlength="16"
+                placeholder="შენი სახელი"
+            >
+
+            <button id="create">
+                CREATE ROOM
+            </button>
+
+            <input
+                id="room"
+                maxlength="5"
+                placeholder="Room Code"
+                style="text-transform:uppercase"
+            >
+
+            <button
+                id="join"
+                class="secondary"
+            >
+                JOIN ROOM
+            </button>
+
+            <div id="status"></div>
+
+            <div class="small">
+                WASD — მოძრაობა<br>
+                Mouse — დამიზნება<br>
+                Left Click — სროლა<br>
+                პირველი 10 kill იგებს
+            </div>
+
         </div>
 
-        <div class="subtitle">
-            schoolgame multiplayer arena
-        </div>
 
-        <input
-            id="name"
-            maxlength="16"
-            placeholder="შენი სახელი"
-        >
+        <!-- LOBBY -->
 
-        <button id="create">
-            CREATE ROOM
-        </button>
+        <div id="lobby">
 
-        <input
-            id="room"
-            maxlength="5"
-            placeholder="Room Code"
-            style="text-transform:uppercase"
-        >
+            <div class="logo">
+                RI<span>V</span>ALS
+            </div>
 
-        <button
-            id="join"
-            class="secondary"
-        >
-            JOIN ROOM
-        </button>
+            <div class="lobbyTitle">
+                🎮 LOBBY
+            </div>
 
-        <div id="status"></div>
+            <div class="lobbySubtitle">
+                თამაშის დაწყებამდე დაელოდე მეორე მოთამაშეს
+            </div>
 
-        <div class="small">
-            WASD — მოძრაობა<br>
-            Mouse — დამიზნება<br>
-            Left Click — სროლა<br>
-            პირველი 10 kill იგებს
+
+            <div class="roomCodeBox">
+
+                <div class="roomLabel">
+                    ROOM CODE
+                </div>
+
+                <div
+                    class="roomCode"
+                    id="lobbyRoomCode"
+                >
+                    -----
+                </div>
+
+            </div>
+
+
+            <button
+                id="copyRoom"
+                class="copyButton"
+            >
+                📋 კოდის კოპირება
+            </button>
+
+
+            <div
+                id="playersStatus"
+                class="playersStatus waiting"
+            >
+                👤 1 / 2 მოთამაშე
+            </div>
+
+
+            <button
+                id="botButton"
+                class="botButton"
+            >
+                🤖 BOT-ის გამოძახება
+            </button>
+
+
+            <button
+                id="backButton"
+                class="backButton"
+            >
+                ← უკან
+            </button>
+
+
+            <div
+                class="lobbyHint"
+                id="lobbyHint"
+            >
+                გაუგზავნე Room Code მეგობარს,<br>
+                ან გამოიძახე BOT თამაშის დასაწყებად.
+            </div>
+
         </div>
 
     </div>
 
 </div>
+
+
+<!-- =========================================
+     GAME
+========================================= -->
 
 <div id="game">
 
@@ -628,39 +866,57 @@ button.secondary {
             id="p1Hud"
         >
             PLAYER 1<br>
-            <span id="p1Kills">0</span>
+
+            <span id="p1Kills">
+                0
+            </span>
         </div>
+
 
         <div
             class="score blue"
             id="p2Hud"
         >
             PLAYER 2<br>
-            <span id="p2Kills">0</span>
+
+            <span id="p2Kills">
+                0
+            </span>
         </div>
 
     </div>
+
 
     <div id="centerScore">
         0 : 0
     </div>
 
+
     <div id="arena">
 
         <div class="wall wall1"></div>
+
         <div class="wall wall2"></div>
+
         <div class="wall wall3"></div>
 
         <div id="entities"></div>
+
         <div id="bullets"></div>
 
     </div>
+
 
     <div id="crosshair"></div>
 
     <div id="message"></div>
 
 </div>
+
+
+<!-- =========================================
+     GAME OVER
+========================================= -->
 
 <div id="gameOver">
 
@@ -682,12 +938,21 @@ button.secondary {
 
 </div>
 
+
 <script>
 
+
+/* =========================================
+   SERVER
+========================================= */
+
 const SERVER_URL =
-    location.protocol === "https:"
-        ? "wss://" + location.host
-        : "ws://" + location.host;
+    "wss://schoolgame-rivals.onrender.com";
+
+
+/* =========================================
+   GAME VARIABLES
+========================================= */
 
 let socket = null;
 
@@ -697,7 +962,10 @@ let roomCode = null;
 
 let gameStarted = false;
 
+let inLobby = false;
+
 let mouseX = 800;
+
 let mouseY = 450;
 
 const keys = {
@@ -711,32 +979,90 @@ let shooting = false;
 
 const players = new Map();
 
+
+/* =========================================
+   HTML ELEMENTS
+========================================= */
+
 const entities =
-    document.getElementById("entities");
+    document.getElementById(
+        "entities"
+    );
 
 const bullets =
-    document.getElementById("bullets");
+    document.getElementById(
+        "bullets"
+    );
 
 const menu =
-    document.getElementById("menu");
+    document.getElementById(
+        "menu"
+    );
+
+const mainMenu =
+    document.getElementById(
+        "mainMenu"
+    );
+
+const lobby =
+    document.getElementById(
+        "lobby"
+    );
 
 const game =
-    document.getElementById("game");
+    document.getElementById(
+        "game"
+    );
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 const message =
-    document.getElementById("message");
+    document.getElementById(
+        "message"
+    );
 
 const gameOver =
-    document.getElementById("gameOver");
+    document.getElementById(
+        "gameOver"
+    );
 
 const winner =
-    document.getElementById("winner");
+    document.getElementById(
+        "winner"
+    );
 
 const winnerText =
-    document.getElementById("winnerText");
+    document.getElementById(
+        "winnerText"
+    );
+
+const lobbyRoomCode =
+    document.getElementById(
+        "lobbyRoomCode"
+    );
+
+const playersStatus =
+    document.getElementById(
+        "playersStatus"
+    );
+
+const botButton =
+    document.getElementById(
+        "botButton"
+    );
+
+const lobbyHint =
+    document.getElementById(
+        "lobbyHint"
+    );
+
+
+/* =========================================
+   CONNECT
+========================================= */
 
 function connect() {
 
@@ -747,11 +1073,14 @@ function connect() {
         SERVER_URL
     );
 
+
     socket.onopen = () => {
 
         status.textContent =
             "სერვერთან დაკავშირებულია.";
+
     };
+
 
     socket.onclose = () => {
 
@@ -765,14 +1094,19 @@ function connect() {
 
             status.textContent =
                 "სერვერი მიუწვდომელია.";
+
         }
+
     };
+
 
     socket.onerror = () => {
 
         status.textContent =
             "სერვერთან დაკავშირება ვერ მოხერხდა.";
+
     };
+
 
     socket.onmessage = event => {
 
@@ -781,25 +1115,46 @@ function connect() {
         try {
 
             data =
-                JSON.parse(event.data);
+                JSON.parse(
+                    event.data
+                );
 
         } catch {
 
             return;
+
         }
 
         handleMessage(data);
+
     };
+
 }
+
+
+/* =========================================
+   SERVER MESSAGES
+========================================= */
 
 function handleMessage(data) {
 
-    if (data.type === "connected") {
+
+    if (
+        data.type ===
+        "connected"
+    ) {
 
         return;
+
     }
 
-    if (data.type === "room_created") {
+
+    /* ROOM CREATED */
+
+    if (
+        data.type ===
+        "room_created"
+    ) {
 
         roomCode =
             data.room;
@@ -807,16 +1162,19 @@ function handleMessage(data) {
         playerId =
             data.playerId;
 
-        startGame();
-
-        showMessage(
-            "Room: " + roomCode
-        );
+        openLobby();
 
         return;
+
     }
 
-    if (data.type === "room_joined") {
+
+    /* ROOM JOINED */
+
+    if (
+        data.type ===
+        "room_joined"
+    ) {
 
         roomCode =
             data.room;
@@ -824,68 +1182,206 @@ function handleMessage(data) {
         playerId =
             data.playerId;
 
-        startGame();
-
-        showMessage(
-            "⚔️ მატჩი დაიწყო!"
-        );
-
         return;
+
     }
 
-    if (data.type === "error") {
+
+    /* ERROR */
+
+    if (
+        data.type ===
+        "error"
+    ) {
 
         status.textContent =
             data.message;
 
         return;
+
     }
 
-    if (data.type === "message") {
+
+    /* MESSAGE */
+
+    if (
+        data.type ===
+        "message"
+    ) {
 
         showMessage(
             data.message
         );
 
         return;
+
     }
 
-    if (data.type === "state") {
+
+    /* GAME STATE */
+
+    if (
+        data.type ===
+        "state"
+    ) {
 
         updateState(data);
 
         return;
+
     }
 
-    if (data.type === "game_over") {
+
+    /* GAME OVER */
+
+    if (
+        data.type ===
+        "game_over"
+    ) {
 
         showGameOver(
             data.winner
         );
 
         return;
+
     }
 
-    if (data.type === "bot_joined") {
+
+    /* BOT */
+
+    if (
+        data.type ===
+        "bot_joined"
+    ) {
 
         showMessage(
             "🤖 BOT შემოვიდა!"
         );
 
         return;
+
     }
 
-    if (data.type === "bot_left") {
+
+    if (
+        data.type ===
+        "bot_left"
+    ) {
 
         showMessage(
             "👤 რეალური მოთამაშე შემოვიდა!"
         );
 
         return;
+
     }
+
 }
 
+
+/* =========================================
+   OPEN LOBBY
+========================================= */
+
+function openLobby() {
+
+    mainMenu.style.display =
+        "none";
+
+    lobby.style.display =
+        "block";
+
+    inLobby = true;
+
+    gameStarted = false;
+
+    lobbyRoomCode.textContent =
+        roomCode;
+
+    playersStatus.className =
+        "playersStatus waiting";
+
+    playersStatus.textContent =
+        "👤 1 / 2 მოთამაშე";
+
+    lobbyHint.innerHTML =
+        "გაუგზავნე Room Code მეგობარს,<br>" +
+        "ან გამოიძახე BOT თამაშის დასაწყებად.";
+
+}
+
+
+/* =========================================
+   UPDATE LOBBY
+========================================= */
+
+function updateLobby(playerList) {
+
+    if (!inLobby) {
+        return;
+    }
+
+    const count =
+        playerList.length;
+
+    const hasBot =
+        playerList.some(
+            p => p.id === "bot"
+        );
+
+    if (count >= 2) {
+
+        playersStatus.className =
+            "playersStatus ready";
+
+        if (hasBot) {
+
+            playersStatus.textContent =
+                "🤖 1 მოთამაშე + BOT";
+
+        } else {
+
+            playersStatus.textContent =
+                "👥 2 / 2 მოთამაშე";
+
+        }
+
+        botButton.style.display =
+            "none";
+
+        lobbyHint.textContent =
+            "მატჩი იწყება...";
+
+    } else {
+
+        playersStatus.className =
+            "playersStatus waiting";
+
+        playersStatus.textContent =
+            "👤 1 / 2 მოთამაშე";
+
+        botButton.style.display =
+            "block";
+
+    }
+
+}
+
+
+/* =========================================
+   START GAME
+========================================= */
+
 function startGame() {
+
+    if (gameStarted) {
+        return;
+    }
+
+    inLobby = false;
+
+    gameStarted = true;
 
     menu.style.display =
         "none";
@@ -893,25 +1389,34 @@ function startGame() {
     game.style.display =
         "block";
 
-    gameStarted = true;
-
     resizeArena();
 
     requestAnimationFrame(
         resizeArena
     );
+
 }
+
+
+/* =========================================
+   ARENA RESIZE
+========================================= */
 
 function resizeArena() {
 
     const scaleX =
-        window.innerWidth / 1600;
+        window.innerWidth /
+        1600;
 
     const scaleY =
-        window.innerHeight / 900;
+        window.innerHeight /
+        900;
 
     const scale =
-        Math.min(scaleX, scaleY);
+        Math.min(
+            scaleX,
+            scaleY
+        );
 
     document.documentElement
         .style
@@ -919,6 +1424,7 @@ function resizeArena() {
             "--scale",
             scale
         );
+
 }
 
 window.addEventListener(
@@ -926,17 +1432,48 @@ window.addEventListener(
     resizeArena
 );
 
+
+/* =========================================
+   UPDATE STATE
+========================================= */
+
 function updateState(data) {
+
+
+    /* LOBBY */
+
+    if (
+        !gameStarted
+    ) {
+
+        updateLobby(
+            data.players
+        );
+
+        if (
+            data.players.length >= 2
+        ) {
+
+            startGame();
+
+        }
+
+    }
+
+
+    /* SCORE */
 
     document.getElementById(
         "p1Kills"
     ).textContent =
         data.score.p1;
 
+
     document.getElementById(
         "p2Kills"
     ).textContent =
         data.score.p2;
+
 
     document.getElementById(
         "centerScore"
@@ -945,42 +1482,64 @@ function updateState(data) {
         " : " +
         data.score.p2;
 
+
     const existing =
         new Set();
 
-    for (const p of data.players) {
 
-        existing.add(p.id);
+    for (
+        const p of data.players
+    ) {
+
+        existing.add(
+            p.id
+        );
+
 
         let el =
-            players.get(p.id);
+            players.get(
+                p.id
+            );
+
 
         if (!el) {
 
             el =
-                createPlayerElement(p);
+                createPlayerElement(
+                    p
+                );
 
             players.set(
                 p.id,
                 el
             );
 
-            entities.appendChild(el);
+            entities.appendChild(
+                el
+            );
+
         }
+
 
         el.style.left =
             p.x + "px";
 
+
         el.style.top =
             p.y + "px";
+
 
         el.style.transform =
             "translate(-50%,-50%) rotate(" +
             p.angle +
             "rad)";
 
+
         const fill =
-            el.querySelector(".hpFill");
+            el.querySelector(
+                ".hpFill"
+            );
+
 
         fill.style.width =
             Math.max(
@@ -988,84 +1547,144 @@ function updateState(data) {
                 p.hp
             ) + "%";
 
+
         el.style.opacity =
-            p.alive ? "1" : "0";
+            p.alive
+                ? "1"
+                : "0";
+
 
         const name =
-            el.querySelector(".name");
+            el.querySelector(
+                ".name"
+            );
+
 
         name.textContent =
             p.name;
+
     }
 
-    for (const [id, el] of players) {
 
-        if (!existing.has(id)) {
+    for (
+        const [id, el]
+        of players
+    ) {
+
+        if (
+            !existing.has(id)
+        ) {
 
             el.remove();
 
-            players.delete(id);
+            players.delete(
+                id
+            );
+
         }
+
     }
 
-    bullets.innerHTML = "";
 
-    for (const b of data.bullets) {
+    bullets.innerHTML =
+        "";
+
+
+    for (
+        const b of data.bullets
+    ) {
 
         const el =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         el.className =
             "bullet";
 
+
         el.style.left =
             b.x + "px";
+
 
         el.style.top =
             b.y + "px";
 
-        bullets.appendChild(el);
+
+        bullets.appendChild(
+            el
+        );
+
     }
+
 }
+
+
+/* =========================================
+   CREATE PLAYER
+========================================= */
 
 function createPlayerElement(p) {
 
     const el =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     let teamClass =
         p.id === "p1"
             ? "red"
             : "blue";
 
-    if (p.id === "bot") {
-        teamClass = "bot";
+
+    if (
+        p.id === "bot"
+    ) {
+
+        teamClass =
+            "bot";
+
     }
+
 
     el.className =
         "player " +
         teamClass;
 
+
     const hp =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     hp.className =
         "hp";
 
+
     const hpFill =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     hpFill.className =
         "hpFill";
+
 
     hp.appendChild(
         hpFill
     );
 
-    el.appendChild(hp);
+
+    el.appendChild(
+        hp
+    );
+
 
     const name =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     name.className =
         "name";
@@ -1073,57 +1692,90 @@ function createPlayerElement(p) {
     name.textContent =
         p.name;
 
-    el.appendChild(name);
+
+    el.appendChild(
+        name
+    );
+
 
     return el;
+
 }
+
+
+/* =========================================
+   MESSAGE
+========================================= */
 
 function showMessage(text) {
 
     message.textContent =
         text;
 
+
     message.classList.add(
         "show"
     );
+
 
     clearTimeout(
         showMessage.timer
     );
 
+
     showMessage.timer =
-        setTimeout(() => {
+        setTimeout(
+            () => {
 
-            message.classList.remove(
-                "show"
-            );
+                message.classList.remove(
+                    "show"
+                );
 
-        }, 2200);
+            },
+            2200
+        );
+
 }
+
+
+/* =========================================
+   GAME OVER
+========================================= */
 
 function showGameOver(id) {
 
     gameOver.style.display =
         "flex";
 
-    if (id === playerId) {
+
+    if (
+        id === playerId
+    ) {
 
         winner.textContent =
             "🏆 YOU WIN";
 
+
         winnerText.textContent =
             "შენ მოიგე მატჩი!";
-    }
 
-    else {
+    } else {
 
         winner.textContent =
             "💀 YOU LOST";
 
+
         winnerText.textContent =
             "მატჩი დასრულდა.";
+
     }
+
 }
+
+
+/* =========================================
+   PLAY AGAIN
+========================================= */
 
 document.getElementById(
     "again"
@@ -1137,8 +1789,14 @@ document.getElementById(
         showMessage(
             "ახალი რაუნდი იწყება..."
         );
+
     }
 );
+
+
+/* =========================================
+   CREATE ROOM
+========================================= */
 
 document.getElementById(
     "create"
@@ -1146,24 +1804,44 @@ document.getElementById(
     "click",
     () => {
 
-        if (!socket ||
-            socket.readyState !== WebSocket.OPEN) {
+        if (
+            !socket ||
+            socket.readyState !==
+            WebSocket.OPEN
+        ) {
 
             connect();
 
             setTimeout(
                 createRoom,
-                500
+                700
             );
 
             return;
+
         }
 
         createRoom();
+
     }
 );
 
+
 function createRoom() {
+
+    if (
+        !socket ||
+        socket.readyState !==
+        WebSocket.OPEN
+    ) {
+
+        status.textContent =
+            "სერვერთან დაკავშირება მიმდინარეობს...";
+
+        return;
+
+    }
+
 
     const name =
         document.getElementById(
@@ -1171,13 +1849,25 @@ function createRoom() {
         ).value.trim() ||
         "PLAYER 1";
 
+
     socket.send(
         JSON.stringify({
-            type: "create_room",
-            name
+
+            type:
+                "create_room",
+
+            name:
+                name
+
         })
     );
+
 }
+
+
+/* =========================================
+   JOIN ROOM
+========================================= */
 
 document.getElementById(
     "join"
@@ -1185,22 +1875,28 @@ document.getElementById(
     "click",
     () => {
 
-        if (!socket ||
-            socket.readyState !== WebSocket.OPEN) {
+        if (
+            !socket ||
+            socket.readyState !==
+            WebSocket.OPEN
+        ) {
 
             connect();
 
             setTimeout(
                 joinRoom,
-                500
+                700
             );
 
             return;
+
         }
 
         joinRoom();
+
     }
 );
+
 
 function joinRoom() {
 
@@ -1210,10 +1906,14 @@ function joinRoom() {
         ).value.trim() ||
         "PLAYER 2";
 
+
     const room =
         document.getElementById(
             "room"
-        ).value.trim().toUpperCase();
+        ).value
+        .trim()
+        .toUpperCase();
+
 
     if (!room) {
 
@@ -1221,16 +1921,123 @@ function joinRoom() {
             "შეიყვანე Room Code.";
 
         return;
+
     }
+
 
     socket.send(
         JSON.stringify({
-            type: "join_room",
-            room,
-            name
+
+            type:
+                "join_room",
+
+            room:
+                room,
+
+            name:
+                name
+
         })
     );
+
 }
+
+
+/* =========================================
+   BOT BUTTON
+========================================= */
+
+botButton.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !socket ||
+            socket.readyState !==
+            WebSocket.OPEN
+        ) {
+
+            showMessage(
+                "❌ სერვერთან კავშირი არ არის."
+            );
+
+            return;
+
+        }
+
+
+        botButton.disabled =
+            true;
+
+        botButton.textContent =
+            "🤖 BOT შემოდის...";
+
+
+        socket.send(
+            JSON.stringify({
+
+                type:
+                    "add_bot"
+
+            })
+        );
+
+    }
+);
+
+
+/* =========================================
+   COPY ROOM CODE
+========================================= */
+
+document.getElementById(
+    "copyRoom"
+).addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                roomCode
+            );
+
+            showMessage(
+                "📋 Room Code დაკოპირდა!"
+            );
+
+        } catch {
+
+            showMessage(
+                "Room Code: " +
+                roomCode
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   BACK FROM LOBBY
+========================================= */
+
+document.getElementById(
+    "backButton"
+).addEventListener(
+    "click",
+    () => {
+
+        location.reload();
+
+    }
+);
+
+
+/* =========================================
+   KEYBOARD
+========================================= */
 
 window.addEventListener(
     "keydown",
@@ -1239,6 +2046,7 @@ window.addEventListener(
         const k =
             e.key.toLowerCase();
 
+
         if (
             k === "w" ||
             k === "a" ||
@@ -1246,14 +2054,20 @@ window.addEventListener(
             k === "d"
         ) {
 
-            keys[k] = true;
+            keys[k] =
+                true;
+
 
             sendInput();
 
+
             e.preventDefault();
+
         }
+
     }
 );
+
 
 window.addEventListener(
     "keyup",
@@ -1262,6 +2076,7 @@ window.addEventListener(
         const k =
             e.key.toLowerCase();
 
+
         if (
             k === "w" ||
             k === "a" ||
@@ -1269,14 +2084,24 @@ window.addEventListener(
             k === "d"
         ) {
 
-            keys[k] = false;
+            keys[k] =
+                false;
+
 
             sendInput();
 
+
             e.preventDefault();
+
         }
+
     }
 );
+
+
+/* =========================================
+   MOUSE AIM
+========================================= */
 
 window.addEventListener(
     "mousemove",
@@ -1289,6 +2114,7 @@ window.addEventListener(
                 )
                 .getBoundingClientRect();
 
+
         const scale =
             parseFloat(
                 getComputedStyle(
@@ -1299,60 +2125,107 @@ window.addEventListener(
                 )
             ) || 1;
 
+
         mouseX =
-            (e.clientX -
-                arenaRect.left) /
-            scale;
+            (
+                e.clientX -
+                arenaRect.left
+            ) / scale;
+
 
         mouseY =
-            (e.clientY -
-                arenaRect.top) /
-            scale;
+            (
+                e.clientY -
+                arenaRect.top
+            ) / scale;
+
     }
 );
+
+
+/* =========================================
+   SHOOTING
+========================================= */
 
 window.addEventListener(
     "mousedown",
     e => {
 
-        if (e.button !== 0) {
+        if (
+            e.button !== 0
+        ) {
+
+            return;
+
+        }
+
+
+        if (!gameStarted) {
             return;
         }
 
-        shooting = true;
+
+        shooting =
+            true;
+
 
         sendInput();
+
     }
 );
+
 
 window.addEventListener(
     "mouseup",
     e => {
 
-        if (e.button !== 0) {
+        if (
+            e.button !== 0
+        ) {
+
             return;
+
         }
 
-        shooting = false;
+
+        shooting =
+            false;
+
 
         sendInput();
+
     }
 );
+
+
+/* =========================================
+   CALCULATE AIM
+========================================= */
 
 function calculateAngle() {
 
     const me =
         getMyPlayer();
 
+
     if (!me) {
+
         return 0;
+
     }
+
 
     return Math.atan2(
         mouseY - me.y,
         mouseX - me.x
     );
+
 }
+
+
+/* =========================================
+   GET MY PLAYER
+========================================= */
 
 function getMyPlayer() {
 
@@ -1361,11 +2234,16 @@ function getMyPlayer() {
             playerId
         );
 
+
     if (!el) {
+
         return null;
+
     }
 
+
     return {
+
         x:
             parseFloat(
                 el.style.left
@@ -1375,38 +2253,76 @@ function getMyPlayer() {
             parseFloat(
                 el.style.top
             )
+
     };
+
 }
+
+
+/* =========================================
+   SEND INPUT
+========================================= */
 
 function sendInput() {
 
-    if (!socket ||
-        socket.readyState !== WebSocket.OPEN) {
+    if (
+        !socket ||
+        socket.readyState !==
+        WebSocket.OPEN
+    ) {
+
+        return;
+
+    }
+
+
+    if (!gameStarted) {
         return;
     }
 
+
     socket.send(
         JSON.stringify({
-            type: "input",
 
-            keys,
+            type:
+                "input",
+
+            keys:
+                keys,
 
             angle:
                 calculateAngle(),
 
-            shooting
+            shooting:
+                shooting
+
         })
     );
+
 }
+
+
+/* =========================================
+   SEND INPUT EVERY 50ms
+========================================= */
 
 setInterval(
     sendInput,
     50
 );
 
+
+/* =========================================
+   RIGHT CLICK
+========================================= */
+
 document.addEventListener(
     "contextmenu",
-    e => e.preventDefault()
+    e => {
+
+        e.preventDefault();
+
+    }
 );
 
 </script>
