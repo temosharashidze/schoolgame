@@ -15,7 +15,7 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#05070b;
+    background:#03050a;
     color:white;
     font-family:Arial,Helvetica,sans-serif;
 }
@@ -36,12 +36,7 @@ input{
     align-items:center;
     justify-content:center;
     background:
-        radial-gradient(
-            circle at center,
-            #182133 0%,
-            #080b12 48%,
-            #020307 100%
-        );
+        radial-gradient(circle at 50% 42%,#182438 0%,#090d15 45%,#020307 100%);
     z-index:100;
 }
 
@@ -50,7 +45,7 @@ input{
     padding:32px;
     border:1px solid #29344a;
     border-radius:20px;
-    background:rgba(9,13,22,.97);
+    background:rgba(8,12,20,.97);
     box-shadow:0 30px 100px #000b;
 }
 
@@ -170,7 +165,7 @@ button:disabled{
     position:fixed;
     inset:0;
     overflow:hidden;
-    background:#07101a;
+    background:#05080d;
 }
 
 canvas{
@@ -178,6 +173,7 @@ canvas{
     width:100%;
     height:100%;
     cursor:crosshair;
+    image-rendering:auto;
 }
 
 #hud{
@@ -195,10 +191,11 @@ canvas{
     min-width:150px;
     padding:9px 14px;
     border-radius:10px;
-    background:rgba(7,10,16,.82);
+    background:rgba(5,8,14,.78);
     border:1px solid #29354b;
     text-align:center;
     font-weight:900;
+    backdrop-filter:blur(5px);
 }
 
 .red{
@@ -213,8 +210,8 @@ canvas{
     position:fixed;
     left:50%;
     top:50%;
-    width:26px;
-    height:26px;
+    width:24px;
+    height:24px;
     transform:translate(-50%,-50%);
     pointer-events:none;
     z-index:30;
@@ -224,22 +221,22 @@ canvas{
 #crosshair::after{
     content:"";
     position:absolute;
-    background:white;
-    box-shadow:0 0 5px black;
+    background:#fff;
+    box-shadow:0 0 4px #000;
 }
 
 #crosshair::before{
     width:2px;
-    height:26px;
-    left:12px;
-    top:0;
+    height:22px;
+    left:11px;
+    top:1px;
 }
 
 #crosshair::after{
+    width:22px;
     height:2px;
-    width:26px;
-    left:0;
-    top:12px;
+    left:1px;
+    top:11px;
 }
 
 #hit{
@@ -278,7 +275,7 @@ canvas{
 }
 
 .hitshow{
-    opacity:1 !important;
+    opacity:1!important;
 }
 
 #hint{
@@ -288,7 +285,7 @@ canvas{
     transform:translateX(-50%);
     padding:8px 14px;
     border-radius:9px;
-    background:rgba(7,11,18,.88);
+    background:rgba(5,8,14,.82);
     border:1px solid #27364c;
     color:#c2ccda;
     font-size:12px;
@@ -337,7 +334,7 @@ canvas{
     inset:0;
     align-items:center;
     justify-content:center;
-    background:rgba(0,0,0,.75);
+    background:rgba(0,0,0,.76);
     backdrop-filter:blur(7px);
     z-index:80;
 }
@@ -354,6 +351,25 @@ canvas{
 .overbox h1{
     font-size:44px;
     margin:0 0 10px;
+}
+
+@media(max-width:600px){
+    .logo{
+        font-size:38px;
+    }
+
+    .box{
+        padding:24px;
+    }
+
+    .card{
+        min-width:100px;
+        padding:7px 10px;
+    }
+
+    #hint{
+        font-size:10px;
+    }
 }
 </style>
 </head>
@@ -391,10 +407,7 @@ canvas{
                 style="text-transform:uppercase"
             >
 
-            <button
-                id="join"
-                class="secondary"
-            >
+            <button id="join" class="secondary">
                 JOIN ROOM
             </button>
 
@@ -408,7 +421,6 @@ canvas{
             </div>
 
         </div>
-
 
         <div id="lobby">
 
@@ -424,19 +436,13 @@ canvas{
                     ROOM CODE
                 </small>
 
-                <div
-                    class="code"
-                    id="roomCode"
-                >
+                <div class="code" id="roomCode">
                     -----
                 </div>
 
             </div>
 
-            <button
-                id="copy"
-                class="secondary"
-            >
+            <button id="copy" class="secondary">
                 📋 კოდის კოპირება
             </button>
 
@@ -444,17 +450,11 @@ canvas{
                 👤 1 / 2 მოთამაშე
             </div>
 
-            <button
-                id="bot"
-                class="bot"
-            >
+            <button id="bot" class="bot">
                 🤖 BOT-ის გამოძახება
             </button>
 
-            <button
-                id="back"
-                class="back"
-            >
+            <button id="back" class="back">
                 ← უკან
             </button>
 
@@ -528,15 +528,31 @@ canvas{
 
 <script>
 
+/* =========================================================
+   SERVER
+========================================================= */
+
 const SERVER_URL =
     "wss://schoolgame-rivals.onrender.com";
 
+
+/* =========================================================
+   DOM
+========================================================= */
 
 const canvas =
     document.getElementById("view");
 
 const ctx =
-    canvas.getContext("2d");
+    canvas.getContext(
+        "2d",
+        {
+            alpha:false,
+            desynchronized:true
+        }
+    );
+
+ctx.imageSmoothingEnabled = true;
 
 
 const menu =
@@ -576,6 +592,10 @@ const hit =
     document.getElementById("hit");
 
 
+/* =========================================================
+   GAME STATE
+========================================================= */
+
 let socket = null;
 
 let myId = null;
@@ -587,14 +607,13 @@ let running = false;
 let pointerLocked = false;
 
 let state = {
-    players: [],
-    bullets: [],
-    score: {
-        p1: 0,
-        p2: 0
+    players:[],
+    bullets:[],
+    score:{
+        p1:0,
+        p2:0
     }
 };
-
 
 let keys = {
     w:false,
@@ -602,7 +621,6 @@ let keys = {
     s:false,
     d:false
 };
-
 
 let shooting = false;
 
@@ -612,10 +630,31 @@ let lastMouseTime = 0;
 
 let toastTimer = null;
 
+let lastFrame = performance.now();
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
 
 const FOV =
     Math.PI / 3;
 
+
+/*
+   სპეციალურად დაბალი შიდა resolution.
+   ეკრანზე მაინც სრულ ზომაზე ჩანს,
+   მაგრამ render ბევრად სწრაფია.
+*/
+
+const MAX_RENDER_WIDTH = 1100;
+
+const MIN_RENDER_WIDTH = 520;
+
+
+/* =========================================================
+   MAP
+========================================================= */
 
 const MAP = [
 
@@ -649,7 +688,6 @@ const MAP = [
 
 ];
 
-
 const MAP_W =
     MAP[0].length;
 
@@ -657,13 +695,39 @@ const MAP_H =
     MAP.length;
 
 
+/* =========================================================
+   CANVAS RESIZE
+========================================================= */
+
 function resizeCanvas(){
 
-    canvas.width =
+    const screenW =
         window.innerWidth;
 
-    canvas.height =
+    const screenH =
         window.innerHeight;
+
+    const renderW =
+        Math.max(
+            MIN_RENDER_WIDTH,
+            Math.min(
+                MAX_RENDER_WIDTH,
+                screenW
+            )
+        );
+
+    const scale =
+        renderW / screenW;
+
+    canvas.width =
+        Math.floor(
+            renderW
+        );
+
+    canvas.height =
+        Math.floor(
+            screenH * scale
+        );
 
 }
 
@@ -675,6 +739,10 @@ window.addEventListener(
 
 resizeCanvas();
 
+
+/* =========================================================
+   NAME
+========================================================= */
 
 function getName(){
 
@@ -690,11 +758,16 @@ function getName(){
 }
 
 
+/* =========================================================
+   CONNECT
+========================================================= */
+
 function connect(){
 
     if(
         socket &&
-        socket.readyState === WebSocket.OPEN
+        socket.readyState ===
+        WebSocket.OPEN
     ){
 
         return Promise.resolve();
@@ -748,26 +821,33 @@ function connect(){
             };
 
 
-            socket.onmessage = event=>{
+            socket.onmessage =
+                event=>{
 
-                try{
+                    try{
 
-                    const data =
-                        JSON.parse(
-                            event.data
+                        const data =
+                            JSON.parse(
+                                event.data
+                            );
+
+                        handleMessage(
+                            data
                         );
 
-                    handleMessage(data);
+                    }catch{}
 
-                }catch{}
-
-            };
+                };
 
         }
     );
 
 }
 
+
+/* =========================================================
+   CREATE ROOM
+========================================================= */
 
 document
     .getElementById("create")
@@ -796,6 +876,10 @@ document
         }
     );
 
+
+/* =========================================================
+   JOIN ROOM
+========================================================= */
 
 document
     .getElementById("join")
@@ -846,8 +930,11 @@ document
     );
 
 
-function handleMessage(data){
+/* =========================================================
+   SERVER MESSAGES
+========================================================= */
 
+function handleMessage(data){
 
     if(
         data.type ===
@@ -993,6 +1080,10 @@ function handleMessage(data){
 }
 
 
+/* =========================================================
+   LOBBY
+========================================================= */
+
 function openLobby(){
 
     main.style.display =
@@ -1018,6 +1109,10 @@ function openLobby(){
 
 }
 
+
+/* =========================================================
+   BOT
+========================================================= */
 
 document
     .getElementById("bot")
@@ -1060,6 +1155,10 @@ document
     );
 
 
+/* =========================================================
+   COPY
+========================================================= */
+
 document
     .getElementById("copy")
     .addEventListener(
@@ -1091,6 +1190,10 @@ document
     );
 
 
+/* =========================================================
+   BACK
+========================================================= */
+
 document
     .getElementById("back")
     .addEventListener(
@@ -1102,6 +1205,10 @@ document
         }
     );
 
+
+/* =========================================================
+   START
+========================================================= */
 
 function startGame(){
 
@@ -1127,26 +1234,12 @@ function startGame(){
     lockTip.style.display =
         "block";
 
-
-    setTimeout(
-        ()=>{
-
-            if(
-                running &&
-                !pointerLocked
-            ){
-
-                lockTip.style.display =
-                    "block";
-
-            }
-
-        },
-        1500
-    );
-
 }
 
+
+/* =========================================================
+   END GAME
+========================================================= */
 
 function endGame(winnerId){
 
@@ -1200,6 +1293,10 @@ function endGame(winnerId){
 }
 
 
+/* =========================================================
+   AGAIN
+========================================================= */
+
 document
     .getElementById("again")
     .addEventListener(
@@ -1212,10 +1309,9 @@ document
     );
 
 
-/* =========================
-   MOUSE
-========================= */
-
+/* =========================================================
+   MOUSE / SHOOT
+========================================================= */
 
 canvas.addEventListener(
     "click",
@@ -1238,8 +1334,6 @@ canvas.addEventListener(
                 canvas.requestPointerLock();
 
             }
-
-            return;
 
         }
 
@@ -1267,9 +1361,19 @@ canvas.addEventListener(
         }
 
 
+        if(
+            document.pointerLockElement !==
+            canvas &&
+            canvas.requestPointerLock
+        ){
+
+            canvas.requestPointerLock();
+
+        }
+
+
         shooting =
             true;
-
 
         sendInput();
 
@@ -1323,7 +1427,8 @@ window.addEventListener(
 
 
             if(
-                now - lastMouseTime > 12
+                now - lastMouseTime >
+                10
             ){
 
                 mouseDX +=
@@ -1362,10 +1467,17 @@ document.addEventListener(
 );
 
 
-/* =========================
-   KEYBOARD
-========================= */
+canvas.addEventListener(
+    "contextmenu",
+    event=>{
+        event.preventDefault();
+    }
+);
 
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
 
 const keyMap = {
 
@@ -1487,10 +1599,9 @@ window.addEventListener(
 );
 
 
-/* =========================
+/* =========================================================
    SEND INPUT
-========================= */
-
+========================================================= */
 
 function sendInput(){
 
@@ -1512,7 +1623,6 @@ function sendInput(){
 
     const dx =
         mouseDX;
-
 
     mouseDX =
         0;
@@ -1549,10 +1659,9 @@ setInterval(
 );
 
 
-/* =========================
-   GAME STATE
-========================= */
-
+/* =========================================================
+   PLAYERS
+========================================================= */
 
 function me(){
 
@@ -1573,6 +1682,10 @@ function enemy(){
 
 }
 
+
+/* =========================================================
+   HUD
+========================================================= */
 
 function updateHUD(){
 
@@ -1601,10 +1714,9 @@ function updateHUD(){
 }
 
 
-/* =========================
+/* =========================================================
    TOAST
-========================= */
-
+========================================================= */
 
 function showToast(text){
 
@@ -1636,10 +1748,9 @@ function showToast(text){
 }
 
 
-/* =========================
+/* =========================================================
    HIT
-========================= */
-
+========================================================= */
 
 function flashHit(){
 
@@ -1662,10 +1773,9 @@ function flashHit(){
 }
 
 
-/* =========================
+/* =========================================================
    MAP
-========================= */
-
+========================================================= */
 
 function isWall(x,y){
 
@@ -1693,53 +1803,255 @@ function isWall(x,y){
 }
 
 
-/* =========================
-   DRAW
-========================= */
+/* =========================================================
+   FAST DDA RAYCAST
+========================================================= */
+
+function castRay(
+    posX,
+    posY,
+    rayDirX,
+    rayDirY
+){
+
+    let mapX =
+        Math.floor(posX);
+
+    let mapY =
+        Math.floor(posY);
 
 
-function drawScene(){
+    const deltaDistX =
+        Math.abs(
+            1 /
+            (rayDirX || 0.000001)
+        );
 
-    const w =
-        canvas.width;
-
-    const h =
-        canvas.height;
-
-
-    const player =
-        me();
+    const deltaDistY =
+        Math.abs(
+            1 /
+            (rayDirY || 0.000001)
+        );
 
 
-    if(!player){
-        return;
+    let stepX;
+    let stepY;
+
+    let sideDistX;
+    let sideDistY;
+
+
+    if(rayDirX < 0){
+
+        stepX = -1;
+
+        sideDistX =
+            (posX - mapX) *
+            deltaDistX;
+
+    }else{
+
+        stepX = 1;
+
+        sideDistX =
+            (mapX + 1 - posX) *
+            deltaDistX;
+
     }
 
 
-    /* SKY */
+    if(rayDirY < 0){
+
+        stepY = -1;
+
+        sideDistY =
+            (posY - mapY) *
+            deltaDistY;
+
+    }else{
+
+        stepY = 1;
+
+        sideDistY =
+            (mapY + 1 - posY) *
+            deltaDistY;
+
+    }
+
+
+    let side = 0;
+
+    let hitWall = false;
+
+
+    for(
+        let i=0;
+        i<40;
+        i++
+    ){
+
+        if(
+            sideDistX <
+            sideDistY
+        ){
+
+            sideDistX +=
+                deltaDistX;
+
+            mapX +=
+                stepX;
+
+            side = 0;
+
+        }else{
+
+            sideDistY +=
+                deltaDistY;
+
+            mapY +=
+                stepY;
+
+            side = 1;
+
+        }
+
+
+        if(
+            mapX < 0 ||
+            mapY < 0 ||
+            mapX >= MAP_W ||
+            mapY >= MAP_H
+        ){
+
+            hitWall = true;
+            break;
+
+        }
+
+
+        if(
+            MAP[mapY][mapX] === "1"
+        ){
+
+            hitWall = true;
+            break;
+
+        }
+
+    }
+
+
+    if(!hitWall){
+
+        return {
+            distance:25,
+            side:0,
+            mapX:0,
+            mapY:0
+        };
+
+    }
+
+
+    let distance;
+
+
+    if(side === 0){
+
+        distance =
+            sideDistX -
+            deltaDistX;
+
+    }else{
+
+        distance =
+            sideDistY -
+            deltaDistY;
+
+    }
+
+
+    return {
+        distance:Math.max(.001,distance),
+        side,
+        mapX,
+        mapY
+    };
+
+}
+
+
+/* =========================================================
+   ANGLE NORMALIZATION
+========================================================= */
+
+function normalizeAngle(angle){
+
+    while(
+        angle > Math.PI
+    ){
+
+        angle -=
+            Math.PI * 2;
+
+    }
+
+
+    while(
+        angle < -Math.PI
+    ){
+
+        angle +=
+            Math.PI * 2;
+
+    }
+
+
+    return angle;
+
+}
+
+
+/* =========================================================
+   DRAW SKY
+========================================================= */
+
+function drawSky(
+    w,
+    h
+){
+
+    const horizon =
+        h * .5;
+
 
     const sky =
         ctx.createLinearGradient(
             0,
             0,
             0,
-            h * .55
+            horizon
         );
 
 
     sky.addColorStop(
         0,
-        "#07101d"
+        "#050b16"
     );
 
     sky.addColorStop(
-        .6,
-        "#172941"
+        .42,
+        "#0d1b2d"
+    );
+
+    sky.addColorStop(
+        .8,
+        "#1c3047"
     );
 
     sky.addColorStop(
         1,
-        "#2c4059"
+        "#344b64"
     );
 
 
@@ -1750,16 +2062,64 @@ function drawScene(){
         0,
         0,
         w,
-        h * .55
+        horizon
     );
 
 
-    /* FLOOR */
+    /* LIGHT AT HORIZON */
+
+    const glow =
+        ctx.createRadialGradient(
+            w*.5,
+            horizon,
+            0,
+            w*.5,
+            horizon,
+            w*.65
+        );
+
+
+    glow.addColorStop(
+        0,
+        "rgba(100,150,190,.22)"
+    );
+
+    glow.addColorStop(
+        1,
+        "rgba(0,0,0,0)"
+    );
+
+
+    ctx.fillStyle =
+        glow;
+
+    ctx.fillRect(
+        0,
+        0,
+        w,
+        horizon
+    );
+
+}
+
+
+/* =========================================================
+   DRAW FLOOR
+========================================================= */
+
+function drawFloor(
+    w,
+    h
+){
+
+    const horizon =
+        h*.5;
+
 
     const floor =
         ctx.createLinearGradient(
             0,
-            h * .5,
+            horizon,
             0,
             h
         );
@@ -1767,12 +2127,17 @@ function drawScene(){
 
     floor.addColorStop(
         0,
-        "#172535"
+        "#243547"
+    );
+
+    floor.addColorStop(
+        .3,
+        "#111d2a"
     );
 
     floor.addColorStop(
         1,
-        "#050a10"
+        "#05090e"
     );
 
 
@@ -1781,192 +2146,46 @@ function drawScene(){
 
     ctx.fillRect(
         0,
-        h * .5,
+        horizon,
         w,
-        h * .5
+        h-horizon
     );
 
 
-    const horizon =
-        h * .5;
-
-
-    const depth =
-        new Float32Array(
-            w
-        );
-
-
-    const step =
-        2;
-
-
-    /* WALL RAYCAST */
-
-    for(
-        let x = 0;
-        x < w;
-        x += step
-    ){
-
-        const cameraX =
-            (2 * x / w) - 1;
-
-
-        const rayAngle =
-            player.angle +
-            cameraX *
-            (FOV / 2);
-
-
-        const dx =
-            Math.cos(rayAngle);
-
-        const dy =
-            Math.sin(rayAngle);
-
-
-        let distance =
-            0;
-
-
-        while(
-            distance < 25
-        ){
-
-            distance +=
-                .025;
-
-
-            const rx =
-                player.x +
-                dx * distance;
-
-
-            const ry =
-                player.y +
-                dy * distance;
-
-
-            if(
-                isWall(
-                    rx,
-                    ry
-                )
-            ){
-
-                break;
-
-            }
-
-        }
-
-
-        const corrected =
-            Math.max(
-                .05,
-                distance *
-                Math.cos(
-                    rayAngle -
-                    player.angle
-                )
-            );
-
-
-        for(
-            let i = 0;
-            i < step &&
-            x + i < w;
-            i++
-        ){
-
-            depth[x+i] =
-                corrected;
-
-        }
-
-
-        const wallHeight =
-            Math.min(
-                h * 2,
-                h / corrected
-            );
-
-
-        const top =
-            horizon -
-            wallHeight / 2;
-
-
-        const mapX =
-            Math.floor(
-                player.x +
-                dx * corrected
-            );
-
-
-        const mapY =
-            Math.floor(
-                player.y +
-                dy * corrected
-            );
-
-
-        const checker =
-            (mapX + mapY) % 2;
-
-
-        const light =
-            Math.max(
-                25,
-                150 -
-                corrected * 5
-            );
-
-
-        ctx.fillStyle =
-            checker
-                ? `rgb(${light*.35},${light*.48},${light*.67})`
-                : `rgb(${light*.28},${light*.40},${light*.58})`;
-
-
-        ctx.fillRect(
-            x,
-            top,
-            step + 1,
-            wallHeight
-        );
-
-    }
-
-
-    /* FLOOR GRID */
+    /*
+       მსუბუქი floor lines.
+       ბევრად იაფია ვიდრე ძველი
+       ყოველ frame-ზე დიდი grid.
+    */
 
     ctx.save();
 
     ctx.globalAlpha =
-        .18;
+        .13;
 
     ctx.strokeStyle =
-        "#6b86a8";
+        "#7891ad";
 
     ctx.lineWidth =
         1;
 
 
     for(
-        let i = 1;
-        i < 14;
+        let i=1;
+        i<=9;
         i++
     ){
+
+        const t =
+            i / 9;
 
         const y =
             horizon +
             Math.pow(
-                i / 14,
-                1.65
+                t,
+                1.85
             ) *
-            (h - horizon);
+            (h-horizon);
 
 
         ctx.beginPath();
@@ -1987,22 +2206,20 @@ function drawScene(){
 
 
     for(
-        let i = -12;
-        i <= 12;
+        let i=-8;
+        i<=8;
         i++
     ){
 
         const x =
-            w / 2 +
-            i *
-            w *
-            .08;
+            w*.5 +
+            i*w*.095;
 
 
         ctx.beginPath();
 
         ctx.moveTo(
-            w / 2,
+            w*.5,
             horizon
         );
 
@@ -2018,8 +2235,199 @@ function drawScene(){
 
     ctx.restore();
 
+}
 
-    /* ENEMY */
+
+/* =========================================================
+   WALLS
+========================================================= */
+
+function drawWalls(
+    player,
+    w,
+    h
+){
+
+    const horizon =
+        h*.5;
+
+
+    /*
+       DDA raycast:
+       ძველ კოდთან შედარებით
+       ათასობით პატარა ნაბიჯის ნაცვლად
+       პირდაპირ grid cell-ზე გადადის.
+    */
+
+    const depth =
+        new Float32Array(w);
+
+
+    for(
+        let x=0;
+        x<w;
+        x++
+    ){
+
+        const cameraX =
+            (2*x/w)-1;
+
+
+        const rayAngle =
+            player.angle +
+            cameraX*
+            (FOV*.5);
+
+
+        const rayDirX =
+            Math.cos(
+                rayAngle
+            );
+
+        const rayDirY =
+            Math.sin(
+                rayAngle
+            );
+
+
+        const hit =
+            castRay(
+                player.x,
+                player.y,
+                rayDirX,
+                rayDirY
+            );
+
+
+        const corrected =
+            Math.max(
+                .05,
+                hit.distance *
+                Math.cos(
+                    rayAngle -
+                    player.angle
+                )
+            );
+
+
+        depth[x] =
+            corrected;
+
+
+        const wallHeight =
+            Math.min(
+                h*1.8,
+                h/
+                corrected
+            );
+
+
+        const top =
+            horizon -
+            wallHeight*.5;
+
+
+        let base =
+            155 -
+            corrected*7;
+
+
+        base =
+            Math.max(
+                32,
+                Math.min(
+                    155,
+                    base
+                )
+            );
+
+
+        if(hit.side === 1){
+
+            base *= .72;
+
+        }
+
+
+        const pattern =
+            (hit.mapX +
+             hit.mapY) % 2;
+
+
+        let r =
+            base*.27;
+
+        let g =
+            base*.39;
+
+        let b =
+            base*.56;
+
+
+        if(pattern){
+
+            r *= .9;
+            g *= .92;
+            b *= .94;
+
+        }
+
+
+        /*
+           ზედა highlight
+        */
+
+        ctx.fillStyle =
+            `rgb(${r|0},${g|0},${b|0})`;
+
+
+        ctx.fillRect(
+            x,
+            top,
+            1.5,
+            wallHeight+1
+        );
+
+
+        /*
+           კედლის მსუბუქი vertical highlight
+        */
+
+        if(
+            x % 7 === 0 &&
+            corrected < 8
+        ){
+
+            ctx.fillStyle =
+                "rgba(255,255,255,.035)";
+
+            ctx.fillRect(
+                x,
+                top,
+                1,
+                wallHeight
+            );
+
+        }
+
+    }
+
+
+    return depth;
+
+}
+
+
+/* =========================================================
+   ENEMY
+========================================================= */
+
+function drawEnemies(
+    player,
+    depth,
+    w,
+    h
+){
 
     const enemies =
         state.players
@@ -2047,50 +2455,31 @@ function drawScene(){
                         );
 
 
-                    let angle =
-                        Math.atan2(
-                            dy,
-                            dx
-                        ) -
-                        player.angle;
-
-
-                    while(
-                        angle >
-                        Math.PI
-                    ){
-
-                        angle -=
-                            Math.PI * 2;
-
-                    }
-
-
-                    while(
-                        angle <
-                        -Math.PI
-                    ){
-
-                        angle +=
-                            Math.PI * 2;
-
-                    }
+                    const relativeAngle =
+                        normalizeAngle(
+                            Math.atan2(
+                                dy,
+                                dx
+                            ) -
+                            player.angle
+                        );
 
 
                     return {
                         ...p,
                         distance,
-                        relativeAngle:angle
+                        relativeAngle
                     };
 
                 }
             )
             .filter(
                 p =>
+                    p.distance > .25 &&
                     Math.abs(
                         p.relativeAngle
                     ) <
-                    FOV * .8
+                    FOV*.58
             )
             .sort(
                 (a,b)=>
@@ -2099,46 +2488,97 @@ function drawScene(){
             );
 
 
+    const horizon =
+        h*.5;
+
+
     for(
         const enemyPlayer of enemies
     ){
 
         const screenX =
-            w / 2 +
+            w*.5 +
             (
                 enemyPlayer.relativeAngle /
                 FOV
-            ) *
+            )*
             w;
 
 
+        /*
+           ზომა უფრო კონტროლირებულია,
+           რომ BOT ძალიან დიდი აღარ ჩანდეს.
+        */
+
         const size =
             Math.min(
-                h * 1.1,
-                h /
+                h*.72,
                 Math.max(
-                    .35,
-                    enemyPlayer.distance *
-                    .72
+                    34,
+                    h /
+                    Math.max(
+                        .75,
+                        enemyPlayer.distance*
+                        .92
+                    )
                 )
             );
 
 
-        const column =
+        const centerColumn =
             Math.max(
                 0,
                 Math.min(
-                    w - 1,
+                    w-1,
                     Math.floor(screenX)
                 )
             );
 
 
+        const leftColumn =
+            Math.max(
+                0,
+                Math.min(
+                    w-1,
+                    Math.floor(
+                        screenX-size*.24
+                    )
+                )
+            );
+
+
+        const rightColumn =
+            Math.max(
+                0,
+                Math.min(
+                    w-1,
+                    Math.floor(
+                        screenX+size*.24
+                    )
+                )
+            );
+
+
+        /*
+           კედლის უკან თუ არის —
+           არ ვხატავთ.
+        */
+
         if(
-            depth[column] &&
-            depth[column] <
-            enemyPlayer.distance -
-            .15
+            depth[centerColumn] <
+            enemyPlayer.distance-.12
+        ){
+
+            continue;
+
+        }
+
+
+        if(
+            depth[leftColumn] <
+            enemyPlayer.distance-.08 &&
+            depth[rightColumn] <
+            enemyPlayer.distance-.08
         ){
 
             continue;
@@ -2148,76 +2588,90 @@ function drawScene(){
 
         const ground =
             horizon +
-            size * .48;
+            size*.49;
 
 
         const headY =
             ground -
-            size * .72;
+            size*.72;
 
 
         const bot =
-            enemyPlayer.id ===
-            "bot";
+            enemyPlayer.id === "bot";
 
 
-        /* SHADOW */
+        /*
+           SHADOW
+        */
 
         ctx.fillStyle =
-            "rgba(0,0,0,.45)";
+            "rgba(0,0,0,.38)";
 
         ctx.beginPath();
 
         ctx.ellipse(
             screenX,
-            ground + 4,
-            size * .28,
-            size * .08,
+            ground+3,
+            size*.26,
+            size*.055,
             0,
             0,
-            Math.PI * 2
+            Math.PI*2
         );
 
         ctx.fill();
 
 
-        /* LEGS */
+        /*
+           LEGS
+        */
 
         ctx.fillStyle =
             bot
-                ? "#3b256f"
-                : "#252d3b";
+                ? "#2e2257"
+                : "#202733";
 
 
         ctx.fillRect(
-            screenX -
-            size*.16,
-            ground -
-            size*.34,
-            size*.12,
+            screenX-size*.145,
+            ground-size*.34,
+            size*.10,
             size*.34
         );
 
 
         ctx.fillRect(
-            screenX +
-            size*.04,
-            ground -
-            size*.34,
-            size*.12,
+            screenX+size*.045,
+            ground-size*.34,
+            size*.10,
             size*.34
         );
 
 
-        /* BODY */
+        /*
+           BODY OUTLINE
+        */
+
+        ctx.fillStyle =
+            "#05070b";
+
+        ctx.fillRect(
+            screenX-size*.225,
+            ground-size*.635,
+            size*.45,
+            size*.34
+        );
+
+
+        /*
+           BODY
+        */
 
         const body =
             ctx.createLinearGradient(
-                screenX -
-                size*.2,
+                screenX-size*.22,
                 0,
-                screenX +
-                size*.2,
+                screenX+size*.22,
                 0
             );
 
@@ -2226,34 +2680,44 @@ function drawScene(){
 
             body.addColorStop(
                 0,
-                "#352060"
+                "#241947"
             );
 
             body.addColorStop(
-                .5,
-                "#9659e8"
+                .45,
+                "#784ac5"
+            );
+
+            body.addColorStop(
+                .75,
+                "#9b62ed"
             );
 
             body.addColorStop(
                 1,
-                "#4b268b"
+                "#39216e"
             );
 
         }else{
 
             body.addColorStop(
                 0,
-                "#761526"
+                "#651323"
             );
 
             body.addColorStop(
-                .5,
-                "#e53a54"
+                .45,
+                "#d7354f"
+            );
+
+            body.addColorStop(
+                .75,
+                "#f24d65"
             );
 
             body.addColorStop(
                 1,
-                "#7e1427"
+                "#741526"
             );
 
         }
@@ -2264,57 +2728,70 @@ function drawScene(){
 
 
         ctx.fillRect(
-            screenX -
-            size*.22,
-            ground -
-            size*.62,
-            size*.44,
-            size*.32
+            screenX-size*.20,
+            ground-size*.61,
+            size*.40,
+            size*.30
         );
 
 
-        /* ARMS */
+        /*
+           CHEST PLATE
+        */
 
         ctx.fillStyle =
             bot
-                ? "#7142c5"
-                : "#ed5269";
+                ? "rgba(220,190,255,.17)"
+                : "rgba(255,255,255,.10)";
 
 
         ctx.fillRect(
-            screenX -
-            size*.33,
-            ground -
-            size*.58,
-            size*.11,
-            size*.28
+            screenX-size*.10,
+            ground-size*.58,
+            size*.20,
+            size*.22
         );
 
 
-        ctx.fillRect(
-            screenX +
-            size*.22,
-            ground -
-            size*.58,
-            size*.11,
-            size*.28
-        );
-
-
-        /* HEAD */
+        /*
+           ARMS
+        */
 
         ctx.fillStyle =
             bot
-                ? "#ceb3fa"
-                : "#ffb0bb";
+                ? "#6540ac"
+                : "#c83249";
 
+
+        ctx.fillRect(
+            screenX-size*.31,
+            ground-size*.57,
+            size*.105,
+            size*.26
+        );
+
+
+        ctx.fillRect(
+            screenX+size*.205,
+            ground-size*.57,
+            size*.105,
+            size*.26
+        );
+
+
+        /*
+           HEAD OUTLINE
+        */
+
+        ctx.fillStyle =
+            "#07090d";
 
         ctx.beginPath();
 
         ctx.arc(
             screenX,
             headY,
-            size*.16,
+            size*.175,
             0,
             Math.PI*2
         );
@@ -2322,103 +2799,193 @@ function drawScene(){
         ctx.fill();
 
 
-        /* VISOR */
+        /*
+           HEAD
+        */
 
         ctx.fillStyle =
-            "#080c13";
+            bot
+                ? "#bca8e5"
+                : "#e9a19e";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            screenX,
+            headY,
+            size*.145,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+
+        /*
+           HAIR / HELMET
+        */
+
+        ctx.fillStyle =
+            bot
+                ? "#241947"
+                : "#35131a";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            screenX,
+            headY-size*.025,
+            size*.15,
+            Math.PI,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+
+        /*
+           VISOR
+        */
+
+        ctx.fillStyle =
+            "#070a10";
 
 
         ctx.fillRect(
-            screenX -
+            screenX-size*.12,
+            headY-size*.018,
+            size*.24,
+            size*.042
+        );
+
+
+        /*
+           WEAPON
+        */
+
+        ctx.fillStyle =
+            "#080b10";
+
+
+        ctx.fillRect(
+            screenX+size*.16,
+            ground-size*.50,
+            size*.32,
+            size*.06
+        );
+
+
+        ctx.fillStyle =
+            "#303947";
+
+
+        ctx.fillRect(
+            screenX+size*.22,
+            ground-size*.515,
             size*.13,
-            headY -
-            size*.025,
-            size*.26,
-            size*.045
+            size*.025
         );
 
 
-        /* WEAPON */
+        /*
+           HP BAR BACKGROUND
+        */
 
         ctx.fillStyle =
-            "#090c11";
+            "rgba(0,0,0,.8)";
 
 
         ctx.fillRect(
-            screenX +
-            size*.18,
-            ground -
-            size*.50,
-            size*.31,
-            size*.075
+            screenX-size*.29,
+            headY-size*.30,
+            size*.58,
+            size*.052
         );
 
 
-        /* HP BAR */
+        /*
+           HP
+        */
 
-        ctx.fillStyle =
-            "#07090d";
-
-
-        ctx.fillRect(
-            screenX -
-            size*.30,
-            headY -
-            size*.30,
-            size*.60,
-            size*.055
-        );
-
-
-        ctx.fillStyle =
-            enemyPlayer.hp > 50
-                ? "#35e879"
-                : "#ff4059";
-
-
-        ctx.fillRect(
-            screenX -
-            size*.29,
-            headY -
-            size*.292,
-            size*.58 *
+        const hp =
             Math.max(
                 0,
-                enemyPlayer.hp / 100
-            ),
-            size*.038
+                Math.min(
+                    100,
+                    Number(
+                        enemyPlayer.hp
+                    ) || 0
+                )
+            );
+
+
+        ctx.fillStyle =
+            hp > 50
+                ? "#39e878"
+                : hp > 25
+                    ? "#ffc247"
+                    : "#ff4059";
+
+
+        ctx.fillRect(
+            screenX-size*.285,
+            headY-size*.296,
+            size*.57*
+            (hp/100),
+            size*.036
         );
 
 
-        /* NAME */
-
-        ctx.fillStyle =
-            "#fff";
-
-        ctx.font =
-            `bold ${Math.max(
-                11,
-                Math.min(
-                    17,
-                    size*.08
-                )
-            )}px Arial`;
+        /*
+           NAME
+        */
 
         ctx.textAlign =
             "center";
 
 
+        ctx.fillStyle =
+            "#fff";
+
+
+        ctx.font =
+            `bold ${Math.max(
+                10,
+                Math.min(
+                    16,
+                    size*.075
+                )
+            )}px Arial`;
+
+
         ctx.fillText(
-            enemyPlayer.name,
+            enemyPlayer.name ||
+            "RIVAL",
             screenX,
-            headY -
-            size*.37
+            headY-size*.37
         );
 
     }
 
+}
 
-    /* BULLETS */
+
+/* =========================================================
+   BULLETS
+========================================================= */
+
+function drawBullets(
+    player,
+    depth,
+    w,
+    h
+){
+
+    const horizon =
+        h*.5;
+
 
     for(
         const bullet of
@@ -2441,39 +3008,24 @@ function drawScene(){
             );
 
 
-        let relative =
-            Math.atan2(
-                dy,
-                dx
-            ) -
-            player.angle;
-
-
-        while(
-            relative >
-            Math.PI
-        ){
-
-            relative -=
-                Math.PI * 2;
-
+        if(distance < .15){
+            continue;
         }
 
 
-        while(
-            relative <
-            -Math.PI
-        ){
-
-            relative +=
-                Math.PI * 2;
-
-        }
+        const relative =
+            normalizeAngle(
+                Math.atan2(
+                    dy,
+                    dx
+                ) -
+                player.angle
+            );
 
 
         if(
             Math.abs(relative) >
-            FOV / 2
+            FOV*.5
         ){
 
             continue;
@@ -2482,11 +3034,11 @@ function drawScene(){
 
 
         const sx =
-            w / 2 +
+            w*.5 +
             (
                 relative /
                 FOV
-            ) *
+            )*
             w;
 
 
@@ -2494,17 +3046,15 @@ function drawScene(){
             Math.max(
                 0,
                 Math.min(
-                    w - 1,
+                    w-1,
                     Math.floor(sx)
                 )
             );
 
 
         if(
-            depth[column] &&
             depth[column] <
-            distance -
-            .1
+            distance-.1
         ){
 
             continue;
@@ -2516,22 +3066,23 @@ function drawScene(){
             Math.max(
                 2,
                 Math.min(
-                    10,
-                    h /
+                    6,
+                    h/
                     Math.max(
                         1,
-                        distance * 3.5
+                        distance*4
                     )
                 )
             );
 
 
-        ctx.fillStyle =
-            "#ffd66b";
+        ctx.save();
 
+        ctx.fillStyle =
+            "#ffd76b";
 
         ctx.shadowBlur =
-            15;
+            10;
 
         ctx.shadowColor =
             "#ff9d00";
@@ -2549,29 +3100,405 @@ function drawScene(){
 
         ctx.fill();
 
+        ctx.restore();
 
-        ctx.shadowBlur =
-            0;
+    }
+
+}
+
+
+/* =========================================================
+   WEAPON
+========================================================= */
+
+function drawWeapon(
+    w,
+    h
+){
+
+    const moving =
+        keys.w ||
+        keys.a ||
+        keys.s ||
+        keys.d;
+
+
+    const time =
+        performance.now();
+
+
+    const bob =
+        moving
+            ? Math.sin(
+                time/80
+              )*4
+            : 0;
+
+
+    const recoil =
+        shooting
+            ? Math.sin(
+                time/42
+              )*2
+            : 0;
+
+
+    const scale =
+        Math.min(
+            1,
+            w/1000
+        );
+
+
+    const x =
+        w*.5 +
+        55*scale;
+
+
+    const y =
+        h -
+        88*scale +
+        bob +
+        recoil;
+
+
+    ctx.save();
+
+    ctx.translate(
+        x,
+        y
+    );
+
+    ctx.scale(
+        scale,
+        scale
+    );
+
+
+    /*
+       ARM
+    */
+
+    ctx.fillStyle =
+        "#a96755";
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -42,
+        36,
+        70,
+        34,
+        8
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#7f493e";
+
+
+    ctx.fillRect(
+        -18,
+        48,
+        46,
+        25
+    );
+
+
+    /*
+       GUN SHADOW
+    */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.6)";
+
+
+    ctx.fillRect(
+        -82,
+        -12,
+        168,
+        58
+    );
+
+
+    /*
+       GUN BODY
+    */
+
+    const metal =
+        ctx.createLinearGradient(
+            -85,
+            -30,
+            95,
+            25
+        );
+
+
+    metal.addColorStop(
+        0,
+        "#0b0f15"
+    );
+
+    metal.addColorStop(
+        .3,
+        "#394552"
+    );
+
+    metal.addColorStop(
+        .5,
+        "#66717c"
+    );
+
+    metal.addColorStop(
+        .7,
+        "#252d37"
+    );
+
+    metal.addColorStop(
+        1,
+        "#080b10"
+    );
+
+
+    ctx.fillStyle =
+        metal;
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -80,
+        -20,
+        155,
+        50,
+        6
+    );
+
+    ctx.fill();
+
+
+    /*
+       TOP RAIL
+    */
+
+    ctx.fillStyle =
+        "#121820";
+
+
+    ctx.fillRect(
+        -54,
+        -28,
+        76,
+        9
+    );
+
+
+    ctx.fillStyle =
+        "#4a5664";
+
+
+    ctx.fillRect(
+        -47,
+        -30,
+        56,
+        3
+    );
+
+
+    /*
+       SCOPE
+    */
+
+    ctx.fillStyle =
+        "#080b10";
+
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -4,
+        -50,
+        32,
+        25,
+        5
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#273342";
+
+
+    ctx.fillRect(
+        1,
+        -45,
+        21,
+        5
+    );
+
+
+    /*
+       BARREL
+    */
+
+    ctx.fillStyle =
+        "#10151c";
+
+
+    ctx.fillRect(
+        22,
+        -6,
+        105,
+        14
+    );
+
+
+    ctx.fillStyle =
+        "#05070a";
+
+
+    ctx.fillRect(
+        105,
+        -10,
+        52,
+        8
+    );
+
+
+    /*
+       MAGAZINE
+    */
+
+    ctx.fillStyle =
+        "#0a0d13";
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        35,
+        24
+    );
+
+    ctx.lineTo(
+        62,
+        24
+    );
+
+    ctx.lineTo(
+        56,
+        64
+    );
+
+    ctx.lineTo(
+        32,
+        58
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /*
+       GRIP
+    */
+
+    ctx.fillStyle =
+        "#11151c";
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        -5,
+        22
+    );
+
+    ctx.lineTo(
+        25,
+        22
+    );
+
+    ctx.lineTo(
+        19,
+        62
+    );
+
+    ctx.lineTo(
+        -2,
+        62
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+
+    /*
+       MUZZLE FLASH
+    */
+
+    if(shooting){
+
+        ctx.fillStyle =
+            "rgba(255,205,85,.85)";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            155,
+            -9
+        );
+
+        ctx.lineTo(
+            183,
+            -1
+        );
+
+        ctx.lineTo(
+            155,
+            8
+        );
+
+        ctx.lineTo(
+            165,
+            -1
+        );
+
+        ctx.closePath();
+
+        ctx.fill();
 
     }
 
 
-    drawWeapon(
-        w,
-        h
-    );
+    ctx.restore();
+
+}
 
 
-    /* VIGNETTE */
+/* =========================================================
+   VIGNETTE
+========================================================= */
+
+function drawVignette(
+    w,
+    h
+){
 
     const vignette =
         ctx.createRadialGradient(
-            w/2,
+            w*.5,
             h*.48,
-            Math.min(w,h)*.2,
-            w/2,
+            Math.min(w,h)*.22,
+            w*.5,
             h*.48,
-            Math.max(w,h)*.75
+            Math.max(w,h)*.78
         );
 
 
@@ -2582,8 +3509,14 @@ function drawScene(){
 
 
     vignette.addColorStop(
+        .72,
+        "rgba(0,0,0,.12)"
+    );
+
+
+    vignette.addColorStop(
         1,
-        "rgba(0,0,0,.55)"
+        "rgba(0,0,0,.62)"
     );
 
 
@@ -2601,193 +3534,118 @@ function drawScene(){
 }
 
 
-function drawWeapon(w,h){
+/* =========================================================
+   MAIN RENDER
+========================================================= */
 
-    const moving =
-        keys.w ||
-        keys.a ||
-        keys.s ||
-        keys.d;
+function drawScene(){
 
+    const w =
+        canvas.width;
 
-    const bob =
-        moving
-            ? Math.sin(
-                performance.now()/75
-              ) * 5
-            : 0;
+    const h =
+        canvas.height;
 
 
-    const recoil =
-        shooting
-            ? Math.sin(
-                performance.now()/35
-              ) * 3
-            : 0;
+    const player =
+        me();
 
 
-    const x =
-        w*.5 + 52;
+    if(!player){
+
+        ctx.fillStyle =
+            "#05080d";
+
+        ctx.fillRect(
+            0,
+            0,
+            w,
+            h
+        );
+
+        return;
+
+    }
 
 
-    const y =
-        h - 90 +
-        bob +
-        recoil;
-
-
-    ctx.save();
-
-    ctx.translate(
-        x,
-        y
+    drawSky(
+        w,
+        h
     );
 
 
-    /* HAND */
-
-    ctx.fillStyle =
-        "#b8745f";
-
-
-    ctx.fillRect(
-        -25,
-        34,
-        60,
-        38
+    drawFloor(
+        w,
+        h
     );
 
 
-    ctx.fillStyle =
-        "#8f5648";
-
-
-    ctx.fillRect(
-        -17,
-        51,
-        42,
-        28
-    );
-
-
-    /* GUN BODY */
-
-    const metal =
-        ctx.createLinearGradient(
-            -80,
-            -20,
-            100,
-            20
+    const depth =
+        drawWalls(
+            player,
+            w,
+            h
         );
 
 
-    metal.addColorStop(
-        0,
-        "#11161f"
-    );
-
-    metal.addColorStop(
-        .45,
-        "#465261"
-    );
-
-    metal.addColorStop(
-        .7,
-        "#151b24"
-    );
-
-    metal.addColorStop(
-        1,
-        "#080b10"
+    drawEnemies(
+        player,
+        depth,
+        w,
+        h
     );
 
 
-    ctx.fillStyle =
-        metal;
-
-
-    ctx.fillRect(
-        -78,
-        -18,
-        150,
-        55
+    drawBullets(
+        player,
+        depth,
+        w,
+        h
     );
 
 
-    /* SCOPE */
-
-    ctx.fillStyle =
-        "#080b10";
-
-
-    ctx.fillRect(
-        -5,
-        -47,
-        30,
-        32
+    drawWeapon(
+        w,
+        h
     );
 
 
-    /* TOP */
-
-    ctx.fillStyle =
-        "#4a5564";
-
-
-    ctx.fillRect(
-        -55,
-        -7,
-        76,
-        12
+    drawVignette(
+        w,
+        h
     );
-
-
-    /* BARREL */
-
-    ctx.fillStyle =
-        "#11151c";
-
-
-    ctx.fillRect(
-        22,
-        -3,
-        95,
-        14
-    );
-
-
-    ctx.fillStyle =
-        "#05070b";
-
-
-    ctx.fillRect(
-        88,
-        -7,
-        66,
-        8
-    );
-
-
-    /* GRIP */
-
-    ctx.fillStyle =
-        "#0b0e14";
-
-
-    ctx.fillRect(
-        35,
-        22,
-        28,
-        40
-    );
-
-
-    ctx.restore();
 
 }
 
 
-function gameLoop(){
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+function gameLoop(now){
+
+    const delta =
+        now -
+        lastFrame;
+
+    lastFrame =
+        now;
+
+
+    /*
+       თუ tab-ში დაბრუნდა და დიდი delta
+       დაგროვდა, არ ვაკეთებთ არაფერს.
+    */
+
+    if(
+        delta > 100
+    ){
+
+        lastFrame =
+            now;
+
+    }
+
 
     if(running){
 
