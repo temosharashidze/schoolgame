@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>schoolgame | RIVALS</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+    background: #05070b;
+    color: white;
+}
+
+body {
+    user-select: none;
+}
+
+#menu {
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #182133 0%,
+            #080b12 45%,
+            #030407 100%
+        );
+
+    z-index: 100;
+}
+
+.menuBox {
+    width: min(520px, 92vw);
+
+    padding: 36px;
+
+    border: 1px solid #29344a;
+
+    border-radius: 20px;
+
+    background:
+        rgba(10, 14, 23, 0.94);
+
+    box-shadow:
+        0 30px 100px
+        rgba(0,0,0,.65);
+}
+
+.logo {
+    text-align: center;
+
+    font-size: 54px;
+
+    font-weight: 900;
+
+    letter-spacing: 4px;
+
+    margin-bottom: 5px;
+}
+
+.logo span {
+    color: #ff334d;
+}
+
+.subtitle {
+    text-align: center;
+
+    color: #8e9bb2;
+
+    margin-bottom: 30px;
+}
+
+input {
+    width: 100%;
+
+    padding: 15px;
+
+    margin-bottom: 12px;
+
+    border-radius: 10px;
+
+    border: 1px solid #2d384d;
+
+    outline: none;
+
+    background: #080c14;
+
+    color: white;
+
+    font-size: 16px;
+}
+
+input:focus {
+    border-color: #ff334d;
+}
+
+button {
+    width: 100%;
+
+    padding: 15px;
+
+    margin-top: 10px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    color: white;
+
+    background: #ff334d;
+
+    font-size: 16px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition: .15s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+
+    filter: brightness(1.1);
+}
+
+button.secondary {
+    background: #151d2c;
+}
+
+#status {
+    min-height: 22px;
+
+    text-align: center;
+
+    margin-top: 15px;
+
+    color: #ff6579;
+}
+
+#game {
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            #172033,
+            #080b11 55%,
+            #030407
+        );
+
+    display: none;
+
+    overflow: hidden;
+}
+
+#arena {
+    position: absolute;
+
+    width: 1600px;
+    height: 900px;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%)
+        scale(var(--scale, 1));
+
+    transform-origin: center;
+
+    background:
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 50px 50px;
+
+    border: 2px solid #1b2537;
+
+    box-shadow:
+        inset 0 0 150px rgba(0,0,0,.6);
+}
+
+.wall {
+    position: absolute;
+
+    background:
+        linear-gradient(
+            135deg,
+            #202b3c,
+            #101722
+        );
+
+    border: 1px solid #354258;
+
+    box-shadow:
+        0 8px 30px
+        rgba(0,0,0,.35);
+}
+
+.wall1 {
+    left: 650px;
+    top: 100px;
+
+    width: 300px;
+    height: 35px;
+}
+
+.wall2 {
+    left: 650px;
+    top: 765px;
+
+    width: 300px;
+    height: 35px;
+}
+
+.wall3 {
+    left: 770px;
+    top: 300px;
+
+    width: 60px;
+    height: 300px;
+}
+
+#hud {
+    position: fixed;
+
+    left: 20px;
+    right: 20px;
+    top: 18px;
+
+    display: flex;
+    justify-content: space-between;
+
+    pointer-events: none;
+
+    z-index: 20;
+}
+
+.score {
+    min-width: 150px;
+
+    padding: 12px 18px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(5,8,14,.8);
+
+    border:
+        1px solid #273247;
+
+    backdrop-filter: blur(10px);
+
+    text-align: center;
+
+    font-weight: 900;
+}
+
+.score.red {
+    border-color: #7e2635;
+}
+
+.score.blue {
+    border-color: #245083;
+}
+
+#centerScore {
+    position: fixed;
+
+    top: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: 24px;
+
+    font-weight: 900;
+
+    z-index: 30;
+}
+
+#crosshair {
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    width: 30px;
+    height: 30px;
+
+    transform: translate(-50%, -50%);
+
+    pointer-events: none;
+
+    z-index: 50;
+}
+
+#crosshair::before,
+#crosshair::after {
+    content: "";
+
+    position: absolute;
+
+    background: white;
+
+    box-shadow:
+        0 0 5px black;
+}
+
+#crosshair::before {
+    width: 2px;
+    height: 30px;
+
+    left: 14px;
+    top: 0;
+}
+
+#crosshair::after {
+    height: 2px;
+    width: 30px;
+
+    left: 0;
+    top: 14px;
+}
+
+.player {
+    position: absolute;
+
+    width: 48px;
+    height: 48px;
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 10;
+
+    box-shadow:
+        0 0 25px
+        rgba(255,255,255,.15);
+}
+
+.player.red {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #ff8b9a,
+            #ff304d 45%,
+            #7f1023
+        );
+
+    border: 3px solid #ff6678;
+}
+
+.player.blue {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #82c9ff,
+            #2689ff 45%,
+            #103b7e
+        );
+
+    border: 3px solid #66b4ff;
+}
+
+.player.bot {
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            #fff,
+            #b16cff 40%,
+            #4d1685
+        );
+
+    border: 3px solid #d29cff;
+}
+
+.hp {
+    position: absolute;
+
+    left: 50%;
+    top: -12px;
+
+    transform: translateX(-50%);
+
+    width: 65px;
+    height: 6px;
+
+    background: #191d26;
+
+    border-radius: 5px;
+
+    overflow: hidden;
+}
+
+.hpFill {
+    height: 100%;
+
+    width: 100%;
+
+    background: #32e875;
+
+    transition: width .15s;
+}
+
+.name {
+    position: absolute;
+
+    left: 50%;
+    top: 53px;
+
+    transform: translateX(-50%);
+
+    white-space: nowrap;
+
+    font-size: 12px;
+
+    font-weight: 900;
+
+    text-shadow:
+        0 2px 5px black;
+}
+
+.bullet {
+    position: absolute;
+
+    width: 10px;
+    height: 10px;
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    background: #fff;
+
+    box-shadow:
+        0 0 15px #fff,
+        0 0 30px #ffb52e;
+
+    z-index: 5;
+}
+
+#message {
+    position: fixed;
+
+    left: 50%;
+    top: 72%;
+
+    transform:
+        translate(-50%, -50%)
+        scale(.9);
+
+    padding: 16px 26px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(5,8,14,.92);
+
+    border: 1px solid #334158;
+
+    font-size: 18px;
+
+    font-weight: 900;
+
+    opacity: 0;
+
+    transition: .25s;
+
+    pointer-events: none;
+
+    z-index: 80;
+}
+
+#message.show {
+    opacity: 1;
+
+    transform:
+        translate(-50%, -50%)
+        scale(1);
+}
+
+#gameOver {
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        rgba(0,0,0,.72);
+
+    backdrop-filter: blur(8px);
+
+    z-index: 100;
+}
+
+.gameOverBox {
+    width: min(450px, 90vw);
+
+    text-align: center;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    background: #0b1019;
+
+    border: 1px solid #2b3850;
+}
+
+.gameOverBox h1 {
+    font-size: 48px;
+
+    margin: 0 0 15px;
+}
+
+.small {
+    color: #8290a8;
+
+    font-size: 13px;
+
+    margin-top: 20px;
+
+    line-height: 1.5;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="menu">
+
+    <div class="menuBox">
+
+        <div class="logo">
+            RI<span>V</span>ALS
+        </div>
+
+        <div class="subtitle">
+            schoolgame multiplayer arena
+        </div>
+
+        <input
+            id="name"
+            maxlength="16"
+            placeholder="შენი სახელი"
+        >
+
+        <button id="create">
+            CREATE ROOM
+        </button>
+
+        <input
+            id="room"
+            maxlength="5"
+            placeholder="Room Code"
+            style="text-transform:uppercase"
+        >
+
+        <button
+            id="join"
+            class="secondary"
+        >
+            JOIN ROOM
+        </button>
+
+        <div id="status"></div>
+
+        <div class="small">
+            WASD — მოძრაობა<br>
+            Mouse — დამიზნება<br>
+            Left Click — სროლა<br>
+            პირველი 10 kill იგებს
+        </div>
+
+    </div>
+
+</div>
+
+<div id="game">
+
+    <div id="hud">
+
+        <div
+            class="score red"
+            id="p1Hud"
+        >
+            PLAYER 1<br>
+            <span id="p1Kills">0</span>
+        </div>
+
+        <div
+            class="score blue"
+            id="p2Hud"
+        >
+            PLAYER 2<br>
+            <span id="p2Kills">0</span>
+        </div>
+
+    </div>
+
+    <div id="centerScore">
+        0 : 0
+    </div>
+
+    <div id="arena">
+
+        <div class="wall wall1"></div>
+        <div class="wall wall2"></div>
+        <div class="wall wall3"></div>
+
+        <div id="entities"></div>
+        <div id="bullets"></div>
+
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="message"></div>
+
+</div>
+
+<div id="gameOver">
+
+    <div class="gameOverBox">
+
+        <h1 id="winner">
+            YOU WIN
+        </h1>
+
+        <div id="winnerText">
+            Match finished
+        </div>
+
+        <button id="again">
+            PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const SERVER_URL =
+    location.protocol === "https:"
+        ? "wss://" + location.host
+        : "ws://" + location.host;
+
+let socket = null;
+
+let playerId = null;
+
+let roomCode = null;
+
+let gameStarted = false;
+
+let mouseX = 800;
+let mouseY = 450;
+
+const keys = {
+    w: false,
+    a: false,
+    s: false,
+    d: false
+};
+
+let shooting = false;
+
+const players = new Map();
+
+const entities =
+    document.getElementById("entities");
+
+const bullets =
+    document.getElementById("bullets");
+
+const menu =
+    document.getElementById("menu");
+
+const game =
+    document.getElementById("game");
+
+const status =
+    document.getElementById("status");
+
+const message =
+    document.getElementById("message");
+
+const gameOver =
+    document.getElementById("gameOver");
+
+const winner =
+    document.getElementById("winner");
+
+const winnerText =
+    document.getElementById("winnerText");
+
+function connect() {
+
+    status.textContent =
+        "სერვერთან დაკავშირება...";
+
+    socket = new WebSocket(
+        SERVER_URL
+    );
+
+    socket.onopen = () => {
+
+        status.textContent =
+            "სერვერთან დაკავშირებულია.";
+    };
+
+    socket.onclose = () => {
+
+        if (gameStarted) {
+
+            showMessage(
+                "❌ სერვერთან კავშირი გაწყდა."
+            );
+
+        } else {
+
+            status.textContent =
+                "სერვერი მიუწვდომელია.";
+        }
+    };
+
+    socket.onerror = () => {
+
+        status.textContent =
+            "სერვერთან დაკავშირება ვერ მოხერხდა.";
+    };
+
+    socket.onmessage = event => {
+
+        let data;
+
+        try {
+
+            data =
+                JSON.parse(event.data);
+
+        } catch {
+
+            return;
+        }
+
+        handleMessage(data);
+    };
+}
+
+function handleMessage(data) {
+
+    if (data.type === "connected") {
+
+        return;
+    }
+
+    if (data.type === "room_created") {
+
+        roomCode =
+            data.room;
+
+        playerId =
+            data.playerId;
+
+        startGame();
+
+        showMessage(
+            "Room: " + roomCode
+        );
+
+        return;
+    }
+
+    if (data.type === "room_joined") {
+
+        roomCode =
+            data.room;
+
+        playerId =
+            data.playerId;
+
+        startGame();
+
+        showMessage(
+            "⚔️ მატჩი დაიწყო!"
+        );
+
+        return;
+    }
+
+    if (data.type === "error") {
+
+        status.textContent =
+            data.message;
+
+        return;
+    }
+
+    if (data.type === "message") {
+
+        showMessage(
+            data.message
+        );
+
+        return;
+    }
+
+    if (data.type === "state") {
+
+        updateState(data);
+
+        return;
+    }
+
+    if (data.type === "game_over") {
+
+        showGameOver(
+            data.winner
+        );
+
+        return;
+    }
+
+    if (data.type === "bot_joined") {
+
+        showMessage(
+            "🤖 BOT შემოვიდა!"
+        );
+
+        return;
+    }
+
+    if (data.type === "bot_left") {
+
+        showMessage(
+            "👤 რეალური მოთამაშე შემოვიდა!"
+        );
+
+        return;
+    }
+}
+
+function startGame() {
+
+    menu.style.display =
+        "none";
+
+    game.style.display =
+        "block";
+
+    gameStarted = true;
+
+    resizeArena();
+
+    requestAnimationFrame(
+        resizeArena
+    );
+}
+
+function resizeArena() {
+
+    const scaleX =
+        window.innerWidth / 1600;
+
+    const scaleY =
+        window.innerHeight / 900;
+
+    const scale =
+        Math.min(scaleX, scaleY);
+
+    document.documentElement
+        .style
+        .setProperty(
+            "--scale",
+            scale
+        );
+}
+
+window.addEventListener(
+    "resize",
+    resizeArena
+);
+
+function updateState(data) {
+
+    document.getElementById(
+        "p1Kills"
+    ).textContent =
+        data.score.p1;
+
+    document.getElementById(
+        "p2Kills"
+    ).textContent =
+        data.score.p2;
+
+    document.getElementById(
+        "centerScore"
+    ).textContent =
+        data.score.p1 +
+        " : " +
+        data.score.p2;
+
+    const existing =
+        new Set();
+
+    for (const p of data.players) {
+
+        existing.add(p.id);
+
+        let el =
+            players.get(p.id);
+
+        if (!el) {
+
+            el =
+                createPlayerElement(p);
+
+            players.set(
+                p.id,
+                el
+            );
+
+            entities.appendChild(el);
+        }
+
+        el.style.left =
+            p.x + "px";
+
+        el.style.top =
+            p.y + "px";
+
+        el.style.transform =
+            "translate(-50%,-50%) rotate(" +
+            p.angle +
+            "rad)";
+
+        const fill =
+            el.querySelector(".hpFill");
+
+        fill.style.width =
+            Math.max(
+                0,
+                p.hp
+            ) + "%";
+
+        el.style.opacity =
+            p.alive ? "1" : "0";
+
+        const name =
+            el.querySelector(".name");
+
+        name.textContent =
+            p.name;
+    }
+
+    for (const [id, el] of players) {
+
+        if (!existing.has(id)) {
+
+            el.remove();
+
+            players.delete(id);
+        }
+    }
+
+    bullets.innerHTML = "";
+
+    for (const b of data.bullets) {
+
+        const el =
+            document.createElement("div");
+
+        el.className =
+            "bullet";
+
+        el.style.left =
+            b.x + "px";
+
+        el.style.top =
+            b.y + "px";
+
+        bullets.appendChild(el);
+    }
+}
+
+function createPlayerElement(p) {
+
+    const el =
+        document.createElement("div");
+
+    let teamClass =
+        p.id === "p1"
+            ? "red"
+            : "blue";
+
+    if (p.id === "bot") {
+        teamClass = "bot";
+    }
+
+    el.className =
+        "player " +
+        teamClass;
+
+    const hp =
+        document.createElement("div");
+
+    hp.className =
+        "hp";
+
+    const hpFill =
+        document.createElement("div");
+
+    hpFill.className =
+        "hpFill";
+
+    hp.appendChild(
+        hpFill
+    );
+
+    el.appendChild(hp);
+
+    const name =
+        document.createElement("div");
+
+    name.className =
+        "name";
+
+    name.textContent =
+        p.name;
+
+    el.appendChild(name);
+
+    return el;
+}
+
+function showMessage(text) {
+
+    message.textContent =
+        text;
+
+    message.classList.add(
+        "show"
+    );
+
+    clearTimeout(
+        showMessage.timer
+    );
+
+    showMessage.timer =
+        setTimeout(() => {
+
+            message.classList.remove(
+                "show"
+            );
+
+        }, 2200);
+}
+
+function showGameOver(id) {
+
+    gameOver.style.display =
+        "flex";
+
+    if (id === playerId) {
+
+        winner.textContent =
+            "🏆 YOU WIN";
+
+        winnerText.textContent =
+            "შენ მოიგე მატჩი!";
+    }
+
+    else {
+
+        winner.textContent =
+            "💀 YOU LOST";
+
+        winnerText.textContent =
+            "მატჩი დასრულდა.";
+    }
+}
+
+document.getElementById(
+    "again"
+).addEventListener(
+    "click",
+    () => {
+
+        gameOver.style.display =
+            "none";
+
+        showMessage(
+            "ახალი რაუნდი იწყება..."
+        );
+    }
+);
+
+document.getElementById(
+    "create"
+).addEventListener(
+    "click",
+    () => {
+
+        if (!socket ||
+            socket.readyState !== WebSocket.OPEN) {
+
+            connect();
+
+            setTimeout(
+                createRoom,
+                500
+            );
+
+            return;
+        }
+
+        createRoom();
+    }
+);
+
+function createRoom() {
+
+    const name =
+        document.getElementById(
+            "name"
+        ).value.trim() ||
+        "PLAYER 1";
+
+    socket.send(
+        JSON.stringify({
+            type: "create_room",
+            name
+        })
+    );
+}
+
+document.getElementById(
+    "join"
+).addEventListener(
+    "click",
+    () => {
+
+        if (!socket ||
+            socket.readyState !== WebSocket.OPEN) {
+
+            connect();
+
+            setTimeout(
+                joinRoom,
+                500
+            );
+
+            return;
+        }
+
+        joinRoom();
+    }
+);
+
+function joinRoom() {
+
+    const name =
+        document.getElementById(
+            "name"
+        ).value.trim() ||
+        "PLAYER 2";
+
+    const room =
+        document.getElementById(
+            "room"
+        ).value.trim().toUpperCase();
+
+    if (!room) {
+
+        status.textContent =
+            "შეიყვანე Room Code.";
+
+        return;
+    }
+
+    socket.send(
+        JSON.stringify({
+            type: "join_room",
+            room,
+            name
+        })
+    );
+}
+
+window.addEventListener(
+    "keydown",
+    e => {
+
+        const k =
+            e.key.toLowerCase();
+
+        if (
+            k === "w" ||
+            k === "a" ||
+            k === "s" ||
+            k === "d"
+        ) {
+
+            keys[k] = true;
+
+            sendInput();
+
+            e.preventDefault();
+        }
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e => {
+
+        const k =
+            e.key.toLowerCase();
+
+        if (
+            k === "w" ||
+            k === "a" ||
+            k === "s" ||
+            k === "d"
+        ) {
+
+            keys[k] = false;
+
+            sendInput();
+
+            e.preventDefault();
+        }
+    }
+);
+
+window.addEventListener(
+    "mousemove",
+    e => {
+
+        const arenaRect =
+            document
+                .getElementById(
+                    "arena"
+                )
+                .getBoundingClientRect();
+
+        const scale =
+            parseFloat(
+                getComputedStyle(
+                    document.documentElement
+                )
+                .getPropertyValue(
+                    "--scale"
+                )
+            ) || 1;
+
+        mouseX =
+            (e.clientX -
+                arenaRect.left) /
+            scale;
+
+        mouseY =
+            (e.clientY -
+                arenaRect.top) /
+            scale;
+    }
+);
+
+window.addEventListener(
+    "mousedown",
+    e => {
+
+        if (e.button !== 0) {
+            return;
+        }
+
+        shooting = true;
+
+        sendInput();
+    }
+);
+
+window.addEventListener(
+    "mouseup",
+    e => {
+
+        if (e.button !== 0) {
+            return;
+        }
+
+        shooting = false;
+
+        sendInput();
+    }
+);
+
+function calculateAngle() {
+
+    const me =
+        getMyPlayer();
+
+    if (!me) {
+        return 0;
+    }
+
+    return Math.atan2(
+        mouseY - me.y,
+        mouseX - me.x
+    );
+}
+
+function getMyPlayer() {
+
+    const el =
+        players.get(
+            playerId
+        );
+
+    if (!el) {
+        return null;
+    }
+
+    return {
+        x:
+            parseFloat(
+                el.style.left
+            ),
+
+        y:
+            parseFloat(
+                el.style.top
+            )
+    };
+}
+
+function sendInput() {
+
+    if (!socket ||
+        socket.readyState !== WebSocket.OPEN) {
+        return;
+    }
+
+    socket.send(
+        JSON.stringify({
+            type: "input",
+
+            keys,
+
+            angle:
+                calculateAngle(),
+
+            shooting
+        })
+    );
+}
+
+setInterval(
+    sendInput,
+    50
+);
+
+document.addEventListener(
+    "contextmenu",
+    e => e.preventDefault()
+);
+
+</script>
+
+</body>
+</html>
