@@ -15,7 +15,7 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#03050a;
+    background:#02040a;
     color:white;
     font-family:Arial,Helvetica,sans-serif;
 }
@@ -24,8 +24,7 @@ body{
     user-select:none;
 }
 
-button,
-input{
+button,input{
     font:inherit;
 }
 
@@ -36,17 +35,17 @@ input{
     align-items:center;
     justify-content:center;
     background:
-        radial-gradient(circle at 50% 42%,#182438 0%,#090d15 45%,#020307 100%);
+        radial-gradient(circle at 50% 35%,#1b2c46 0%,#0a101c 42%,#020307 100%);
     z-index:100;
 }
 
 .box{
     width:min(520px,92vw);
     padding:32px;
-    border:1px solid #29344a;
+    border:1px solid #334158;
     border-radius:20px;
-    background:rgba(8,12,20,.97);
-    box-shadow:0 30px 100px #000b;
+    background:rgba(7,11,19,.97);
+    box-shadow:0 30px 100px #000;
 }
 
 .logo{
@@ -62,7 +61,7 @@ input{
 
 .sub{
     text-align:center;
-    color:#8996ac;
+    color:#8c9bb0;
     margin:7px 0 26px;
 }
 
@@ -70,10 +69,10 @@ input{
     width:100%;
     padding:14px 15px;
     margin:6px 0;
-    border:1px solid #2d384d;
+    border:1px solid #303c52;
     border-radius:10px;
     outline:none;
-    background:#080c14;
+    background:#070b13;
     color:white;
 }
 
@@ -94,7 +93,7 @@ button{
 }
 
 button.secondary{
-    background:#151d2c;
+    background:#151e2d;
 }
 
 button.bot{
@@ -115,7 +114,7 @@ button:disabled{
     min-height:22px;
     text-align:center;
     margin-top:12px;
-    color:#ff6b7d;
+    color:#ff7181;
 }
 
 .help{
@@ -165,7 +164,7 @@ button:disabled{
     position:fixed;
     inset:0;
     overflow:hidden;
-    background:#05080d;
+    background:#03060b;
 }
 
 canvas{
@@ -191,7 +190,7 @@ canvas{
     min-width:150px;
     padding:9px 14px;
     border-radius:10px;
-    background:rgba(5,8,14,.78);
+    background:rgba(5,8,14,.76);
     border:1px solid #29354b;
     text-align:center;
     font-weight:900;
@@ -210,8 +209,8 @@ canvas{
     position:fixed;
     left:50%;
     top:50%;
-    width:24px;
-    height:24px;
+    width:26px;
+    height:26px;
     transform:translate(-50%,-50%);
     pointer-events:none;
     z-index:30;
@@ -222,21 +221,21 @@ canvas{
     content:"";
     position:absolute;
     background:#fff;
-    box-shadow:0 0 4px #000;
+    box-shadow:0 0 5px #000;
 }
 
 #crosshair::before{
     width:2px;
     height:22px;
-    left:11px;
-    top:1px;
+    left:12px;
+    top:2px;
 }
 
 #crosshair::after{
     width:22px;
     height:2px;
-    left:1px;
-    top:11px;
+    left:2px;
+    top:12px;
 }
 
 #hit{
@@ -354,6 +353,7 @@ canvas{
 }
 
 @media(max-width:600px){
+
     .logo{
         font-size:38px;
     }
@@ -370,6 +370,7 @@ canvas{
     #hint{
         font-size:10px;
     }
+
 }
 </style>
 </head>
@@ -528,10 +529,6 @@ canvas{
 
 <script>
 
-/* =========================================================
-   SERVER
-========================================================= */
-
 const SERVER_URL =
     "wss://schoolgame-rivals.onrender.com";
 
@@ -544,13 +541,10 @@ const canvas =
     document.getElementById("view");
 
 const ctx =
-    canvas.getContext(
-        "2d",
-        {
-            alpha:false,
-            desynchronized:true
-        }
-    );
+    canvas.getContext("2d",{
+        alpha:false,
+        desynchronized:true
+    });
 
 ctx.imageSmoothingEnabled = true;
 
@@ -593,17 +587,13 @@ const hit =
 
 
 /* =========================================================
-   GAME STATE
+   STATE
 ========================================================= */
 
 let socket = null;
-
 let myId = null;
-
 let roomCode = "";
-
 let running = false;
-
 let pointerLocked = false;
 
 let state = {
@@ -623,32 +613,15 @@ let keys = {
 };
 
 let shooting = false;
-
 let mouseDX = 0;
-
 let lastMouseTime = 0;
-
 let toastTimer = null;
-
 let lastFrame = performance.now();
-
-
-/* =========================================================
-   SETTINGS
-========================================================= */
 
 const FOV =
     Math.PI / 3;
 
-
-/*
-   სპეციალურად დაბალი შიდა resolution.
-   ეკრანზე მაინც სრულ ზომაზე ჩანს,
-   მაგრამ render ბევრად სწრაფია.
-*/
-
-const MAX_RENDER_WIDTH = 1100;
-
+const MAX_RENDER_WIDTH = 1050;
 const MIN_RENDER_WIDTH = 520;
 
 
@@ -659,31 +632,18 @@ const MIN_RENDER_WIDTH = 520;
 const MAP = [
 
     "1111111111111111",
-
     "1000000000000001",
-
     "1000110001100001",
-
     "1000000000000001",
-
     "1011001110011001",
-
     "1000000000000001",
-
     "1000010000100001",
-
     "1000010000100001",
-
     "1000000000000001",
-
     "1011001110011001",
-
     "1000000000000001",
-
     "1000110001100001",
-
     "1000000000000001",
-
     "1111111111111111"
 
 ];
@@ -696,41 +656,36 @@ const MAP_H =
 
 
 /* =========================================================
-   CANVAS RESIZE
+   RESIZE
 ========================================================= */
 
 function resizeCanvas(){
 
-    const screenW =
+    const sw =
         window.innerWidth;
 
-    const screenH =
+    const sh =
         window.innerHeight;
 
-    const renderW =
+    const rw =
         Math.max(
             MIN_RENDER_WIDTH,
             Math.min(
                 MAX_RENDER_WIDTH,
-                screenW
+                sw
             )
         );
 
     const scale =
-        renderW / screenW;
+        rw / sw;
 
     canvas.width =
-        Math.floor(
-            renderW
-        );
+        Math.floor(rw);
 
     canvas.height =
-        Math.floor(
-            screenH * scale
-        );
+        Math.floor(sh * scale);
 
 }
-
 
 window.addEventListener(
     "resize",
@@ -766,18 +721,15 @@ function connect(){
 
     if(
         socket &&
-        socket.readyState ===
-        WebSocket.OPEN
+        socket.readyState === WebSocket.OPEN
     ){
 
         return Promise.resolve();
 
     }
 
-
     statusEl.textContent =
         "სერვერთან დაკავშირება...";
-
 
     return new Promise(
         (resolve,reject)=>{
@@ -786,7 +738,6 @@ function connect(){
                 new WebSocket(
                     SERVER_URL
                 );
-
 
             socket.onopen = ()=>{
 
@@ -797,7 +748,6 @@ function connect(){
 
             };
 
-
             socket.onerror = ()=>{
 
                 statusEl.textContent =
@@ -806,7 +756,6 @@ function connect(){
                 reject();
 
             };
-
 
             socket.onclose = ()=>{
 
@@ -820,19 +769,15 @@ function connect(){
 
             };
 
-
             socket.onmessage =
                 event=>{
 
                     try{
 
-                        const data =
+                        handleMessage(
                             JSON.parse(
                                 event.data
-                            );
-
-                        handleMessage(
-                            data
+                            )
                         );
 
                     }catch{}
@@ -846,88 +791,78 @@ function connect(){
 
 
 /* =========================================================
-   CREATE ROOM
+   CREATE
 ========================================================= */
 
 document
-    .getElementById("create")
-    .addEventListener(
-        "click",
-        async()=>{
+.getElementById("create")
+.addEventListener(
+    "click",
+    async()=>{
 
-            try{
+        try{
 
-                await connect();
+            await connect();
 
-                socket.send(
-                    JSON.stringify({
+            socket.send(
+                JSON.stringify({
 
-                        type:
-                            "create_room",
+                    type:"create_room",
+                    name:getName()
 
-                        name:
-                            getName()
+                })
+            );
 
-                    })
-                );
+        }catch{}
 
-            }catch{}
-
-        }
-    );
+    }
+);
 
 
 /* =========================================================
-   JOIN ROOM
+   JOIN
 ========================================================= */
 
 document
-    .getElementById("join")
-    .addEventListener(
-        "click",
-        async()=>{
+.getElementById("join")
+.addEventListener(
+    "click",
+    async()=>{
 
-            const room =
-                document
-                    .getElementById("room")
-                    .value
-                    .trim()
-                    .toUpperCase();
+        const room =
+            document
+            .getElementById("room")
+            .value
+            .trim()
+            .toUpperCase();
 
+        if(!room){
 
-            if(!room){
+            statusEl.textContent =
+                "შეიყვანე Room Code.";
 
-                statusEl.textContent =
-                    "შეიყვანე Room Code.";
-
-                return;
-
-            }
-
-
-            try{
-
-                await connect();
-
-                socket.send(
-                    JSON.stringify({
-
-                        type:
-                            "join_room",
-
-                        room:
-                            room,
-
-                        name:
-                            getName()
-
-                    })
-                );
-
-            }catch{}
+            return;
 
         }
-    );
+
+        try{
+
+            await connect();
+
+            socket.send(
+                JSON.stringify({
+
+                    type:"join_room",
+                    room,
+                    name:getName()
+
+                })
+            );
+
+        }catch{}
+
+    }
+);
 
 
 /* =========================================================
@@ -936,10 +871,7 @@ document
 
 function handleMessage(data){
 
-    if(
-        data.type ===
-        "room_created"
-    ){
+    if(data.type === "room_created"){
 
         myId =
             data.playerId;
@@ -950,14 +882,9 @@ function handleMessage(data){
         openLobby();
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "room_joined"
-    ){
+    if(data.type === "room_joined"){
 
         myId =
             data.playerId;
@@ -968,27 +895,17 @@ function handleMessage(data){
         openLobby();
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "error"
-    ){
+    if(data.type === "error"){
 
         statusEl.textContent =
             data.message;
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "bot_joined"
-    ){
+    if(data.type === "bot_joined"){
 
         showToast(
             "🤖 BOT შემოვიდა!"
@@ -997,18 +914,12 @@ function handleMessage(data){
         startGame();
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "state"
-    ){
+    if(data.type === "state"){
 
         state =
             data;
-
 
         if(
             !running &&
@@ -1020,7 +931,6 @@ function handleMessage(data){
 
         }
 
-
         if(!running){
 
             lobbyState.textContent =
@@ -1029,47 +939,30 @@ function handleMessage(data){
                 " / 2 მოთამაშე";
 
             return;
-
         }
-
 
         updateHUD();
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "hit_confirm"
-    ){
+    if(data.type === "hit_confirm"){
 
         flashHit();
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "game_over"
-    ){
+    if(data.type === "game_over"){
 
         endGame(
             data.winner
         );
 
         return;
-
     }
 
-
-    if(
-        data.type ===
-        "message"
-    ){
+    if(data.type === "message"){
 
         showToast(
             data.message
@@ -1115,44 +1008,39 @@ function openLobby(){
 ========================================================= */
 
 document
-    .getElementById("bot")
-    .addEventListener(
-        "click",
-        ()=>{
+.getElementById("bot")
+.addEventListener(
+    "click",
+    ()=>{
 
-            if(
-                !socket ||
-                socket.readyState !==
-                WebSocket.OPEN
-            ){
+        if(
+            !socket ||
+            socket.readyState !==
+            WebSocket.OPEN
+        ){
 
-                showToast(
-                    "სერვერთან კავშირი არ არის."
-                );
-
-                return;
-
-            }
-
-
-            botBtn.disabled =
-                true;
-
-            botBtn.textContent =
-                "🤖 BOT შემოდის...";
-
-
-            socket.send(
-                JSON.stringify({
-
-                    type:
-                        "add_bot"
-
-                })
+            showToast(
+                "სერვერთან კავშირი არ არის."
             );
 
+            return;
+
         }
-    );
+
+        botBtn.disabled =
+            true;
+
+        botBtn.textContent =
+            "🤖 BOT შემოდის...";
+
+        socket.send(
+            JSON.stringify({
+                type:"add_bot"
+            })
+        );
+
+    }
+);
 
 
 /* =========================================================
@@ -1160,34 +1048,34 @@ document
 ========================================================= */
 
 document
-    .getElementById("copy")
-    .addEventListener(
-        "click",
-        async()=>{
+.getElementById("copy")
+.addEventListener(
+    "click",
+    async()=>{
 
-            try{
+        try{
 
-                await navigator
-                    .clipboard
-                    .writeText(
-                        roomCode
-                    );
-
-                showToast(
-                    "📋 კოდი დაკოპირდა!"
-                );
-
-            }catch{
-
-                showToast(
-                    "Room Code: " +
+            await navigator
+                .clipboard
+                .writeText(
                     roomCode
                 );
 
-            }
+            showToast(
+                "📋 კოდი დაკოპირდა!"
+            );
+
+        }catch{
+
+            showToast(
+                "Room Code: " +
+                roomCode
+            );
 
         }
-    );
+
+    }
+);
 
 
 /* =========================================================
@@ -1195,15 +1083,13 @@ document
 ========================================================= */
 
 document
-    .getElementById("back")
-    .addEventListener(
-        "click",
-        ()=>{
-
-            location.reload();
-
-        }
-    );
+.getElementById("back")
+.addEventListener(
+    "click",
+    ()=>{
+        location.reload();
+    }
+);
 
 
 /* =========================================================
@@ -1216,10 +1102,8 @@ function startGame(){
         return;
     }
 
-
     running =
         true;
-
 
     menu.style.display =
         "none";
@@ -1230,7 +1114,6 @@ function startGame(){
     over.style.display =
         "none";
 
-
     lockTip.style.display =
         "block";
 
@@ -1238,7 +1121,7 @@ function startGame(){
 
 
 /* =========================================================
-   END GAME
+   END
 ========================================================= */
 
 function endGame(winnerId){
@@ -1261,19 +1144,14 @@ function endGame(winnerId){
     keys.d =
         false;
 
-
-    if(
-        document.pointerLockElement
-    ){
+    if(document.pointerLockElement){
 
         document.exitPointerLock();
 
     }
 
-
     over.style.display =
         "flex";
-
 
     document
         .getElementById("overTitle")
@@ -1281,7 +1159,6 @@ function endGame(winnerId){
             winnerId === myId
                 ? "🏆 YOU WIN"
                 : "💀 YOU LOST";
-
 
     document
         .getElementById("overText")
@@ -1298,54 +1175,18 @@ function endGame(winnerId){
 ========================================================= */
 
 document
-    .getElementById("again")
-    .addEventListener(
-        "click",
-        ()=>{
-
-            location.reload();
-
-        }
-    );
-
-
-/* =========================================================
-   MOUSE / SHOOT
-========================================================= */
-
-canvas.addEventListener(
+.getElementById("again")
+.addEventListener(
     "click",
     ()=>{
-
-        if(!running){
-            return;
-        }
-
-
-        if(
-            document.pointerLockElement !==
-            canvas
-        ){
-
-            if(
-                canvas.requestPointerLock
-            ){
-
-                canvas.requestPointerLock();
-
-            }
-
-        }
-
-
-        shooting =
-            true;
-
-        sendInput();
-
+        location.reload();
     }
 );
 
+
+/* =========================================================
+   MOUSE
+========================================================= */
 
 canvas.addEventListener(
     "mousedown",
@@ -1355,22 +1196,17 @@ canvas.addEventListener(
             event.button !== 0 ||
             !running
         ){
-
             return;
-
         }
 
-
         if(
-            document.pointerLockElement !==
-            canvas &&
+            document.pointerLockElement !== canvas &&
             canvas.requestPointerLock
         ){
 
             canvas.requestPointerLock();
 
         }
-
 
         shooting =
             true;
@@ -1385,14 +1221,9 @@ window.addEventListener(
     "mouseup",
     event=>{
 
-        if(
-            event.button !== 0
-        ){
-
+        if(event.button !== 0){
             return;
-
         }
-
 
         shooting =
             false;
@@ -1411,10 +1242,8 @@ window.addEventListener(
             return;
         }
 
-
         if(
-            document.pointerLockElement ===
-            canvas
+            document.pointerLockElement === canvas
         ){
 
             mouseDX +=
@@ -1425,10 +1254,8 @@ window.addEventListener(
             const now =
                 performance.now();
 
-
             if(
-                now - lastMouseTime >
-                10
+                now-lastMouseTime > 10
             ){
 
                 mouseDX +=
@@ -1450,9 +1277,7 @@ document.addEventListener(
     ()=>{
 
         pointerLocked =
-            document.pointerLockElement ===
-            canvas;
-
+            document.pointerLockElement === canvas;
 
         lockTip.style.display =
             pointerLocked
@@ -1469,8 +1294,8 @@ document.addEventListener(
 
 canvas.addEventListener(
     "contextmenu",
-    event=>{
-        event.preventDefault();
+    e=>{
+        e.preventDefault();
     }
 );
 
@@ -1497,11 +1322,7 @@ window.addEventListener(
             return;
         }
 
-
-        if(
-            event.code ===
-            "Space"
-        ){
+        if(event.code === "Space"){
 
             shooting =
                 true;
@@ -1514,19 +1335,15 @@ window.addEventListener(
 
         }
 
-
         const key =
             keyMap[event.code];
-
 
         if(!key){
             return;
         }
 
-
         keys[key] =
             true;
-
 
         event.preventDefault();
 
@@ -1538,10 +1355,7 @@ window.addEventListener(
     "keyup",
     event=>{
 
-        if(
-            event.code ===
-            "Space"
-        ){
+        if(event.code === "Space"){
 
             shooting =
                 false;
@@ -1554,19 +1368,15 @@ window.addEventListener(
 
         }
 
-
         const key =
             keyMap[event.code];
-
 
         if(!key){
             return;
         }
 
-
         keys[key] =
             false;
-
 
         event.preventDefault();
 
@@ -1600,26 +1410,18 @@ window.addEventListener(
 
 
 /* =========================================================
-   SEND INPUT
+   INPUT
 ========================================================= */
 
 function sendInput(){
 
     if(
         !socket ||
-        socket.readyState !==
-        WebSocket.OPEN
+        socket.readyState !== WebSocket.OPEN ||
+        !running
     ){
-
-        return;
-
-    }
-
-
-    if(!running){
         return;
     }
-
 
     const dx =
         mouseDX;
@@ -1627,12 +1429,10 @@ function sendInput(){
     mouseDX =
         0;
 
-
     socket.send(
         JSON.stringify({
 
-            type:
-                "input",
+            type:"input",
 
             keys:{
                 w:!!keys.w,
@@ -1641,11 +1441,9 @@ function sendInput(){
                 d:!!keys.d
             },
 
-            mouseDX:
-                dx,
+            mouseDX:dx,
 
-            shooting:
-                !!shooting
+            shooting:!!shooting
 
         })
     );
@@ -1666,8 +1464,7 @@ setInterval(
 function me(){
 
     return state.players.find(
-        p =>
-            p.id === myId
+        p=>p.id === myId
     );
 
 }
@@ -1676,8 +1473,7 @@ function me(){
 function enemy(){
 
     return state.players.find(
-        p =>
-            p.id !== myId
+        p=>p.id !== myId
     );
 
 }
@@ -1689,27 +1485,21 @@ function enemy(){
 
 function updateHUD(){
 
-    const player =
+    const p =
         me();
 
-    const rival =
+    const e =
         enemy();
-
 
     document
         .getElementById("myScore")
         .textContent =
-            player
-                ? player.kills
-                : 0;
-
+            p ? p.kills : 0;
 
     document
         .getElementById("enemyScore")
         .textContent =
-            rival
-                ? rival.kills
-                : 0;
+            e ? e.kills : 0;
 
 }
 
@@ -1727,20 +1517,16 @@ function showToast(text){
         "show"
     );
 
-
     clearTimeout(
         toastTimer
     );
 
-
     toastTimer =
         setTimeout(
             ()=>{
-
                 toast.classList.remove(
                     "show"
                 );
-
             },
             1800
         );
@@ -1758,14 +1544,11 @@ function flashHit(){
         "hitshow"
     );
 
-
     setTimeout(
         ()=>{
-
             hit.classList.remove(
                 "hitshow"
             );
-
         },
         100
     );
@@ -1774,7 +1557,7 @@ function flashHit(){
 
 
 /* =========================================================
-   MAP
+   WALL
 ========================================================= */
 
 function isWall(x,y){
@@ -1785,18 +1568,14 @@ function isWall(x,y){
     const my =
         Math.floor(y);
 
-
     if(
         mx < 0 ||
         my < 0 ||
         mx >= MAP_W ||
         my >= MAP_H
     ){
-
         return true;
-
     }
-
 
     return MAP[my][mx] === "1";
 
@@ -1804,7 +1583,7 @@ function isWall(x,y){
 
 
 /* =========================================================
-   FAST DDA RAYCAST
+   DDA RAY
 ========================================================= */
 
 function castRay(
@@ -1820,83 +1599,61 @@ function castRay(
     let mapY =
         Math.floor(posY);
 
-
-    const deltaDistX =
+    const deltaX =
         Math.abs(
-            1 /
-            (rayDirX || 0.000001)
+            1/(rayDirX || .000001)
         );
 
-    const deltaDistY =
+    const deltaY =
         Math.abs(
-            1 /
-            (rayDirY || 0.000001)
+            1/(rayDirY || .000001)
         );
-
 
     let stepX;
     let stepY;
-
-    let sideDistX;
-    let sideDistY;
-
+    let sideX;
+    let sideY;
 
     if(rayDirX < 0){
 
         stepX = -1;
 
-        sideDistX =
-            (posX - mapX) *
-            deltaDistX;
+        sideX =
+            (posX-mapX)*deltaX;
 
     }else{
 
         stepX = 1;
 
-        sideDistX =
-            (mapX + 1 - posX) *
-            deltaDistX;
+        sideX =
+            (mapX+1-posX)*deltaX;
 
     }
-
 
     if(rayDirY < 0){
 
         stepY = -1;
 
-        sideDistY =
-            (posY - mapY) *
-            deltaDistY;
+        sideY =
+            (posY-mapY)*deltaY;
 
     }else{
 
         stepY = 1;
 
-        sideDistY =
-            (mapY + 1 - posY) *
-            deltaDistY;
+        sideY =
+            (mapY+1-posY)*deltaY;
 
     }
 
-
     let side = 0;
 
-    let hitWall = false;
+    for(let i=0;i<40;i++){
 
+        if(sideX < sideY){
 
-    for(
-        let i=0;
-        i<40;
-        i++
-    ){
-
-        if(
-            sideDistX <
-            sideDistY
-        ){
-
-            sideDistX +=
-                deltaDistX;
+            sideX +=
+                deltaX;
 
             mapX +=
                 stepX;
@@ -1905,8 +1662,8 @@ function castRay(
 
         }else{
 
-            sideDistY +=
-                deltaDistY;
+            sideY +=
+                deltaY;
 
             mapY +=
                 stepY;
@@ -1915,7 +1672,6 @@ function castRay(
 
         }
 
-
         if(
             mapX < 0 ||
             mapY < 0 ||
@@ -1923,137 +1679,97 @@ function castRay(
             mapY >= MAP_H
         ){
 
-            hitWall = true;
-            break;
+            return {
+                distance:25,
+                side:0,
+                mapX:0,
+                mapY:0
+            };
 
         }
-
 
         if(
             MAP[mapY][mapX] === "1"
         ){
 
-            hitWall = true;
-            break;
+            const distance =
+                side === 0
+                    ? sideX-deltaX
+                    : sideY-deltaY;
+
+            return {
+                distance:Math.max(.001,distance),
+                side,
+                mapX,
+                mapY
+            };
 
         }
 
     }
 
-
-    if(!hitWall){
-
-        return {
-            distance:25,
-            side:0,
-            mapX:0,
-            mapY:0
-        };
-
-    }
-
-
-    let distance;
-
-
-    if(side === 0){
-
-        distance =
-            sideDistX -
-            deltaDistX;
-
-    }else{
-
-        distance =
-            sideDistY -
-            deltaDistY;
-
-    }
-
-
     return {
-        distance:Math.max(.001,distance),
-        side,
-        mapX,
-        mapY
+        distance:25,
+        side:0,
+        mapX:0,
+        mapY:0
     };
 
 }
 
 
 /* =========================================================
-   ANGLE NORMALIZATION
+   ANGLE
 ========================================================= */
 
-function normalizeAngle(angle){
+function normalizeAngle(a){
 
-    while(
-        angle > Math.PI
-    ){
-
-        angle -=
-            Math.PI * 2;
-
+    while(a > Math.PI){
+        a -= Math.PI*2;
     }
 
-
-    while(
-        angle < -Math.PI
-    ){
-
-        angle +=
-            Math.PI * 2;
-
+    while(a < -Math.PI){
+        a += Math.PI*2;
     }
 
-
-    return angle;
+    return a;
 
 }
 
 
 /* =========================================================
-   DRAW SKY
+   SKY
 ========================================================= */
 
-function drawSky(
-    w,
-    h
-){
+function drawSky(w,h){
 
     const horizon =
-        h * .5;
-
+        h*.49;
 
     const sky =
         ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            horizon
+            0,0,0,horizon
         );
-
 
     sky.addColorStop(
         0,
-        "#050b16"
+        "#020711"
     );
 
     sky.addColorStop(
-        .42,
-        "#0d1b2d"
+        .38,
+        "#081527"
     );
 
     sky.addColorStop(
-        .8,
-        "#1c3047"
+        .72,
+        "#17304b"
     );
 
     sky.addColorStop(
         1,
-        "#344b64"
+        "#39536b"
     );
-
 
     ctx.fillStyle =
         sky;
@@ -2066,32 +1782,35 @@ function drawSky(
     );
 
 
-    /* LIGHT AT HORIZON */
+    /* ზედა მსუბუქი განათება */
 
-    const glow =
+    const light =
         ctx.createRadialGradient(
             w*.5,
-            horizon,
+            horizon*.88,
             0,
             w*.5,
-            horizon,
+            horizon*.88,
             w*.65
         );
 
-
-    glow.addColorStop(
+    light.addColorStop(
         0,
-        "rgba(100,150,190,.22)"
+        "rgba(105,175,225,.22)"
     );
 
-    glow.addColorStop(
+    light.addColorStop(
+        .45,
+        "rgba(60,120,170,.08)"
+    );
+
+    light.addColorStop(
         1,
         "rgba(0,0,0,0)"
     );
 
-
     ctx.fillStyle =
-        glow;
+        light;
 
     ctx.fillRect(
         0,
@@ -2100,21 +1819,53 @@ function drawSky(
         horizon
     );
 
+
+    /* პატარა შორეული ნათურები */
+
+    ctx.save();
+
+    ctx.globalAlpha =
+        .35;
+
+    ctx.fillStyle =
+        "#dceeff";
+
+    const lights = [
+        [.15,.31],
+        [.27,.25],
+        [.72,.27],
+        [.84,.34]
+    ];
+
+    for(const p of lights){
+
+        ctx.beginPath();
+
+        ctx.arc(
+            w*p[0],
+            horizon*p[1],
+            1.5,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+    ctx.restore();
+
 }
 
 
 /* =========================================================
-   DRAW FLOOR
+   FLOOR
 ========================================================= */
 
-function drawFloor(
-    w,
-    h
-){
+function drawFloor(w,h){
 
     const horizon =
-        h*.5;
-
+        h*.49;
 
     const floor =
         ctx.createLinearGradient(
@@ -2124,22 +1875,20 @@ function drawFloor(
             h
         );
 
-
     floor.addColorStop(
         0,
-        "#243547"
+        "#263c4d"
     );
 
     floor.addColorStop(
-        .3,
-        "#111d2a"
+        .22,
+        "#162532"
     );
 
     floor.addColorStop(
         1,
         "#05090e"
     );
-
 
     ctx.fillStyle =
         floor;
@@ -2153,31 +1902,28 @@ function drawFloor(
 
 
     /*
-       მსუბუქი floor lines.
-       ბევრად იაფია ვიდრე ძველი
-       ყოველ frame-ზე დიდი grid.
+       იატაკის ხაზები
     */
 
     ctx.save();
 
     ctx.globalAlpha =
-        .13;
+        .16;
 
     ctx.strokeStyle =
-        "#7891ad";
+        "#8299ae";
 
     ctx.lineWidth =
         1;
 
-
     for(
         let i=1;
-        i<=9;
+        i<=10;
         i++
     ){
 
         const t =
-            i / 9;
+            i/10;
 
         const y =
             horizon +
@@ -2186,7 +1932,6 @@ function drawFloor(
                 1.85
             ) *
             (h-horizon);
-
 
         ctx.beginPath();
 
@@ -2206,15 +1951,14 @@ function drawFloor(
 
 
     for(
-        let i=-8;
-        i<=8;
+        let i=-10;
+        i<=10;
         i++
     ){
 
         const x =
             w*.5 +
-            i*w*.095;
-
+            i*w*.085;
 
         ctx.beginPath();
 
@@ -2232,7 +1976,6 @@ function drawFloor(
 
     }
 
-
     ctx.restore();
 
 }
@@ -2249,19 +1992,10 @@ function drawWalls(
 ){
 
     const horizon =
-        h*.5;
-
-
-    /*
-       DDA raycast:
-       ძველ კოდთან შედარებით
-       ათასობით პატარა ნაბიჯის ნაცვლად
-       პირდაპირ grid cell-ზე გადადის.
-    */
+        h*.49;
 
     const depth =
         new Float32Array(w);
-
 
     for(
         let x=0;
@@ -2272,146 +2006,140 @@ function drawWalls(
         const cameraX =
             (2*x/w)-1;
 
-
-        const rayAngle =
+        const angle =
             player.angle +
-            cameraX*
-            (FOV*.5);
+            cameraX*(FOV*.5);
 
+        const rayX =
+            Math.cos(angle);
 
-        const rayDirX =
-            Math.cos(
-                rayAngle
-            );
-
-        const rayDirY =
-            Math.sin(
-                rayAngle
-            );
-
+        const rayY =
+            Math.sin(angle);
 
         const hit =
             castRay(
                 player.x,
                 player.y,
-                rayDirX,
-                rayDirY
+                rayX,
+                rayY
             );
 
-
-        const corrected =
+        const distance =
             Math.max(
                 .05,
                 hit.distance *
                 Math.cos(
-                    rayAngle -
-                    player.angle
+                    angle-player.angle
                 )
             );
 
-
         depth[x] =
-            corrected;
-
+            distance;
 
         const wallHeight =
             Math.min(
-                h*1.8,
-                h/
-                corrected
+                h*1.65,
+                h/distance
             );
-
 
         const top =
             horizon -
             wallHeight*.5;
 
 
-        let base =
-            155 -
-            corrected*7;
+        /*
+           კედლის ფერი
+        */
 
+        let brightness =
+            150 -
+            distance*8;
 
-        base =
+        brightness =
             Math.max(
-                32,
+                34,
                 Math.min(
-                    155,
-                    base
+                    150,
+                    brightness
                 )
             );
 
-
         if(hit.side === 1){
-
-            base *= .72;
-
-        }
-
-
-        const pattern =
-            (hit.mapX +
-             hit.mapY) % 2;
-
-
-        let r =
-            base*.27;
-
-        let g =
-            base*.39;
-
-        let b =
-            base*.56;
-
-
-        if(pattern){
-
-            r *= .9;
-            g *= .92;
-            b *= .94;
-
+            brightness *= .68;
         }
 
 
         /*
-           ზედა highlight
+           სხვადასხვა ოთახს ოდნავ
+           განსხვავებული ფერი
         */
+
+        const variant =
+            (hit.mapX*7+
+             hit.mapY*13)%3;
+
+        let r =
+            brightness*.22;
+
+        let g =
+            brightness*.38;
+
+        let b =
+            brightness*.55;
+
+        if(variant === 1){
+
+            r *= .92;
+            g *= 1.04;
+            b *= .96;
+
+        }
+
+        if(variant === 2){
+
+            r *= 1.03;
+            g *= .92;
+            b *= .92;
+
+        }
+
 
         ctx.fillStyle =
             `rgb(${r|0},${g|0},${b|0})`;
 
-
         ctx.fillRect(
             x,
             top,
-            1.5,
+            1.2,
             wallHeight+1
         );
 
 
         /*
-           კედლის მსუბუქი vertical highlight
+           კედლის ზედა edge
         */
 
         if(
-            x % 7 === 0 &&
-            corrected < 8
+            distance < 7 &&
+            x%4 === 0
         ){
 
             ctx.fillStyle =
-                "rgba(255,255,255,.035)";
+                "rgba(190,225,245,.045)";
 
             ctx.fillRect(
                 x,
                 top,
                 1,
-                wallHeight
+                Math.max(
+                    2,
+                    wallHeight*.02
+                )
             );
 
         }
 
     }
-
 
     return depth;
 
@@ -2429,103 +2157,88 @@ function drawEnemies(
     h
 ){
 
-    const enemies =
+    const list =
         state.players
-            .filter(
-                p =>
-                    p.id !== myId &&
-                    p.alive
-            )
-            .map(
-                p=>{
+        .filter(
+            p =>
+                p.id !== myId &&
+                p.alive
+        )
+        .map(
+            p=>{
 
-                    const dx =
-                        p.x -
-                        player.x;
+                const dx =
+                    p.x-player.x;
 
-                    const dy =
-                        p.y -
-                        player.y;
+                const dy =
+                    p.y-player.y;
 
+                const distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    );
 
-                    const distance =
-                        Math.hypot(
-                            dx,
-                            dy
-                        );
+                const angle =
+                    normalizeAngle(
+                        Math.atan2(
+                            dy,
+                            dx
+                        ) -
+                        player.angle
+                    );
 
+                return {
+                    ...p,
+                    distance,
+                    relativeAngle:angle
+                };
 
-                    const relativeAngle =
-                        normalizeAngle(
-                            Math.atan2(
-                                dy,
-                                dx
-                            ) -
-                            player.angle
-                        );
-
-
-                    return {
-                        ...p,
-                        distance,
-                        relativeAngle
-                    };
-
-                }
-            )
-            .filter(
-                p =>
-                    p.distance > .25 &&
-                    Math.abs(
-                        p.relativeAngle
-                    ) <
-                    FOV*.58
-            )
-            .sort(
-                (a,b)=>
-                    b.distance -
-                    a.distance
-            );
+            }
+        )
+        .filter(
+            p =>
+                p.distance>.25 &&
+                Math.abs(
+                    p.relativeAngle
+                ) < FOV*.58
+        )
+        .sort(
+            (a,b)=>
+                b.distance-a.distance
+        );
 
 
     const horizon =
-        h*.5;
+        h*.49;
 
 
-    for(
-        const enemyPlayer of enemies
-    ){
+    for(const p of list){
 
         const screenX =
             w*.5 +
-            (
-                enemyPlayer.relativeAngle /
-                FOV
-            )*
-            w;
+            (p.relativeAngle/FOV)*w;
 
 
         /*
-           ზომა უფრო კონტროლირებულია,
-           რომ BOT ძალიან დიდი აღარ ჩანდეს.
+           უფრო ბუნებრივი ზომა.
         */
 
         const size =
             Math.min(
-                h*.72,
+                h*.68,
                 Math.max(
-                    34,
-                    h /
+                    30,
+                    h/
                     Math.max(
-                        .75,
-                        enemyPlayer.distance*
-                        .92
+                        1,
+                        p.distance*.86
                     )
                 )
             );
 
 
-        const centerColumn =
+        const center =
             Math.max(
                 0,
                 Math.min(
@@ -2535,69 +2248,59 @@ function drawEnemies(
             );
 
 
-        const leftColumn =
+        const edgeL =
             Math.max(
                 0,
                 Math.min(
                     w-1,
                     Math.floor(
-                        screenX-size*.24
+                        screenX-size*.22
                     )
                 )
             );
 
 
-        const rightColumn =
+        const edgeR =
             Math.max(
                 0,
                 Math.min(
                     w-1,
                     Math.floor(
-                        screenX+size*.24
+                        screenX+size*.22
                     )
                 )
             );
 
 
-        /*
-           კედლის უკან თუ არის —
-           არ ვხატავთ.
-        */
-
         if(
-            depth[centerColumn] <
-            enemyPlayer.distance-.12
+            depth[center] <
+            p.distance-.15
         ){
-
             continue;
-
         }
 
 
         if(
-            depth[leftColumn] <
-            enemyPlayer.distance-.08 &&
-            depth[rightColumn] <
-            enemyPlayer.distance-.08
+            depth[edgeL] <
+            p.distance-.05 &&
+            depth[edgeR] <
+            p.distance-.05
         ){
-
             continue;
-
         }
+
+
+        const bot =
+            p.id === "bot";
 
 
         const ground =
             horizon +
-            size*.49;
-
+            size*.48;
 
         const headY =
             ground -
-            size*.72;
-
-
-        const bot =
-            enemyPlayer.id === "bot";
+            size*.70;
 
 
         /*
@@ -2605,14 +2308,14 @@ function drawEnemies(
         */
 
         ctx.fillStyle =
-            "rgba(0,0,0,.38)";
+            "rgba(0,0,0,.42)";
 
         ctx.beginPath();
 
         ctx.ellipse(
             screenX,
-            ground+3,
-            size*.26,
+            ground+4,
+            size*.27,
             size*.055,
             0,
             0,
@@ -2628,23 +2331,43 @@ function drawEnemies(
 
         ctx.fillStyle =
             bot
-                ? "#2e2257"
-                : "#202733";
-
+                ? "#281d4b"
+                : "#151c27";
 
         ctx.fillRect(
-            screenX-size*.145,
+            screenX-size*.15,
             ground-size*.34,
-            size*.10,
-            size*.34
+            size*.105,
+            size*.35
         );
-
 
         ctx.fillRect(
             screenX+size*.045,
             ground-size*.34,
-            size*.10,
-            size*.34
+            size*.105,
+            size*.35
+        );
+
+
+        /*
+           BOOTS
+        */
+
+        ctx.fillStyle =
+            "#070a0f";
+
+        ctx.fillRect(
+            screenX-size*.17,
+            ground-size*.02,
+            size*.13,
+            size*.045
+        );
+
+        ctx.fillRect(
+            screenX+size*.035,
+            ground-size*.02,
+            size*.13,
+            size*.045
         );
 
 
@@ -2653,13 +2376,13 @@ function drawEnemies(
         */
 
         ctx.fillStyle =
-            "#05070b";
+            "#030508";
 
         ctx.fillRect(
             screenX-size*.225,
-            ground-size*.635,
+            ground-size*.64,
             size*.45,
-            size*.34
+            size*.35
         );
 
 
@@ -2675,81 +2398,101 @@ function drawEnemies(
                 0
             );
 
-
         if(bot){
 
             body.addColorStop(
                 0,
-                "#241947"
+                "#251747"
             );
 
             body.addColorStop(
                 .45,
-                "#784ac5"
+                "#7544c2"
             );
 
             body.addColorStop(
-                .75,
-                "#9b62ed"
+                .7,
+                "#a267ee"
             );
 
             body.addColorStop(
                 1,
-                "#39216e"
+                "#36205f"
             );
 
         }else{
 
             body.addColorStop(
                 0,
-                "#651323"
+                "#5e1424"
             );
 
             body.addColorStop(
                 .45,
-                "#d7354f"
+                "#c92e48"
             );
 
             body.addColorStop(
-                .75,
-                "#f24d65"
+                .72,
+                "#ef5268"
             );
 
             body.addColorStop(
                 1,
-                "#741526"
+                "#71182a"
             );
 
         }
 
-
         ctx.fillStyle =
             body;
-
 
         ctx.fillRect(
             screenX-size*.20,
             ground-size*.61,
             size*.40,
-            size*.30
+            size*.31
         );
 
 
         /*
-           CHEST PLATE
+           ARMOR
         */
 
         ctx.fillStyle =
             bot
-                ? "rgba(220,190,255,.17)"
-                : "rgba(255,255,255,.10)";
-
+                ? "rgba(235,220,255,.18)"
+                : "rgba(255,255,255,.12)";
 
         ctx.fillRect(
-            screenX-size*.10,
+            screenX-size*.095,
             ground-size*.58,
-            size*.20,
-            size*.22
+            size*.19,
+            size*.23
+        );
+
+
+        /*
+           SHOULDERS
+        */
+
+        ctx.fillStyle =
+            bot
+                ? "#52338d"
+                : "#a7273e";
+
+        ctx.fillRect(
+            screenX-size*.28,
+            ground-size*.57,
+            size*.10,
+            size*.18
+        );
+
+        ctx.fillRect(
+            screenX+size*.18,
+            ground-size*.57,
+            size*.10,
+            size*.18
         );
 
 
@@ -2759,23 +2502,21 @@ function drawEnemies(
 
         ctx.fillStyle =
             bot
-                ? "#6540ac"
-                : "#c83249";
-
+                ? "#5d3ca0"
+                : "#c63149";
 
         ctx.fillRect(
             screenX-size*.31,
-            ground-size*.57,
-            size*.105,
-            size*.26
+            ground-size*.48,
+            size*.10,
+            size*.24
         );
 
-
         ctx.fillRect(
-            screenX+size*.205,
-            ground-size*.57,
-            size*.105,
-            size*.26
+            screenX+size*.21,
+            ground-size*.48,
+            size*.10,
+            size*.24
         );
 
 
@@ -2784,14 +2525,14 @@ function drawEnemies(
         */
 
         ctx.fillStyle =
-            "#07090d";
+            "#030507";
 
         ctx.beginPath();
 
         ctx.arc(
             screenX,
             headY,
-            size*.175,
+            size*.18,
             0,
             Math.PI*2
         );
@@ -2805,16 +2546,15 @@ function drawEnemies(
 
         ctx.fillStyle =
             bot
-                ? "#bca8e5"
-                : "#e9a19e";
-
+                ? "#bba8df"
+                : "#e5a09b";
 
         ctx.beginPath();
 
         ctx.arc(
             screenX,
             headY,
-            size*.145,
+            size*.148,
             0,
             Math.PI*2
         );
@@ -2823,21 +2563,20 @@ function drawEnemies(
 
 
         /*
-           HAIR / HELMET
+           HELMET
         */
 
         ctx.fillStyle =
             bot
-                ? "#241947"
-                : "#35131a";
-
+                ? "#211638"
+                : "#291016";
 
         ctx.beginPath();
 
         ctx.arc(
             screenX,
             headY-size*.025,
-            size*.15,
+            size*.154,
             Math.PI,
             Math.PI*2
         );
@@ -2850,14 +2589,30 @@ function drawEnemies(
         */
 
         ctx.fillStyle =
-            "#070a10";
-
+            "#060a10";
 
         ctx.fillRect(
-            screenX-size*.12,
-            headY-size*.018,
-            size*.24,
-            size*.042
+            screenX-size*.125,
+            headY-size*.015,
+            size*.25,
+            size*.045
+        );
+
+
+        /*
+           VISOR LIGHT
+        */
+
+        ctx.fillStyle =
+            bot
+                ? "rgba(192,155,255,.55)"
+                : "rgba(255,70,90,.55)";
+
+        ctx.fillRect(
+            screenX-size*.10,
+            headY-size*.005,
+            size*.20,
+            size*.012
         );
 
 
@@ -2866,75 +2621,63 @@ function drawEnemies(
         */
 
         ctx.fillStyle =
-            "#080b10";
-
+            "#070a0e";
 
         ctx.fillRect(
-            screenX+size*.16,
-            ground-size*.50,
-            size*.32,
-            size*.06
+            screenX+size*.14,
+            ground-size*.46,
+            size*.34,
+            size*.065
         );
 
-
         ctx.fillStyle =
-            "#303947";
-
+            "#3b4653";
 
         ctx.fillRect(
             screenX+size*.22,
-            ground-size*.515,
-            size*.13,
+            ground-size*.475,
+            size*.14,
             size*.025
         );
 
 
         /*
-           HP BAR BACKGROUND
+           HP BAR
         */
 
         ctx.fillStyle =
-            "rgba(0,0,0,.8)";
-
+            "rgba(0,0,0,.86)";
 
         ctx.fillRect(
-            screenX-size*.29,
-            headY-size*.30,
-            size*.58,
-            size*.052
+            screenX-size*.30,
+            headY-size*.32,
+            size*.60,
+            size*.055
         );
 
-
-        /*
-           HP
-        */
 
         const hp =
             Math.max(
                 0,
                 Math.min(
                     100,
-                    Number(
-                        enemyPlayer.hp
-                    ) || 0
+                    Number(p.hp)||0
                 )
             );
 
 
         ctx.fillStyle =
-            hp > 50
-                ? "#39e878"
-                : hp > 25
+            hp>50
+                ? "#36e879"
+                : hp>25
                     ? "#ffc247"
                     : "#ff4059";
 
-
         ctx.fillRect(
-            screenX-size*.285,
-            headY-size*.296,
-            size*.57*
-            (hp/100),
-            size*.036
+            screenX-size*.292,
+            headY-size*.313,
+            size*.584*(hp/100),
+            size*.037
         );
 
 
@@ -2945,26 +2688,22 @@ function drawEnemies(
         ctx.textAlign =
             "center";
 
-
         ctx.fillStyle =
-            "#fff";
-
+            "#ffffff";
 
         ctx.font =
             `bold ${Math.max(
                 10,
                 Math.min(
-                    16,
+                    17,
                     size*.075
                 )
             )}px Arial`;
 
-
         ctx.fillText(
-            enemyPlayer.name ||
-            "RIVAL",
+            p.name || "RIVAL",
             screenX,
-            headY-size*.37
+            headY-size*.39
         );
 
     }
@@ -2984,22 +2723,17 @@ function drawBullets(
 ){
 
     const horizon =
-        h*.5;
-
+        h*.49;
 
     for(
-        const bullet of
-        state.bullets || []
+        const bullet of state.bullets || []
     ){
 
         const dx =
-            bullet.x -
-            player.x;
+            bullet.x-player.x;
 
         const dy =
-            bullet.y -
-            player.y;
-
+            bullet.y-player.y;
 
         const distance =
             Math.hypot(
@@ -3007,40 +2741,29 @@ function drawBullets(
                 dy
             );
 
-
-        if(distance < .15){
+        if(distance<.15){
             continue;
         }
 
-
-        const relative =
+        const angle =
             normalizeAngle(
                 Math.atan2(
                     dy,
                     dx
-                ) -
+                )-
                 player.angle
             );
 
-
         if(
-            Math.abs(relative) >
+            Math.abs(angle)>
             FOV*.5
         ){
-
             continue;
-
         }
 
-
         const sx =
-            w*.5 +
-            (
-                relative /
-                FOV
-            )*
-            w;
-
+            w*.5+
+            (angle/FOV)*w;
 
         const column =
             Math.max(
@@ -3051,16 +2774,12 @@ function drawBullets(
                 )
             );
 
-
         if(
             depth[column] <
             distance-.1
         ){
-
             continue;
-
         }
-
 
         const size =
             Math.max(
@@ -3075,18 +2794,16 @@ function drawBullets(
                 )
             );
 
-
         ctx.save();
 
         ctx.fillStyle =
-            "#ffd76b";
+            "#ffd86b";
 
         ctx.shadowBlur =
-            10;
+            9;
 
         ctx.shadowColor =
-            "#ff9d00";
-
+            "#ff8b00";
 
         ctx.beginPath();
 
@@ -3108,13 +2825,26 @@ function drawBullets(
 
 
 /* =========================================================
-   WEAPON
+   FIRST PERSON GUN
 ========================================================= */
 
 function drawWeapon(
     w,
     h
 ){
+
+    /*
+       იარაღი ყოველთვის ჩანს.
+       ზომა სპეციალურად დავაპატარავე,
+       რომ ეკრანის ნახევარი არ დაიკავოს.
+    */
+
+    const scale =
+        Math.min(
+            1,
+            w/1050
+        );
+
 
     const moving =
         keys.w ||
@@ -3129,36 +2859,22 @@ function drawWeapon(
 
     const bob =
         moving
-            ? Math.sin(
-                time/80
-              )*4
-            : 0;
+            ? Math.sin(time/75)*3.5
+            : Math.sin(time/250)*.7;
 
 
     const recoil =
         shooting
-            ? Math.sin(
-                time/42
-              )*2
+            ? Math.sin(time/35)*1.8
             : 0;
 
 
-    const scale =
-        Math.min(
-            1,
-            w/1000
-        );
-
-
     const x =
-        w*.5 +
-        55*scale;
-
+        w*.56;
 
     const y =
-        h -
-        88*scale +
-        bob +
+        h-73*scale+
+        bob+
         recoil;
 
 
@@ -3176,167 +2892,218 @@ function drawWeapon(
 
 
     /*
-       ARM
+       ხელის/მკლავის ჩრდილი
     */
 
     ctx.fillStyle =
-        "#a96755";
-
+        "rgba(0,0,0,.4)";
 
     ctx.beginPath();
 
     ctx.roundRect(
-        -42,
-        36,
-        70,
-        34,
-        8
+        -45,
+        35,
+        100,
+        42,
+        12
     );
 
     ctx.fill();
 
 
-    ctx.fillStyle =
-        "#7f493e";
-
-
-    ctx.fillRect(
-        -18,
-        48,
-        46,
-        25
-    );
-
-
     /*
-       GUN SHADOW
+       ხელი
     */
 
-    ctx.fillStyle =
-        "rgba(0,0,0,.6)";
-
-
-    ctx.fillRect(
-        -82,
-        -12,
-        168,
-        58
-    );
-
-
-    /*
-       GUN BODY
-    */
-
-    const metal =
+    const skin =
         ctx.createLinearGradient(
-            -85,
-            -30,
-            95,
-            25
+            -35,
+            35,
+            35,
+            75
         );
 
-
-    metal.addColorStop(
+    skin.addColorStop(
         0,
-        "#0b0f15"
+        "#c8836e"
     );
 
-    metal.addColorStop(
-        .3,
-        "#394552"
-    );
-
-    metal.addColorStop(
+    skin.addColorStop(
         .5,
-        "#66717c"
+        "#a95f50"
     );
 
-    metal.addColorStop(
-        .7,
-        "#252d37"
-    );
-
-    metal.addColorStop(
+    skin.addColorStop(
         1,
-        "#080b10"
+        "#6d3b35"
     );
-
 
     ctx.fillStyle =
-        metal;
-
+        skin;
 
     ctx.beginPath();
 
     ctx.roundRect(
-        -80,
-        -20,
-        155,
-        50,
+        -34,
+        31,
+        76,
+        43,
+        10
+    );
+
+    ctx.fill();
+
+
+    /*
+       GUN MAIN BODY
+    */
+
+    const gun =
+        ctx.createLinearGradient(
+            -90,
+            -30,
+            110,
+            30
+        );
+
+    gun.addColorStop(
+        0,
+        "#090d13"
+    );
+
+    gun.addColorStop(
+        .22,
+        "#2b3541"
+    );
+
+    gun.addColorStop(
+        .43,
+        "#66727d"
+    );
+
+    gun.addColorStop(
+        .58,
+        "#333d49"
+    );
+
+    gun.addColorStop(
+        .82,
+        "#161d25"
+    );
+
+    gun.addColorStop(
+        1,
+        "#05080c"
+    );
+
+    ctx.fillStyle =
+        gun;
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -82,
+        -24,
+        150,
+        52,
+        7
+    );
+
+    ctx.fill();
+
+
+    /*
+       GUN TOP
+    */
+
+    ctx.fillStyle =
+        "#10161e";
+
+    ctx.fillRect(
+        -55,
+        -33,
+        73,
+        9
+    );
+
+
+    ctx.fillStyle =
+        "#77838e";
+
+    ctx.fillRect(
+        -48,
+        -34,
+        55,
+        3
+    );
+
+
+    /*
+       SCOPE / ზირი
+       ახლა მკაფიოდ ჩანს იარაღის თავზე
+    */
+
+    ctx.fillStyle =
+        "#05080c";
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -2,
+        -58,
+        38,
+        28,
         6
     );
 
     ctx.fill();
 
 
-    /*
-       TOP RAIL
-    */
-
     ctx.fillStyle =
-        "#121820";
-
+        "#252f3b";
 
     ctx.fillRect(
-        -54,
-        -28,
-        76,
-        9
-    );
-
-
-    ctx.fillStyle =
-        "#4a5664";
-
-
-    ctx.fillRect(
-        -47,
-        -30,
-        56,
-        3
+        4,
+        -52,
+        26,
+        7
     );
 
 
     /*
-       SCOPE
+       scope glass
     */
 
-    ctx.fillStyle =
-        "#080b10";
+    const glass =
+        ctx.createLinearGradient(
+            6,
+            -51,
+            29,
+            -45
+        );
 
-
-    ctx.beginPath();
-
-    ctx.roundRect(
-        -4,
-        -50,
-        32,
-        25,
-        5
+    glass.addColorStop(
+        0,
+        "#79a8c8"
     );
 
-    ctx.fill();
+    glass.addColorStop(
+        .5,
+        "#d4efff"
+    );
 
-
-    ctx.fillStyle =
-        "#273342";
-
-
-    ctx.fillRect(
+    glass.addColorStop(
         1,
-        -45,
-        21,
+        "#365a73"
+    );
+
+    ctx.fillStyle =
+        glass;
+
+    ctx.fillRect(
+        7,
+        -51,
+        22,
         5
     );
 
@@ -3346,13 +3113,12 @@ function drawWeapon(
     */
 
     ctx.fillStyle =
-        "#10151c";
-
+        "#11171f";
 
     ctx.fillRect(
-        22,
-        -6,
-        105,
+        20,
+        -8,
+        110,
         14
     );
 
@@ -3360,12 +3126,26 @@ function drawWeapon(
     ctx.fillStyle =
         "#05070a";
 
+    ctx.fillRect(
+        106,
+        -12,
+        53,
+        9
+    );
+
+
+    /*
+       barrel highlight
+    */
+
+    ctx.fillStyle =
+        "#596672";
 
     ctx.fillRect(
-        105,
-        -10,
-        52,
-        8
+        28,
+        -8,
+        70,
+        2
     );
 
 
@@ -3374,29 +3154,28 @@ function drawWeapon(
     */
 
     ctx.fillStyle =
-        "#0a0d13";
-
+        "#080c12";
 
     ctx.beginPath();
 
     ctx.moveTo(
-        35,
-        24
+        27,
+        22
     );
 
     ctx.lineTo(
-        62,
-        24
+        57,
+        22
     );
 
     ctx.lineTo(
-        56,
-        64
+        51,
+        61
     );
 
     ctx.lineTo(
-        32,
-        58
+        25,
+        55
     );
 
     ctx.closePath();
@@ -3405,17 +3184,31 @@ function drawWeapon(
 
 
     /*
+       MAGAZINE highlight
+    */
+
+    ctx.fillStyle =
+        "#28323d";
+
+    ctx.fillRect(
+        31,
+        27,
+        4,
+        25
+    );
+
+
+    /*
        GRIP
     */
 
     ctx.fillStyle =
-        "#11151c";
-
+        "#0c1117";
 
     ctx.beginPath();
 
     ctx.moveTo(
-        -5,
+        -4,
         22
     );
 
@@ -3425,18 +3218,41 @@ function drawWeapon(
     );
 
     ctx.lineTo(
-        19,
-        62
+        18,
+        63
     );
 
     ctx.lineTo(
-        -2,
-        62
+        -6,
+        60
     );
 
     ctx.closePath();
 
     ctx.fill();
+
+
+    /*
+       TRIGGER
+    */
+
+    ctx.strokeStyle =
+        "#737f8b";
+
+    ctx.lineWidth =
+        2;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        11,
+        24,
+        7,
+        0,
+        Math.PI
+    );
+
+    ctx.stroke();
 
 
     /*
@@ -3446,31 +3262,47 @@ function drawWeapon(
     if(shooting){
 
         ctx.fillStyle =
-            "rgba(255,205,85,.85)";
+            "rgba(255,215,95,.9)";
 
         ctx.beginPath();
 
         ctx.moveTo(
-            155,
-            -9
+            157,
+            -12
         );
 
         ctx.lineTo(
-            183,
+            190,
             -1
         );
 
         ctx.lineTo(
-            155,
-            8
+            158,
+            11
         );
 
         ctx.lineTo(
-            165,
+            169,
             -1
         );
 
         ctx.closePath();
+
+        ctx.fill();
+
+
+        ctx.fillStyle =
+            "rgba(255,245,190,.9)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            158,
+            -1,
+            7,
+            0,
+            Math.PI*2
+        );
 
         ctx.fill();
 
@@ -3491,38 +3323,33 @@ function drawVignette(
     h
 ){
 
-    const vignette =
+    const v =
         ctx.createRadialGradient(
             w*.5,
-            h*.48,
-            Math.min(w,h)*.22,
+            h*.47,
+            Math.min(w,h)*.20,
             w*.5,
-            h*.48,
-            Math.max(w,h)*.78
+            h*.47,
+            Math.max(w,h)*.82
         );
 
-
-    vignette.addColorStop(
+    v.addColorStop(
         0,
         "rgba(0,0,0,0)"
     );
 
-
-    vignette.addColorStop(
+    v.addColorStop(
         .72,
-        "rgba(0,0,0,.12)"
+        "rgba(0,0,0,.10)"
     );
 
-
-    vignette.addColorStop(
+    v.addColorStop(
         1,
-        "rgba(0,0,0,.62)"
+        "rgba(0,0,0,.65)"
     );
-
 
     ctx.fillStyle =
-        vignette;
-
+        v;
 
     ctx.fillRect(
         0,
@@ -3535,7 +3362,7 @@ function drawVignette(
 
 
 /* =========================================================
-   MAIN RENDER
+   DRAW SCENE
 ========================================================= */
 
 function drawScene(){
@@ -3546,7 +3373,6 @@ function drawScene(){
     const h =
         canvas.height;
 
-
     const player =
         me();
 
@@ -3554,7 +3380,7 @@ function drawScene(){
     if(!player){
 
         ctx.fillStyle =
-            "#05080d";
+            "#03060b";
 
         ctx.fillRect(
             0,
@@ -3604,6 +3430,11 @@ function drawScene(){
     );
 
 
+    /*
+       იარაღი ბოლოს იხატება,
+       ამიტომ კედელი/მტერი მას ვერ გადაფარავს.
+    */
+
     drawWeapon(
         w,
         h
@@ -3625,27 +3456,17 @@ function drawScene(){
 function gameLoop(now){
 
     const delta =
-        now -
-        lastFrame;
+        now-lastFrame;
 
     lastFrame =
         now;
 
-
-    /*
-       თუ tab-ში დაბრუნდა და დიდი delta
-       დაგროვდა, არ ვაკეთებთ არაფერს.
-    */
-
-    if(
-        delta > 100
-    ){
+    if(delta>100){
 
         lastFrame =
             now;
 
     }
-
 
     if(running){
 
@@ -3653,13 +3474,11 @@ function gameLoop(now){
 
     }
 
-
     requestAnimationFrame(
         gameLoop
     );
 
 }
-
 
 requestAnimationFrame(
     gameLoop
