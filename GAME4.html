@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SCHOOLGAME — Street Horizon</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111d;font-family:Arial,Helvetica,sans-serif}
+#game{position:fixed;inset:0}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 35%,#254a68,#07111d 70%);color:white;z-index:20;text-align:center}
+.loadbox{width:min(560px,86vw);padding:28px;border:1px solid rgba(255,255,255,.18);border-radius:22px;background:rgba(5,10,18,.72);backdrop-filter:blur(12px)}
+.loadtitle{font-size:34px;font-weight:900;letter-spacing:2px}
+.bar{height:8px;background:#172638;border-radius:10px;margin-top:18px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:#4fd1ff;border-radius:10px;transition:width .25s}
+.small{margin-top:12px;color:#a8bdd0;font-size:14px}
+#hud{position:fixed;inset:0;pointer-events:none;color:#fff;z-index:10;display:none}
+.top{position:absolute;top:18px;left:20px;right:20px;display:flex;justify-content:space-between;gap:12px}
+.pill{padding:10px 14px;border:1px solid rgba(255,255,255,.16);background:rgba(5,10,18,.55);backdrop-filter:blur(8px);border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.brand{font-weight:900;letter-spacing:1px}
+.right{display:flex;gap:10px}
+#mission{position:absolute;top:88px;left:20px}
+#mission b{display:block;font-size:12px;color:#7ee4ff;letter-spacing:1px}
+#mission span{font-size:18px;font-weight:800}
+#speed{position:absolute;right:22px;bottom:22px;text-align:right}
+#kmh{font-size:58px;font-weight:900;line-height:.9}
+#unit{font-size:12px;color:#9eb0c2;letter-spacing:2px}
+#gear{font-size:22px;font-weight:800;margin-top:6px}
+#money{font-weight:900}
+#map{position:absolute;right:22px;top:86px;width:170px;height:120px;border-radius:15px;border:1px solid rgba(255,255,255,.18);background:rgba(7,15,24,.68);overflow:hidden}
+#map canvas{width:100%;height:100%}
+#help{position:absolute;left:20px;bottom:20px;color:#d5e4ef;font-size:12px;background:rgba(5,10,18,.45);padding:9px 12px;border-radius:10px}
+#message{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:42px;font-weight:1000;text-shadow:0 8px 30px #000;opacity:0;transition:opacity .2s;text-align:center}
+#message.show{opacity:1}
+#damage{position:absolute;inset:0;background:radial-gradient(circle,transparent 40%,rgba(255,40,30,.38));opacity:0;transition:opacity .12s}
+@media(max-width:700px){#map{width:130px;height:92px}.top{top:10px;left:10px;right:10px}.pill{padding:8px 10px}.brand{font-size:12px}#speed{right:12px;bottom:14px}#kmh{font-size:42px}#help{left:10px;bottom:10px}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="loading">
+  <div class="loadbox">
+    <div class="loadtitle">STREET HORIZON</div>
+    <div style="margin-top:8px;color:#c9d9e7">ნამდვილი 3D მანქანა იტვირთება...</div>
+    <div class="bar"><i id="progress"></i></div>
+    <div class="small" id="loadtext">ვემზადებით...</div>
+  </div>
+</div>
+<div id="hud">
+  <div class="top">
+    <div class="pill brand">SCHOOLGAME • STREET HORIZON</div>
+    <div class="right">
+      <div class="pill" id="money">$12,450</div>
+      <div class="pill">RACE 01</div>
+    </div>
+  </div>
+  <div class="pill" id="mission"><b>MISSION</b><span>Reach the finish • 2.8 km</span></div>
+  <div id="map"><canvas id="mapCanvas" width="340" height="240"></canvas></div>
+  <div id="speed"><div id="kmh">000</div><div id="unit">KM/H</div><div id="gear">D</div></div>
+  <div id="help">W / S — გაზი / მუხრუჭი &nbsp; A / D — მოხვევა &nbsp; SHIFT — NITRO &nbsp; R — restart</div>
+  <div id="message"></div>
+  <div id="damage"></div>
+</div>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+import {GLTFLoader} from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/loaders/GLTFLoader.js";
+
+const $=id=>document.getElementById(id);
+const loading=$("loading"),progress=$("progress"),loadtext=$("loadtext"),hud=$("hud");
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x8db8d6);
+scene.fog=new THREE.Fog(0x8db8d6,90,520);
+
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,1000);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+$("game").appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xbde4ff,0x203020,1.8));
+const sun=new THREE.DirectionalLight(0xffe1b0,3.2);
+sun.position.set(-80,120,40); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-180;sun.shadow.camera.right=180;sun.shadow.camera.top=180;sun.shadow.camera.bottom=-180;
+scene.add(sun);
+
+const world=new THREE.Group();scene.add(world);
+const roads=new THREE.Group();const buildings=new THREE.Group();const decor=new THREE.Group();
+world.add(roads,buildings,decor);
+
+const loader=new GLTFLoader();
+const MODEL_BASE="https://raw.githubusercontent.com/Hidencod/tge-assets/main/packs/";
+const CAR_BASE="https://raw.githubusercontent.com/Arslan12216775/kenney_car-kit/master/Models/GLB%20format/";
+const models={};
+
+function setProgress(v,t){progress.style.width=v+"%";loadtext.textContent=t}
+function loadGLB(url, timeout=6500){
+  return new Promise((resolve,reject)=>{
+    let done=false;
+    const finish=(fn,v)=>{if(done)return;done=true;clearTimeout(timer);fn(v)};
+    const timer=setTimeout(()=>finish(reject,new Error("3D asset timeout")),timeout);
+    loader.load(
+      url,
+      g=>finish(resolve,g.scene),
+      undefined,
+      e=>finish(reject,e)
+    );
+  });
+}
+
+function box(w,h,d,color,x,y,z,rot=0,parent=world){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.78,metalness:.08}));
+  m.position.set(x,y,z);m.rotation.y=rot;m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+}
+function cyl(r,h,color,x,y,z,parent=decor){
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,16),new THREE.MeshStandardMaterial({color,roughness:.9}));
+  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+}
+
+function createRoadFallback(){
+  const asphalt=new THREE.MeshStandardMaterial({color:0x30363c,roughness:.96});
+  const side=new THREE.MeshStandardMaterial({color:0x66706b,roughness:1});
+  for(let z=-320;z<=320;z+=24){
+    const r=new THREE.Mesh(new THREE.BoxGeometry(18,.18,24),asphalt);r.position.set(0,0,z);r.receiveShadow=true;roads.add(r);
+    const l=new THREE.Mesh(new THREE.BoxGeometry(3,.22,24),side);l.position.set(-10,0,z);l.receiveShadow=true;roads.add(l);
+    const rr=l.clone();rr.position.x=10;roads.add(rr);
+    for(let x=-6;x<=6;x+=3){
+      const line=new THREE.Mesh(new THREE.BoxGeometry(.18,.025,2.5),new THREE.MeshBasicMaterial({color:0xf6e7a8}));
+      line.position.set(x,.11,z);roads.add(line);
+    }
+  }
+}
+function createCity(){
+  const palette=[0x25374a,0x304b5b,0x3d5a6b,0x1f3141,0x4a5a65,0x273b53];
+  for(let z=-300;z<=300;z+=30){
+    if(Math.abs(z)<45) continue;
+    for(const side of [-1,1]){
+      const x=side*(18+Math.random()*15);
+      const w=8+Math.random()*9,d=12+Math.random()*13,h=7+Math.random()*28;
+      box(w,h,d,palette[Math.floor(Math.random()*palette.length)],x,h/2,z,Math.random()*.2,buildings);
+      if(Math.random()<.55){
+        for(let i=0;i<3;i++){
+          const tx=x+(Math.random()-.5)*w;
+          const tz=z+(Math.random()-.5)*d;
+          cyl(.55,4.2,0x4d7b52,tx,2.1,tz);
+          cyl(1.7,2.8,0x285a38,tx,5.1,tz);
+        }
+      }
+    }
+  }
+  // distant coastal skyline
+  for(let i=0;i<18;i++){
+    const x=-105+i*12;
+    const h=12+Math.random()*45;
+    box(7,h,8,0x496272,x,h/2,-115);
+  }
+}
+function createBridge(){
+  box(44,1.2,14,0x39444d,0,15,135,0,decor);
+  for(let x=-20;x<=20;x+=8) box(.8,15,.8,0x505c66,x,7.5,135,0,decor);
+  for(let x=-20;x<=20;x+=8) box(1,1,14,0x56636d,x,14,135,0,decor);
+  box(42,.25,.25,0xffc857,0,15.7,128.5,0,decor);
+  box(42,.25,.25,0xffc857,0,15.7,141.5,0,decor);
+}
+function createOcean(){
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(900,900),new THREE.MeshStandardMaterial({color:0x17658b,roughness:.22,metalness:.25}));
+  water.rotation.x=-Math.PI/2;water.position.set(0,-.2,-150);world.add(water);
+}
+function createMountains(){
+  for(let i=0;i<14;i++){
+    const h=35+Math.random()*55;
+    const m=new THREE.Mesh(new THREE.ConeGeometry(20+Math.random()*18,h,6),new THREE.MeshStandardMaterial({color:0x3b5360,roughness:1}));
+    m.position.set(-160+i*25,h/2,-230-Math.random()*40);m.castShadow=true;world.add(m);
+  }
+}
+function addStreetLights(){
+  for(let z=-300;z<=300;z+=24){
+    for(const x of [-11,11]){
+      cyl(.09,5.5,0x252a2f,x,2.75,z,decor);
+      const arm=box(1.1,.08,.08,0x252a2f,x+(x<0?.5:-.5),5.35,z,0,decor);
+      const lamp=new THREE.PointLight(0xffdca8,1.0,18,2);lamp.position.set(x+(x<0?.9:-.9),5.15,z);decor.add(lamp);
+    }
+  }
+}
+function addCoast(){
+  for(let z=-300;z<=300;z+=18){
+    const p=box(3,.35,16,0xb7a67b,14.2,.05,z,0,decor);
+    p.rotation.y=(Math.sin(z*.11)*.04);
+  }
+}
+
+let playerCar=null,traffic=[];
+const player={x:0,z:250,y:0.02,yaw:Math.PI,speed:0,steer:0,nitro:100,damage:0,dist:0};
+const keys={};
+let started=false,finishShown=false;
+
+function tintCar(obj,color){
+  obj.traverse(o=>{
+    if(o.isMesh){
+      o.castShadow=true;o.receiveShadow=true;
+      if(o.material){
+        o.material=o.material.clone();
+        if(color && o.material.color) o.material.color.lerp(new THREE.Color(color),.35);
+      }
+    }
+  });
+}
+function normalizeModel(obj,target=4.3){
+  const b=new THREE.Box3().setFromObject(obj),s=b.getSize(new THREE.Vector3());
+  const max=Math.max(s.x,s.y,s.z)||1;
+  obj.scale.multiplyScalar(target/max);
+  const b2=new THREE.Box3().setFromObject(obj),c=b2.getCenter(new THREE.Vector3());
+  obj.position.sub(c);
+  obj.position.y-=b2.min.y;
+}
+function addCarModel(model,x,z,yaw,color,target=4.3){
+  const c=model.clone(true);normalizeModel(c,target);tintCar(c,color);
+  c.position.set(x,0,z);c.rotation.y=yaw;c.castShadow=true;world.add(c);return c;
+}
+
+async function build(){
+  setProgress(12,"3D მანქანის asset იტვირთება...");
+  try{
+    models.race=await loadGLB(CAR_BASE+"race.glb");
+    playerCar=addCarModel(models.race,0,250,Math.PI,0x111820,4.8);
+  }catch(e){
+    // emergency visual fallback, only if remote asset fails
+    playerCar=new THREE.Group();
+    box(2.1,.55,4.4,0x121820,0,.65,0,0,playerCar);
+    box(1.55,.48,1.9,0x111820,0,1.05,-.2,0,playerCar);
+    for(const x of [-.9,.9])for(const z of [-1.45,1.45]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.22,24),new THREE.MeshStandardMaterial({color:0x101214}));w.rotation.z=Math.PI/2;w.position.set(x,.42,z);playerCar.add(w)}
+    playerCar.position.set(0,0,250);world.add(playerCar);
+  }
+  setProgress(30,"ქალაქის ქუჩები იგება...");
+  createRoadFallback();
+  createCity();
+  createBridge();
+  createOcean();
+  createMountains();
+  addStreetLights();
+  addCoast();
+
+  setProgress(52,"ქალაქი მზადაა — Traffic ფონურად იტვირთება...");
+  setProgress(75,"სამყარო და განათება...");
+  for(let i=0;i<20;i++){
+    const x=(Math.random()-.5)*18,z=-300+Math.random()*600;
+    cyl(.14,1.2,0x2a2a2a,x,.6,z);
+    const s=new THREE.Mesh(new THREE.SphereGeometry(.34,10,8),new THREE.MeshStandardMaterial({color:0xffd58a,emissive:0xffa000,emissiveIntensity:1.2}));
+    s.position.set(x,1.25,z);decor.add(s);
+  }
+  setProgress(100,"დაწყება...");
+  await new Promise(r=>setTimeout(r,250));
+  loading.style.display="none";hud.style.display="block";started=true;
+  showMessage("GO!");
+  setTimeout(()=>hideMessage(),900);
+
+  // Traffic is optional: it can never prevent the game from starting.
+  const trafficDefs=[
+    ["sedan.glb",-4,205,0,0x7a1018],
+    ["suv.glb",4,155,Math.PI,0x164d7a],
+    ["hatchback-sports.glb",-4,80,0,0xe0b12d],
+    ["taxi.glb",4,20,Math.PI,0xd5b21f],
+    ["race-future.glb",-4,-60,0,0x7b2bd1],
+    ["sedan-sports.glb",4,-125,Math.PI,0xc9d0d7],
+    ["suv-luxury.glb",-4,-205,0,0x24333e]
+  ];
+  for(const [file,x,z,yaw,color] of trafficDefs){
+    loadGLB(CAR_BASE+file,3500).then(m=>{
+      if(!started)return;
+      const car=addCarModel(m,x,z,yaw,color,3.8);
+      traffic.push({mesh:car,x,z,yaw,dir:Math.sin(yaw)>0?1:-1,speed:7+Math.random()*5});
+    }).catch(()=>{});
+  }
+}
+
+function showMessage(t){$("message").textContent=t;$("message").classList.add("show")}
+function hideMessage(){$("message").classList.remove("show")}
+
+addEventListener("keydown",e=>{
+  keys[e.code]=true;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code))e.preventDefault();
+  if(e.code==="KeyR")reset();
+});
+addEventListener("keyup",e=>keys[e.code]=false);
+
+function reset(){
+  player.x=0;player.z=250;player.speed=0;player.yaw=Math.PI;player.dist=0;player.damage=0;finishShown=false;
+  if(playerCar){playerCar.position.set(0,0,250);playerCar.rotation.y=Math.PI}
+  showMessage("RESTART");setTimeout(hideMessage,700);
+}
+
+function collideTraffic(){
+  for(const t of traffic){
+    const dx=player.x-t.mesh.position.x,dz=player.z-t.mesh.position.z;
+    if(dx*dx+dz*dz<7){
+      player.speed*=.42;player.damage=Math.min(100,player.damage+13);
+      $("damage").style.opacity=.7;setTimeout(()=>$("damage").style.opacity=0,110);
+    }
+  }
+}
+function updateTraffic(dt){
+  for(const t of traffic){
+    t.mesh.position.z += t.dir*t.speed*dt;
+    if(t.mesh.position.z>280)t.mesh.position.z=-280;
+    if(t.mesh.position.z<-280)t.mesh.position.z=280;
+  }
+}
+function updatePlayer(dt){
+  if(!started)return;
+  const gas=keys.KeyW||keys.ArrowUp,brake=keys.KeyS||keys.ArrowDown;
+  const left=keys.KeyA||keys.ArrowLeft,right=keys.KeyD||keys.ArrowRight;
+  const boost=keys.ShiftLeft||keys.ShiftRight;
+  if(gas)player.speed=Math.min(46,player.speed+20*dt);
+  else if(brake)player.speed=Math.max(-10,player.speed-30*dt);
+  else player.speed*=Math.pow(.985,dt*60);
+  if(Math.abs(player.speed)<.03)player.speed=0;
+  const steer=(left?-1:0)+(right?1:0);
+  player.steer+=(steer-player.steer)*Math.min(1,dt*7);
+  const steerPower=(.8+Math.min(Math.abs(player.speed)/28,1)*1.25);
+  player.yaw += player.steer*steerPower*dt*(player.speed>=0?1:-1);
+  if(boost && player.nitro>0 && player.speed>8){player.speed=Math.min(68,player.speed+36*dt);player.nitro=Math.max(0,player.nitro-24*dt)}
+  else player.nitro=Math.min(100,player.nitro+8*dt);
+  const fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
+  player.x += fx*player.speed*dt;
+  player.z += fz*player.speed*dt;
+  player.x=Math.max(-7.2,Math.min(7.2,player.x));
+  if(player.z<-310)player.z=310;
+  if(player.z>310)player.z=-310;
+  player.dist+=Math.max(0,player.speed)*dt;
+  if(playerCar){playerCar.position.set(player.x,0,player.z);playerCar.rotation.y=player.yaw}
+  collideTraffic();
+  if(player.dist>2800 && !finishShown){finishShown=true;showMessage("FINISH!<br><span style='font-size:18px'>+$2,500</span>");$("money").textContent="$14,950";setTimeout(hideMessage,2200)}
+}
+
+function updateCamera(dt){
+  const fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
+  const desired=new THREE.Vector3(player.x-fx*11,5.2,player.z-fz*11);
+  camera.position.lerp(desired,1-Math.pow(.0008,dt));
+  const look=new THREE.Vector3(player.x+fx*5,1.2,player.z+fz*5);
+  camera.lookAt(look);
+}
+
+function updateHUD(){
+  $("kmh").textContent=String(Math.max(0,Math.round(Math.abs(player.speed)*4.3))).padStart(3,"0");
+  $("gear").textContent=player.speed<-.5?"R":"D";
+  const left=Math.max(0,2.8-player.dist/1000).toFixed(1);
+  $("mission").querySelector("span").textContent=finishShown?"Mission complete!":"Reach the finish • "+left+" km";
+  drawMap();
+}
+function drawMap(){
+  const c=$("mapCanvas"),ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="#0b1824";ctx.fillRect(0,0,c.width,c.height);
+  ctx.strokeStyle="#2d4657";ctx.lineWidth=16;ctx.beginPath();ctx.moveTo(170,230);ctx.lineTo(170,10);ctx.stroke();
+  ctx.strokeStyle="#8093a0";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(170,230);ctx.lineTo(170,10);ctx.stroke();
+  for(const t of traffic){
+    const y=120-(t.mesh.position.z-player.z)*.28;
+    if(y>0&&y<240){ctx.fillStyle="#e5b33c";ctx.fillRect(163,y,14,7)}
+  }
+  ctx.fillStyle="#4fd1ff";ctx.beginPath();ctx.arc(170,210,6,0,Math.PI*2);ctx.fill();
+}
+
+let last=performance.now();
+function animate(now){
+  requestAnimationFrame(animate);
+  const dt=Math.min(.033,(now-last)/1000);last=now;
+  updatePlayer(dt);updateTraffic(dt);updateCamera(dt);updateHUD();
+  renderer.render(scene,camera);
+}
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+build().catch(e=>{loadtext.textContent="დატვირთვა ვერ დასრულდა — გვერდი განაახლე.";console.error(e)});
+animate(performance.now());
+</script>
+</body>
+</html>
