@@ -1,242 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ka">
 <head>
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>schoolgame | თამაშების საიტი</title>
-
-<meta
-    name="description"
-    content="schoolgame - თამაშების საიტი. ითამაშე Coreball, CS2 Upgrader, RIVALS და სხვა საინტერესო თამაშები."
->
-
-<meta
-    name="keywords"
-    content="schoolgame, school game, თამაშები, Coreball, CS2 Upgrader, RIVALS"
->
-
-<meta
-    name="robots"
-    content="index, follow"
->
-
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BlockWorld 4</title>
 <style>
-
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        radial-gradient(
-            circle at top,
-            #172033 0%,
-            #080b12 45%,
-            #030407 100%
-        );
-
-    color: white;
-}
-
-body {
-    min-height: 100vh;
-}
-
-.container {
-    width: min(1100px, 92%);
-
-    margin: 0 auto;
-
-    padding: 70px 0;
-}
-
-h1 {
-    text-align: center;
-
-    font-size:
-        clamp(36px, 6vw, 64px);
-
-    margin:
-        0 0 12px;
-
-    font-weight: 900;
-}
-
-.subtitle {
-    text-align: center;
-
-    color: #8e9bb2;
-
-    font-size: 18px;
-
-    margin-bottom: 50px;
-}
-
-.games {
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            auto-fit,
-            minmax(240px, 1fr)
-        );
-
-    gap: 22px;
-}
-
-.game {
-    min-height: 180px;
-
-    border: 1px solid #29344a;
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #111827,
-            #080c14
-        );
-
-    color: white;
-
-    font-size: 25px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-
-    transition:
-        transform .2s,
-        border-color .2s,
-        box-shadow .2s;
-
-    box-shadow:
-        0 15px 45px
-        rgba(0,0,0,.35);
-}
-
-.game:hover {
-    transform:
-        translateY(-7px);
-
-    border-color:
-        #ff334d;
-
-    box-shadow:
-        0 20px 60px
-        rgba(255,51,77,.18);
-}
-
-.upgrader-game:hover {
-    border-color:
-        #4d9cff;
-
-    box-shadow:
-        0 20px 60px
-        rgba(77,156,255,.18);
-}
-
-.rivals-game:hover {
-    border-color:
-        #ff334d;
-
-    box-shadow:
-        0 20px 60px
-        rgba(255,51,77,.25);
-}
-
-.footer {
-    text-align: center;
-
-    margin-top: 55px;
-
-    color: #59657a;
-
-    font-size: 14px;
-}
-
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#111;color:#fff;font-family:Arial,sans-serif}
+canvas{display:block;width:100%;height:100%}
+#menu{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(#0b1220dd,#071018ee);z-index:10}
+.card{width:min(440px,92vw);padding:28px;border-radius:20px;background:#182231;border:1px solid #ffffff20;box-shadow:0 20px 60px #0008}
+h1{margin:0 0 8px;font-size:38px}.sub{color:#b9c5d6;line-height:1.5}
+input,button{width:100%;padding:13px 14px;margin-top:10px;border-radius:10px;border:1px solid #ffffff22;font-size:16px}
+input{background:#0d1520;color:white}.row{display:flex;gap:10px}.row>*{flex:1}
+button{background:#4caf50;color:white;border:0;font-weight:700;cursor:pointer}.secondary{background:#263447}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:4}
+#top{margin:14px;padding:10px 14px;background:#0008;border-radius:12px;width:max-content}
+#cross{position:absolute;left:50%;top:50%;width:20px;height:20px;transform:translate(-50%,-50%)}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;box-shadow:0 0 3px #000}
+#cross:before{width:20px;height:2px;top:9px}#cross:after{height:20px;width:2px;left:9px}
+#hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 13px;background:#0008;border-radius:10px;color:#ddd;font-size:13px}
+#status{position:absolute;right:14px;top:14px;background:#0008;border-radius:12px;padding:10px 14px;text-align:right}
+#error{color:#ff8e8e;margin-top:10px;min-height:20px}
 </style>
-
 </head>
-
 <body>
+<div id="menu"><div class="card">
+<h1>🧱 BlockWorld 4</h1>
+<div class="sub">Minecraft-ის მსგავსი ორიგინალური 3D სამყარო. ითამაშე მეგობრებთან ერთად ერთ ოთახში.</div>
+<input id="name" maxlength="14" placeholder="შენი სახელი">
+<div class="row"><button id="create">ოთახის შექმნა</button><button id="join" class="secondary">ოთახში შესვლა</button></div>
+<input id="room" maxlength="6" placeholder="ოთახის კოდი (მაგ. ABC123)">
+<div id="error"></div>
+</div></div>
+<canvas id="game"></canvas>
+<div id="hud"><div id="top">🌍 BlockWorld 4 · ოთახი: <b id="roomLabel">—</b> · მოთამაშეები: <b id="count">0</b>/4</div>
+<div id="status">🧱 ბლოკი: <b id="selected">grass</b><br>1–5 არჩევა</div>
+<div id="cross"></div><div id="hint">WASD · Mouse · მარცხენა: მოტეხე · მარჯვენა: დადე · 1-5 ბლოკი · ESC მენიუ</div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
 
-<div class="container">
+const canvas=document.getElementById('game');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5)); renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=true; renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x8fc8f0); scene.fog=new THREE.Fog(0x8fc8f0,28,75);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.05,100);
+scene.add(new THREE.HemisphereLight(0xcfe8ff,0x53603e,1.8));
+const sun=new THREE.DirectionalLight(0xffffff,2.0); sun.position.set(20,30,10); sun.castShadow=true; scene.add(sun);
 
-    <h1>
-        🎮 მოგესალმებით schoolgame-ზე!
-    </h1>
+const worldGroup=new THREE.Group(); scene.add(worldGroup);
+const playersGroup=new THREE.Group(); scene.add(playersGroup);
+const blockMats={
+ grass:new THREE.MeshLambertMaterial({color:0x55a83b}),
+ dirt:new THREE.MeshLambertMaterial({color:0x8b5a36}),
+ stone:new THREE.MeshLambertMaterial({color:0x7c8088}),
+ wood:new THREE.MeshLambertMaterial({color:0x9b633b}),
+ sand:new THREE.MeshLambertMaterial({color:0xd9c27a}),
+};
+const blockNames=['grass','dirt','stone','wood','sand'];
+let blocks=new Map(), meshes=new Map(), selected='grass';
 
-    <div class="subtitle">
-        აირჩიე თამაში და დაიწყე თამაში
-    </div>
+function key(x,y,z){return `${x},${y},${z}`}
+function addBlock(x,y,z,type,local=true){
+  const k=key(x,y,z); if(blocks.has(k)) return;
+  blocks.set(k,type);
+  const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),blockMats[type]||blockMats.grass);
+  m.position.set(x+.5,y+.5,z+.5); m.castShadow=true;m.receiveShadow=true;
+  worldGroup.add(m); meshes.set(k,m);
+}
+function removeBlock(x,y,z){
+  const k=key(x,y,z),m=meshes.get(k); if(!m)return;
+  worldGroup.remove(m);meshes.delete(k);blocks.delete(k);
+}
+function buildInitialWorld(){
+  for(let x=-14;x<14;x++)for(let z=-14;z<14;z++){
+    addBlock(x,0,z,'grass');
+    if((x*x+z*z)%19===0)addBlock(x,1,z,'dirt');
+  }
+  for(let i=0;i<30;i++){
+    const x=Math.floor(Math.random()*24)-12,z=Math.floor(Math.random()*24)-12;
+    if(Math.abs(x)<4&&Math.abs(z)<4)continue;
+    const h=2+Math.floor(Math.random()*3);
+    for(let y=1;y<=h;y++)addBlock(x,y,z,'wood');
+    addBlock(x,y=h+1,z,'grass'); addBlock(x+1,h+1,z,'grass'); addBlock(x-1,h+1,z,'grass');
+    addBlock(x,h+1,z+1,'grass'); addBlock(x,h+1,z-1,'grass');
+  }
+}
+buildInitialWorld();
 
-    <div class="games">
+const player={x:0.5,y:1.01,z:0.5,yaw:0,pitch:0};
+const keys={w:false,a:false,s:false,d:false};
+let socket=null, roomCode='', myId='', locked=false;
+const remote=new Map();
+const ray=new THREE.Raycaster();
 
-        <button
-            class="game"
-            type="button"
-            onclick="openCoreball()"
-        >
-            ⚫ Coreball
-        </button>
+function makeAvatar(name,color){
+ const g=new THREE.Group();
+ const mat=new THREE.MeshLambertMaterial({color});
+ const body=new THREE.Mesh(new THREE.BoxGeometry(.65,.85,.38),mat);body.position.y=1.15;g.add(body);
+ const head=new THREE.Mesh(new THREE.BoxGeometry(.52,.52,.52),new THREE.MeshLambertMaterial({color:0xd89a70}));head.position.y=1.83;g.add(head);
+ const l=new THREE.Mesh(new THREE.BoxGeometry(.22,.7,.22),mat);l.position.set(-.2,.43,0);g.add(l);
+ const r=new THREE.Mesh(new THREE.BoxGeometry(.22,.7,.22),mat);r.position.set(.2,.43,0);g.add(r);
+ g.userData.name=name; return g;
+}
+const colors=[0x3f8cff,0xff5a5a,0xffc83d,0xa86bff];
+function setRemote(p){
+ let g=remote.get(p.id); if(!g){g=makeAvatar(p.name,colors[p.slot%4]);playersGroup.add(g);remote.set(p.id,g)}
+ g.position.set(p.x,p.y,p.z);g.rotation.y=p.yaw;
+}
+function removeRemote(id){const g=remote.get(id);if(g){playersGroup.remove(g);remote.delete(id)}}
 
-        <button
-            class="game upgrader-game"
-            type="button"
-            onclick="openUpgrader()"
-        >
-            🔫 CS2 UPGRADER
-        </button>
+function send(obj){if(socket&&socket.readyState===1)socket.send(JSON.stringify(obj))}
+function connect(mode,code){
+ socket=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+ socket.onopen=()=>send({type:mode,name:(document.getElementById('name').value.trim()||'Player'),room:code});
+ socket.onmessage=e=>{
+   const m=JSON.parse(e.data);
+   if(m.type==='created'||m.type==='joined'){roomCode=m.room;myId=m.id;roomLabel.textContent=roomCode;menu.style.display='none';canvas.requestPointerLock()}
+   if(m.type==='state'){count.textContent=m.players.length;for(const p of m.players)if(p.id!==myId)setRemote(p);for(const [id] of remote)if(!m.players.some(p=>p.id===id))removeRemote(id)}
+   if(m.type==='world'){for(const b of m.added||[])addBlock(b.x,b.y,b.z,b.type);for(const b of m.removed||[])removeBlock(b.x,b.y,b.z)}
+   if(m.type==='error'){error.textContent=m.message}
+ };
+ socket.onclose=()=>{if(myId)error.textContent='სერვერთან კავშირი გაითიშა';};
+}
+create.onclick=()=>connect('create','');
+join.onclick=()=>{const c=room.value.trim().toUpperCase();if(c)connect('join',c);else error.textContent='ჩაწერე ოთახის კოდი';};
 
-        <button
-            class="game rivals-game"
-            type="button"
-            onclick="openRivals()"
-        >
-            🔫 RIVALS
-        </button>
-
-    </div>
-
-    <div class="footer">
-        © 2026 schoolgame
-    </div>
-
-</div>
-
-<script>
-
-function openCoreball() {
-    window.location.href = "GAME.html";
+function solidAt(x,y,z){return blocks.has(key(Math.floor(x),Math.floor(y),Math.floor(z)))}
+function move(dx,dz){
+ const nx=player.x+dx,nz=player.z+dz;
+ const r=.28;
+ const checks=[[nx-r,player.y,nz-r],[nx+r,player.y,nz-r],[nx-r,player.y,nz+r],[nx+r,player.y,nz+r]];
+ if(!checks.some(q=>solidAt(q[0],q[1],q[2])||solidAt(q[0],q[1]+.75,q[2])))player.x=nx;
+ const checks2=[[player.x-r,player.y,nz-r],[player.x+r,player.y,nz-r],[player.x-r,player.y,nz+r],[player.x+r,player.y,nz+r]];
+ if(!checks2.some(q=>solidAt(q[0],q[1],q[2])||solidAt(q[0],q[1]+.75,q[2])))player.z=nz;
 }
 
-function openUpgrader() {
-    window.location.href = "GAME2.html";
+function targetBlock(){
+ ray.setFromCamera({x:0,y:0},camera);
+ const hits=ray.intersectObjects(worldGroup.children,false);
+ return hits.length&&hits[0].distance<7?hits[0]:null;
+}
+function mine(){
+ const h=targetBlock();if(!h)return;
+ const p=h.object.position.clone().sub(h.face); // cube center to hit-side direction
+ const x=Math.floor(p.x),y=Math.floor(p.y),z=Math.floor(p.z);
+ if(y<=0)return;
+ send({type:'remove',x,y,z});
+}
+function place(){
+ const h=targetBlock();if(!h)return;
+ const p=h.object.position.clone().add(h.face);
+ const x=Math.floor(p.x),y=Math.floor(p.y),z=Math.floor(p.z);
+ if(y<0||y>10)return;
+ if(Math.hypot(x+.5-player.x,z+.5-player.z)<1)return;
+ send({type:'add',x,y,z,block:selected});
 }
 
-function openRivals() {
-    window.location.href = "GAME3.html";
-}
+document.addEventListener('pointerlockchange',()=>locked=document.pointerLockElement===canvas);
+document.addEventListener('mousemove',e=>{if(!locked)return;player.yaw-=e.movementX*.0024;player.pitch-=e.movementY*.0022;player.pitch=Math.max(-1.45,Math.min(1.45,player.pitch))});
+document.addEventListener('mousedown',e=>{if(!locked)return;if(e.button===0)mine();if(e.button===2)place()});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('keydown',e=>{
+ const k=e.key.toLowerCase();if(k in keys)keys[k]=true;
+ if('12345'.includes(k)){selected=blockNames[+k-1];document.getElementById('selected').textContent=selected}
+ if(k==='escape'&&locked)document.exitPointerLock();
+});
+document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k in keys)keys[k]=false});
 
+let last=performance.now();
+function loop(t){
+ requestAnimationFrame(loop);const dt=Math.min(.05,(t-last)/1000);last=t;
+ if(locked){
+   let x=(keys.d?1:0)-(keys.a?1:0),z=(keys.s?1:0)-(keys.w?1:0),l=Math.hypot(x,z)||1;x/=l;z/=l;
+   const f=new THREE.Vector3(Math.sin(player.yaw),0,-Math.cos(player.yaw));
+   const r=new THREE.Vector3(Math.cos(player.yaw),0,Math.sin(player.yaw));
+   move((f.x*z+r.x*x)*4*dt,(f.z*z+r.z*x)*4*dt);
+   send({type:'input',x:player.x,y:player.y,z:player.z,yaw:player.yaw});
+ }
+ camera.position.set(player.x,2.05,player.z);camera.rotation.order='YXZ';camera.rotation.y=player.yaw;camera.rotation.x=player.pitch;
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(loop);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script>
-
-</body>
-</html>
+</body></html>

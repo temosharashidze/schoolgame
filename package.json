@@ -1,8 +1,7 @@
 {
-  "name": "schoolgame-rivals-fps",
-  "version": "2.0.0",
-  "description": "SchoolGame RIVALS-style first-person browser shooter",
-  "main": "server.js",
+  "name": "blockworld4",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
     "start": "node server.js"
   },
