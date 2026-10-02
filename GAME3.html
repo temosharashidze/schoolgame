@@ -1,18 +1,11 @@
 <!DOCTYPE html>
 <html lang="ka">
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>schoolgame | RIVALS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>schoolgame | RIVALS FPS</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
@@ -23,70 +16,55 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
     background: #05070b;
     color: white;
-}
-
-body {
+    font-family: Arial, Helvetica, sans-serif;
     user-select: none;
 }
 
+body {
+    cursor: default;
+}
 
-/* =========================================
-   MAIN MENU
-========================================= */
+button,
+input {
+    font-family: inherit;
+}
+
+/* =========================
+   MENU
+========================= */
 
 #menu {
     position: fixed;
     inset: 0;
+    z-index: 1000;
 
     display: flex;
     align-items: center;
     justify-content: center;
 
     background:
-        radial-gradient(
-            circle at center,
-            #182133 0%,
-            #080b12 45%,
-            #030407 100%
-        );
-
-    z-index: 100;
+        radial-gradient(circle at center, #182133 0%, #080b12 45%, #030407 100%);
 }
 
 .menuBox {
     width: min(520px, 92vw);
-
     padding: 36px;
 
     border: 1px solid #29344a;
-
     border-radius: 20px;
 
-    background:
-        rgba(10, 14, 23, 0.94);
+    background: rgba(10, 14, 23, .95);
 
-    box-shadow:
-        0 30px 100px
-        rgba(0,0,0,.65);
+    box-shadow: 0 30px 100px rgba(0,0,0,.65);
 }
 
 .logo {
     text-align: center;
-
     font-size: 54px;
-
     font-weight: 900;
-
     letter-spacing: 4px;
-
     margin-bottom: 5px;
 }
 
@@ -96,27 +74,20 @@ body {
 
 .subtitle {
     text-align: center;
-
     color: #8e9bb2;
-
     margin-bottom: 30px;
 }
 
 input {
     width: 100%;
-
     padding: 15px;
-
     margin-bottom: 12px;
 
     border-radius: 10px;
-
     border: 1px solid #2d384d;
-
     outline: none;
 
     background: #080c14;
-
     color: white;
 
     font-size: 16px;
@@ -128,31 +99,24 @@ input:focus {
 
 button {
     width: 100%;
-
     padding: 15px;
-
     margin-top: 10px;
 
     border: 0;
-
     border-radius: 10px;
 
     color: white;
-
     background: #ff334d;
 
     font-size: 16px;
-
     font-weight: 800;
 
     cursor: pointer;
-
     transition: .15s;
 }
 
 button:hover {
     transform: translateY(-2px);
-
     filter: brightness(1.1);
 }
 
@@ -161,19 +125,8 @@ button.secondary {
 }
 
 button.botButton {
-    background:
-        linear-gradient(
-            135deg,
-            #7b35ff,
-            #4d1685
-        );
-
-    border:
-        1px solid #a86cff;
-
-    box-shadow:
-        0 0 25px
-        rgba(139, 70, 255, .22);
+    background: linear-gradient(135deg, #7b35ff, #4d1685);
+    border: 1px solid #a86cff;
 }
 
 button.copyButton {
@@ -182,97 +135,83 @@ button.copyButton {
 
 button.backButton {
     background: #111722;
-
     border: 1px solid #2b374c;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 #status {
     min-height: 22px;
-
     text-align: center;
-
     margin-top: 15px;
-
     color: #ff6579;
 }
 
+.small {
+    color: #8290a8;
+    font-size: 13px;
+    margin-top: 20px;
+    line-height: 1.6;
+    text-align: center;
+}
 
-/* =========================================
+/* =========================
    LOBBY
-========================================= */
+========================= */
 
 #lobby {
     display: none;
-
     text-align: center;
 }
 
 .lobbyTitle {
     font-size: 30px;
-
     font-weight: 900;
-
     margin-bottom: 10px;
 }
 
 .lobbySubtitle {
     color: #8290a8;
-
     margin-bottom: 25px;
 }
 
 .roomCodeBox {
     padding: 20px;
-
     margin-bottom: 18px;
 
     border-radius: 14px;
-
     border: 1px solid #39465e;
 
-    background:
-        linear-gradient(
-            145deg,
-            #111927,
-            #080c14
-        );
+    background: linear-gradient(145deg, #111927, #080c14);
 }
 
 .roomLabel {
     color: #8290a8;
-
     font-size: 13px;
-
     margin-bottom: 8px;
 }
 
 .roomCode {
     font-size: 42px;
-
     font-weight: 900;
-
     letter-spacing: 8px;
-
     color: #ff334d;
-
-    text-shadow:
-        0 0 18px
-        rgba(255,51,77,.35);
 }
 
 .playersStatus {
     margin-top: 20px;
-
     padding: 14px;
 
     border-radius: 12px;
 
     background: #080c14;
-
     border: 1px solid #263249;
 
     font-size: 17px;
-
     font-weight: 800;
 }
 
@@ -286,156 +225,62 @@ button.backButton {
 
 .lobbyHint {
     color: #6f7c92;
-
     font-size: 13px;
-
     line-height: 1.6;
-
     margin-top: 18px;
 }
 
-.small {
-    color: #8290a8;
-
-    font-size: 13px;
-
-    margin-top: 20px;
-
-    line-height: 1.5;
-}
-
-
-/* =========================================
-   GAME
-========================================= */
+/* =========================
+   FPS GAME
+========================= */
 
 #game {
     position: fixed;
-
     inset: 0;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #172033,
-            #080b11 55%,
-            #030407
-        );
-
     display: none;
-
     overflow: hidden;
+    background: #05070b;
 }
 
-#arena {
+#threeCanvas {
     position: absolute;
-
-    width: 1600px;
-    height: 900px;
-
-    left: 50%;
-    top: 50%;
-
-    transform:
-        translate(-50%, -50%)
-        scale(var(--scale, 1));
-
-    transform-origin: center;
-
-    background:
-        linear-gradient(
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        );
-
-    background-size: 50px 50px;
-
-    border: 2px solid #1b2537;
-
-    box-shadow:
-        inset 0 0 150px
-        rgba(0,0,0,.6);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
-.wall {
-    position: absolute;
-
-    background:
-        linear-gradient(
-            135deg,
-            #202b3c,
-            #101722
-        );
-
-    border: 1px solid #354258;
-
-    box-shadow:
-        0 8px 30px
-        rgba(0,0,0,.35);
-}
-
-.wall1 {
-    left: 650px;
-    top: 100px;
-
-    width: 300px;
-    height: 35px;
-}
-
-.wall2 {
-    left: 650px;
-    top: 765px;
-
-    width: 300px;
-    height: 35px;
-}
-
-.wall3 {
-    left: 770px;
-    top: 300px;
-
-    width: 60px;
-    height: 300px;
-}
+/* =========================
+   HUD
+========================= */
 
 #hud {
     position: fixed;
-
     left: 20px;
     right: 20px;
     top: 18px;
 
     display: flex;
-
     justify-content: space-between;
 
     pointer-events: none;
-
-    z-index: 20;
+    z-index: 30;
 }
 
 .score {
-    min-width: 150px;
+    min-width: 160px;
 
-    padding: 12px 18px;
+    padding: 11px 18px;
 
     border-radius: 12px;
 
-    background:
-        rgba(5,8,14,.8);
+    background: rgba(5,8,14,.78);
 
-    border:
-        1px solid #273247;
+    border: 1px solid #273247;
 
     backdrop-filter: blur(10px);
 
     text-align: center;
-
     font-weight: 900;
 }
 
@@ -455,12 +300,16 @@ button.backButton {
 
     transform: translateX(-50%);
 
-    font-size: 24px;
-
+    font-size: 25px;
     font-weight: 900;
 
-    z-index: 30;
+    z-index: 31;
+    pointer-events: none;
 }
+
+/* =========================
+   CROSSHAIR
+========================= */
 
 #crosshair {
     position: fixed;
@@ -468,15 +317,14 @@ button.backButton {
     left: 50%;
     top: 50%;
 
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
 
-    transform:
-        translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 
     pointer-events: none;
 
-    z-index: 50;
+    z-index: 40;
 }
 
 #crosshair::before,
@@ -487,154 +335,194 @@ button.backButton {
 
     background: white;
 
-    box-shadow:
-        0 0 5px black;
+    box-shadow: 0 0 5px black;
 }
 
 #crosshair::before {
     width: 2px;
-    height: 30px;
+    height: 26px;
 
-    left: 14px;
+    left: 12px;
     top: 0;
 }
 
 #crosshair::after {
+    width: 26px;
     height: 2px;
-    width: 30px;
 
     left: 0;
-    top: 14px;
+    top: 12px;
 }
 
-.player {
-    position: absolute;
+/* =========================
+   FPS WEAPON
+========================= */
 
-    width: 48px;
-    height: 48px;
-
-    border-radius: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    z-index: 10;
-
-    box-shadow:
-        0 0 25px
-        rgba(255,255,255,.15);
-}
-
-.player.red {
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            #ff8b9a,
-            #ff304d 45%,
-            #7f1023
-        );
-
-    border: 3px solid #ff6678;
-}
-
-.player.blue {
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            #82c9ff,
-            #2689ff 45%,
-            #103b7e
-        );
-
-    border: 3px solid #66b4ff;
-}
-
-.player.bot {
-    background:
-        radial-gradient(
-            circle at 35% 30%,
-            #fff,
-            #b16cff 40%,
-            #4d1685
-        );
-
-    border: 3px solid #d29cff;
-}
-
-.hp {
-    position: absolute;
+#weapon {
+    position: fixed;
 
     left: 50%;
-    top: -12px;
+    bottom: -5px;
 
-    transform:
-        translateX(-50%);
+    width: 300px;
+    height: 230px;
 
-    width: 65px;
-    height: 6px;
+    transform: translateX(-50%);
 
-    background: #191d26;
+    pointer-events: none;
+
+    z-index: 50;
+}
+
+.weaponBody {
+    position: absolute;
+
+    width: 150px;
+    height: 62px;
+
+    right: 45px;
+    bottom: 35px;
+
+    border-radius: 10px 25px 8px 8px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #454c57,
+            #151922 60%,
+            #080a0f
+        );
+
+    border: 2px solid #656e7d;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,.7);
+}
+
+.weaponBarrel {
+    position: absolute;
+
+    width: 125px;
+    height: 18px;
+
+    right: 165px;
+    bottom: 68px;
+
+    background: #11151c;
 
     border-radius: 5px;
+
+    box-shadow:
+        inset 0 0 0 2px #343b47;
+}
+
+.weaponHandle {
+    position: absolute;
+
+    width: 42px;
+    height: 85px;
+
+    right: 85px;
+    bottom: -5px;
+
+    transform: rotate(12deg);
+
+    border-radius: 6px 6px 15px 15px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #11141a,
+            #343a44,
+            #10131a
+        );
+}
+
+.weaponSight {
+    position: absolute;
+
+    width: 32px;
+    height: 10px;
+
+    right: 100px;
+    bottom: 93px;
+
+    border-radius: 4px;
+
+    background: #080a0f;
+}
+
+#ammo {
+    position: fixed;
+
+    right: 25px;
+    bottom: 25px;
+
+    z-index: 60;
+
+    font-size: 25px;
+    font-weight: 900;
+
+    padding: 10px 15px;
+
+    background: rgba(5,8,14,.75);
+
+    border-radius: 10px;
+
+    pointer-events: none;
+}
+
+#health {
+    position: fixed;
+
+    left: 25px;
+    bottom: 25px;
+
+    z-index: 60;
+
+    font-size: 25px;
+    font-weight: 900;
+
+    padding: 10px 15px;
+
+    background: rgba(5,8,14,.75);
+
+    border-radius: 10px;
+
+    pointer-events: none;
+}
+
+#healthBar {
+    width: 170px;
+    height: 7px;
+
+    margin-top: 7px;
+
+    background: #222833;
+
+    border-radius: 10px;
 
     overflow: hidden;
 }
 
-.hpFill {
+#healthFill {
+    width: 100%;
     height: 100%;
 
-    width: 100%;
+    background: #36e878;
 
-    background: #32e875;
-
-    transition:
-        width .15s;
+    transition: width .15s;
 }
 
-.name {
-    position: absolute;
-
-    left: 50%;
-    top: 53px;
-
-    transform:
-        translateX(-50%);
-
-    white-space: nowrap;
-
-    font-size: 12px;
-
-    font-weight: 900;
-
-    text-shadow:
-        0 2px 5px black;
-}
-
-.bullet {
-    position: absolute;
-
-    width: 10px;
-    height: 10px;
-
-    border-radius: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    background: #fff;
-
-    box-shadow:
-        0 0 15px #fff,
-        0 0 30px #ffb52e;
-
-    z-index: 5;
-}
+/* =========================
+   MESSAGE
+========================= */
 
 #message {
     position: fixed;
 
     left: 50%;
-    top: 72%;
+    top: 70%;
 
     transform:
         translate(-50%, -50%)
@@ -644,14 +532,11 @@ button.backButton {
 
     border-radius: 12px;
 
-    background:
-        rgba(5,8,14,.92);
+    background: rgba(5,8,14,.92);
 
-    border:
-        1px solid #334158;
+    border: 1px solid #334158;
 
     font-size: 18px;
-
     font-weight: 900;
 
     opacity: 0;
@@ -660,7 +545,7 @@ button.backButton {
 
     pointer-events: none;
 
-    z-index: 80;
+    z-index: 100;
 }
 
 #message.show {
@@ -670,6 +555,67 @@ button.backButton {
         translate(-50%, -50%)
         scale(1);
 }
+
+/* =========================
+   CONTROLS
+========================= */
+
+#controls {
+    position: fixed;
+
+    left: 50%;
+    bottom: 15px;
+
+    transform: translateX(-50%);
+
+    z-index: 70;
+
+    color: rgba(255,255,255,.55);
+
+    font-size: 12px;
+
+    text-align: center;
+
+    pointer-events: none;
+}
+
+/* =========================
+   START OVERLAY
+========================= */
+
+#startOverlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,.45);
+
+    cursor: pointer;
+}
+
+.startBox {
+    text-align: center;
+}
+
+.startBox h1 {
+    margin: 0 0 12px;
+    font-size: 42px;
+}
+
+.startBox p {
+    color: #c7cfdd;
+}
+
+/* =========================
+   GAME OVER
+========================= */
 
 #gameOver {
     position: fixed;
@@ -681,13 +627,11 @@ button.backButton {
     align-items: center;
     justify-content: center;
 
-    background:
-        rgba(0,0,0,.72);
+    background: rgba(0,0,0,.72);
 
-    backdrop-filter:
-        blur(8px);
+    backdrop-filter: blur(8px);
 
-    z-index: 100;
+    z-index: 500;
 }
 
 .gameOverBox {
@@ -706,26 +650,77 @@ button.backButton {
 
 .gameOverBox h1 {
     font-size: 48px;
-
     margin: 0 0 15px;
 }
 
-</style>
+/* =========================
+   DAMAGE
+========================= */
 
+#damageFlash {
+    position: fixed;
+    inset: 0;
+
+    z-index: 45;
+
+    pointer-events: none;
+
+    background: rgba(255,0,0,.22);
+
+    opacity: 0;
+
+    transition: opacity .08s;
+}
+
+#damageFlash.show {
+    opacity: 1;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 700px) {
+
+    .logo {
+        font-size: 42px;
+    }
+
+    .menuBox {
+        padding: 25px;
+    }
+
+    #weapon {
+        transform: translateX(-50%) scale(.75);
+        transform-origin: bottom center;
+    }
+
+    #controls {
+        display: none;
+    }
+
+    .score {
+        min-width: 110px;
+        font-size: 12px;
+    }
+
+    #centerScore {
+        font-size: 20px;
+    }
+}
+
+</style>
 </head>
 
 <body>
 
-
 <!-- =========================================
-     MENU + LOBBY
+     MENU
 ========================================= -->
 
 <div id="menu">
 
     <div class="menuBox">
-
-        <!-- MAIN MENU -->
 
         <div id="mainMenu">
 
@@ -734,7 +729,7 @@ button.backButton {
             </div>
 
             <div class="subtitle">
-                schoolgame multiplayer arena
+                schoolgame multiplayer FPS
             </div>
 
             <input
@@ -765,15 +760,15 @@ button.backButton {
 
             <div class="small">
                 WASD — მოძრაობა<br>
-                Mouse — დამიზნება<br>
+                Mouse — კამერა<br>
                 Left Click — სროლა<br>
-                პირველი 10 kill იგებს
+                Shift — სირბილი<br>
+                Space — ხტომა<br>
+                R — გადატენვა
             </div>
 
         </div>
 
-
-        <!-- LOBBY -->
 
         <div id="lobby">
 
@@ -786,9 +781,8 @@ button.backButton {
             </div>
 
             <div class="lobbySubtitle">
-                თამაშის დაწყებამდე დაელოდე მეორე მოთამაშეს
+                დაელოდე მეორე მოთამაშეს
             </div>
-
 
             <div class="roomCodeBox">
 
@@ -805,14 +799,12 @@ button.backButton {
 
             </div>
 
-
             <button
                 id="copyRoom"
                 class="copyButton"
             >
                 📋 კოდის კოპირება
             </button>
-
 
             <div
                 id="playersStatus"
@@ -821,14 +813,12 @@ button.backButton {
                 👤 1 / 2 მოთამაშე
             </div>
 
-
             <button
                 id="botButton"
                 class="botButton"
             >
                 🤖 BOT-ის გამოძახება
             </button>
-
 
             <button
                 id="backButton"
@@ -837,13 +827,12 @@ button.backButton {
                 ← უკან
             </button>
 
-
             <div
                 class="lobbyHint"
                 id="lobbyHint"
             >
                 გაუგზავნე Room Code მეგობარს,<br>
-                ან გამოიძახე BOT თამაშის დასაწყებად.
+                ან გამოიძახე BOT.
             </div>
 
         </div>
@@ -859,59 +848,89 @@ button.backButton {
 
 <div id="game">
 
+    <canvas id="threeCanvas"></canvas>
+
     <div id="hud">
 
-        <div
-            class="score red"
-            id="p1Hud"
-        >
-            PLAYER 1<br>
-
-            <span id="p1Kills">
-                0
-            </span>
+        <div class="score red">
+            PLAYER
+            <br>
+            <span id="p1Kills">0</span>
         </div>
 
-
-        <div
-            class="score blue"
-            id="p2Hud"
-        >
-            PLAYER 2<br>
-
-            <span id="p2Kills">
-                0
-            </span>
+        <div class="score blue">
+            ENEMY
+            <br>
+            <span id="p2Kills">0</span>
         </div>
 
     </div>
-
 
     <div id="centerScore">
         0 : 0
     </div>
 
+    <div id="crosshair"></div>
 
-    <div id="arena">
+    <div id="weapon">
 
-        <div class="wall wall1"></div>
+        <div class="weaponBarrel"></div>
 
-        <div class="wall wall2"></div>
+        <div class="weaponBody"></div>
 
-        <div class="wall wall3"></div>
+        <div class="weaponHandle"></div>
 
-        <div id="entities"></div>
-
-        <div id="bullets"></div>
+        <div class="weaponSight"></div>
 
     </div>
 
+    <div id="ammo">
+        30 / 90
+    </div>
 
-    <div id="crosshair"></div>
+    <div id="health">
 
-    <div id="message"></div>
+        ❤️ 100
+
+        <div id="healthBar">
+            <div id="healthFill"></div>
+        </div>
+
+    </div>
+
+    <div id="controls">
+        WASD • SHIFT • SPACE • R • MOUSE • CLICK
+    </div>
 
 </div>
+
+
+<!-- =========================================
+     START
+========================================= -->
+
+<div id="startOverlay">
+
+    <div class="startBox">
+
+        <h1>RIVALS</h1>
+
+        <p>
+            დააჭირე ეკრანს თამაშის დასაწყებად
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     MESSAGE
+========================================= -->
+
+<div id="message"></div>
+
+<div id="damageFlash"></div>
 
 
 <!-- =========================================
@@ -939,20 +958,24 @@ button.backButton {
 </div>
 
 
+<!-- THREE.JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+
 <script>
 
-
-/* =========================================
+/* =====================================================
    SERVER
-========================================= */
+===================================================== */
 
 const SERVER_URL =
     "wss://schoolgame-rivals.onrender.com";
 
 
-/* =========================================
-   GAME VARIABLES
-========================================= */
+/* =====================================================
+   NETWORK
+===================================================== */
 
 let socket = null;
 
@@ -964,120 +987,164 @@ let gameStarted = false;
 
 let inLobby = false;
 
-let mouseX = 800;
 
-let mouseY = 450;
+/* =====================================================
+   THREE
+===================================================== */
+
+let scene;
+
+let camera;
+
+let renderer;
+
+let clock;
+
+let worldGroup;
+
+let remotePlayers = new Map();
+
+let remoteBullets = new Map();
+
+
+/* =====================================================
+   PLAYER
+===================================================== */
+
+const player = {
+
+    x: 350,
+
+    z: 400,
+
+    y: 0,
+
+    yaw: 0,
+
+    pitch: 0,
+
+    hp: 100,
+
+    velocityY: 0,
+
+    onGround: true
+
+};
+
+
+/* =====================================================
+   INPUT
+===================================================== */
 
 const keys = {
+
     w: false,
     a: false,
     s: false,
-    d: false
+    d: false,
+
+    shift: false,
+    space: false
+
 };
 
-let shooting = false;
+let mouseLocked = false;
 
-const players = new Map();
+let firing = false;
+
+let lastShotTime = 0;
+
+let magazine = 30;
+
+let reserveAmmo = 90;
+
+let reloading = false;
 
 
-/* =========================================
-   HTML ELEMENTS
-========================================= */
-
-const entities =
-    document.getElementById(
-        "entities"
-    );
-
-const bullets =
-    document.getElementById(
-        "bullets"
-    );
+/* =====================================================
+   HTML
+===================================================== */
 
 const menu =
-    document.getElementById(
-        "menu"
-    );
+    document.getElementById("menu");
 
 const mainMenu =
-    document.getElementById(
-        "mainMenu"
-    );
+    document.getElementById("mainMenu");
 
 const lobby =
-    document.getElementById(
-        "lobby"
-    );
+    document.getElementById("lobby");
 
 const game =
-    document.getElementById(
-        "game"
-    );
+    document.getElementById("game");
 
 const status =
-    document.getElementById(
-        "status"
-    );
+    document.getElementById("status");
 
 const message =
-    document.getElementById(
-        "message"
-    );
+    document.getElementById("message");
 
 const gameOver =
-    document.getElementById(
-        "gameOver"
-    );
+    document.getElementById("gameOver");
 
 const winner =
-    document.getElementById(
-        "winner"
-    );
+    document.getElementById("winner");
 
 const winnerText =
-    document.getElementById(
-        "winnerText"
-    );
+    document.getElementById("winnerText");
 
 const lobbyRoomCode =
-    document.getElementById(
-        "lobbyRoomCode"
-    );
+    document.getElementById("lobbyRoomCode");
 
 const playersStatus =
-    document.getElementById(
-        "playersStatus"
-    );
+    document.getElementById("playersStatus");
 
 const botButton =
-    document.getElementById(
-        "botButton"
-    );
+    document.getElementById("botButton");
 
 const lobbyHint =
-    document.getElementById(
-        "lobbyHint"
-    );
+    document.getElementById("lobbyHint");
+
+const ammoText =
+    document.getElementById("ammo");
+
+const healthText =
+    document.getElementById("health");
+
+const healthFill =
+    document.getElementById("healthFill");
+
+const startOverlay =
+    document.getElementById("startOverlay");
+
+const damageFlash =
+    document.getElementById("damageFlash");
 
 
-/* =========================================
+/* =====================================================
    CONNECT
-========================================= */
+===================================================== */
 
 function connect() {
 
     status.textContent =
         "სერვერთან დაკავშირება...";
 
-    socket = new WebSocket(
-        SERVER_URL
-    );
+    socket =
+        new WebSocket(SERVER_URL);
 
 
     socket.onopen = () => {
 
         status.textContent =
             "სერვერთან დაკავშირებულია.";
+
+    };
+
+
+    socket.onerror = () => {
+
+        status.textContent =
+            "სერვერთან დაკავშირება ვერ მოხერხდა.";
 
     };
 
@@ -1100,14 +1167,6 @@ function connect() {
     };
 
 
-    socket.onerror = () => {
-
-        status.textContent =
-            "სერვერთან დაკავშირება ვერ მოხერხდა.";
-
-    };
-
-
     socket.onmessage = event => {
 
         let data;
@@ -1115,9 +1174,7 @@ function connect() {
         try {
 
             data =
-                JSON.parse(
-                    event.data
-                );
+                JSON.parse(event.data);
 
         } catch {
 
@@ -1132,29 +1189,18 @@ function connect() {
 }
 
 
-/* =========================================
+/* =====================================================
    SERVER MESSAGES
-========================================= */
+===================================================== */
 
 function handleMessage(data) {
 
-
-    if (
-        data.type ===
-        "connected"
-    ) {
-
+    if (data.type === "connected") {
         return;
-
     }
 
 
-    /* ROOM CREATED */
-
-    if (
-        data.type ===
-        "room_created"
-    ) {
+    if (data.type === "room_created") {
 
         roomCode =
             data.room;
@@ -1165,16 +1211,10 @@ function handleMessage(data) {
         openLobby();
 
         return;
-
     }
 
 
-    /* ROOM JOINED */
-
-    if (
-        data.type ===
-        "room_joined"
-    ) {
+    if (data.type === "room_joined") {
 
         roomCode =
             data.room;
@@ -1183,106 +1223,59 @@ function handleMessage(data) {
             data.playerId;
 
         return;
-
     }
 
 
-    /* ERROR */
-
-    if (
-        data.type ===
-        "error"
-    ) {
+    if (data.type === "error") {
 
         status.textContent =
             data.message;
 
         return;
-
     }
 
 
-    /* MESSAGE */
-
-    if (
-        data.type ===
-        "message"
-    ) {
-
-        showMessage(
-            data.message
-        );
-
-        return;
-
-    }
-
-
-    /* GAME STATE */
-
-    if (
-        data.type ===
-        "state"
-    ) {
-
-        updateState(data);
-
-        return;
-
-    }
-
-
-    /* GAME OVER */
-
-    if (
-        data.type ===
-        "game_over"
-    ) {
-
-        showGameOver(
-            data.winner
-        );
-
-        return;
-
-    }
-
-
-    /* BOT */
-
-    if (
-        data.type ===
-        "bot_joined"
-    ) {
+    if (data.type === "bot_joined") {
 
         showMessage(
             "🤖 BOT შემოვიდა!"
         );
 
         return;
-
     }
 
 
-    if (
-        data.type ===
-        "bot_left"
-    ) {
+    if (data.type === "game_started") {
 
-        showMessage(
-            "👤 რეალური მოთამაშე შემოვიდა!"
+        startGame();
+
+        return;
+    }
+
+
+    if (data.type === "state") {
+
+        updateState(data);
+
+        return;
+    }
+
+
+    if (data.type === "game_over") {
+
+        showGameOver(
+            data.winner
         );
 
         return;
-
     }
 
 }
 
 
-/* =========================================
-   OPEN LOBBY
-========================================= */
+/* =====================================================
+   LOBBY
+===================================================== */
 
 function openLobby() {
 
@@ -1305,6 +1298,15 @@ function openLobby() {
     playersStatus.textContent =
         "👤 1 / 2 მოთამაშე";
 
+    botButton.style.display =
+        "block";
+
+    botButton.disabled =
+        false;
+
+    botButton.textContent =
+        "🤖 BOT-ის გამოძახება";
+
     lobbyHint.innerHTML =
         "გაუგზავნე Room Code მეგობარს,<br>" +
         "ან გამოიძახე BOT თამაშის დასაწყებად.";
@@ -1312,28 +1314,174 @@ function openLobby() {
 }
 
 
-/* =========================================
-   UPDATE LOBBY
-========================================= */
+/* =====================================================
+   UPDATE STATE
+===================================================== */
 
-function updateLobby(playerList) {
+function updateState(data) {
+
+    const list =
+        Array.isArray(data.players)
+            ? data.players
+            : [];
+
+
+    if (inLobby) {
+
+        updateLobby(list);
+
+    }
+
+
+    if (
+        !gameStarted &&
+        list.length >= 2
+    ) {
+
+        startGame();
+
+    }
+
+
+    /* SCORE */
+
+    const scores =
+        data.scores || {};
+
+
+    let myScore = 0;
+
+    let enemyScore = 0;
+
+
+    if (playerId) {
+
+        myScore =
+            Number(
+                scores[playerId] || 0
+            );
+
+    }
+
+
+    Object.keys(scores).forEach(id => {
+
+        if (id !== playerId) {
+
+            enemyScore =
+                Number(
+                    scores[id] || 0
+                );
+
+        }
+
+    });
+
+
+    document.getElementById(
+        "p1Kills"
+    ).textContent =
+        myScore;
+
+
+    document.getElementById(
+        "p2Kills"
+    ).textContent =
+        enemyScore;
+
+
+    document.getElementById(
+        "centerScore"
+    ).textContent =
+        myScore +
+        " : " +
+        enemyScore;
+
+
+    /* PLAYERS */
+
+    const currentIds =
+        new Set();
+
+
+    list.forEach(p => {
+
+        currentIds.add(p.id);
+
+
+        if (p.id === playerId) {
+
+            player.x =
+                Number(p.x) || player.x;
+
+            player.z =
+                Number(p.y) || player.z;
+
+            player.hp =
+                Number(p.hp ?? 100);
+
+            updateHealth();
+
+            return;
+        }
+
+
+        updateRemotePlayer(p);
+
+    });
+
+
+    remotePlayers.forEach(
+        (obj, id) => {
+
+            if (
+                !currentIds.has(id)
+            ) {
+
+                scene.remove(
+                    obj
+                );
+
+                remotePlayers.delete(
+                    id
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   LOBBY STATUS
+===================================================== */
+
+function updateLobby(list) {
 
     if (!inLobby) {
         return;
     }
 
+
     const count =
-        playerList.length;
+        list.length;
+
 
     const hasBot =
-        playerList.some(
-            p => p.id === "bot"
+        list.some(
+            p =>
+                String(p.id).toUpperCase()
+                === "BOT"
         );
+
 
     if (count >= 2) {
 
         playersStatus.className =
             "playersStatus ready";
+
 
         if (hasBot) {
 
@@ -1347,8 +1495,10 @@ function updateLobby(playerList) {
 
         }
 
+
         botButton.style.display =
             "none";
+
 
         lobbyHint.textContent =
             "მატჩი იწყება...";
@@ -1369,9 +1519,512 @@ function updateLobby(playerList) {
 }
 
 
-/* =========================================
-   START GAME
-========================================= */
+/* =====================================================
+   START THREE.JS
+===================================================== */
+
+function initThree() {
+
+    if (renderer) {
+        return;
+    }
+
+
+    scene =
+        new THREE.Scene();
+
+
+    scene.background =
+        new THREE.Color(
+            0x080b12
+        );
+
+
+    scene.fog =
+        new THREE.Fog(
+            0x080b12,
+            500,
+            1700
+        );
+
+
+    camera =
+        new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth /
+            window.innerHeight,
+            0.1,
+            2000
+        );
+
+
+    camera.position.set(
+        player.x,
+        70,
+        player.z
+    );
+
+
+    renderer =
+        new THREE.WebGLRenderer({
+            canvas:
+                document.getElementById(
+                    "threeCanvas"
+                ),
+            antialias: true
+        });
+
+
+    renderer.setPixelRatio(
+        Math.min(
+            window.devicePixelRatio,
+            2
+        )
+    );
+
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+
+
+    renderer.shadowMap.enabled =
+        true;
+
+
+    clock =
+        new THREE.Clock();
+
+
+    createWorld();
+
+
+    window.addEventListener(
+        "resize",
+        resizeThree
+    );
+
+
+    animateThree();
+
+}
+
+
+/* =====================================================
+   WORLD
+===================================================== */
+
+function createWorld() {
+
+    worldGroup =
+        new THREE.Group();
+
+
+    scene.add(
+        worldGroup
+    );
+
+
+    /* LIGHT */
+
+    const ambient =
+        new THREE.HemisphereLight(
+            0xaac7ff,
+            0x151923,
+            1.6
+        );
+
+    scene.add(
+        ambient
+    );
+
+
+    const light =
+        new THREE.DirectionalLight(
+            0xffffff,
+            2.2
+        );
+
+    light.position.set(
+        300,
+        500,
+        200
+    );
+
+    light.castShadow =
+        true;
+
+    scene.add(
+        light
+    );
+
+
+    /* FLOOR */
+
+    const floorGeometry =
+        new THREE.PlaneGeometry(
+            1600,
+            900
+        );
+
+
+    const floorMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x121823,
+            roughness: .82,
+            metalness: .12
+        });
+
+
+    const floor =
+        new THREE.Mesh(
+            floorGeometry,
+            floorMaterial
+        );
+
+
+    floor.rotation.x =
+        -Math.PI / 2;
+
+
+    floor.position.set(
+        800,
+        0,
+        450
+    );
+
+
+    floor.receiveShadow =
+        true;
+
+
+    worldGroup.add(
+        floor
+    );
+
+
+    /* GRID */
+
+    const grid =
+        new THREE.GridHelper(
+            1600,
+            32,
+            0x344055,
+            0x202939
+        );
+
+
+    grid.position.set(
+        800,
+        .5,
+        450
+    );
+
+
+    worldGroup.add(
+        grid
+    );
+
+
+    /* OUTER WALLS */
+
+    createWall(
+        800,
+        80,
+        1600,
+        100
+    );
+
+    createWall(
+        800,
+        820,
+        1600,
+        100
+    );
+
+    createWall(
+        50,
+        450,
+        100,
+        740
+    );
+
+    createWall(
+        1550,
+        450,
+        100,
+        740
+    );
+
+
+    /* CENTER WALL */
+
+    createWall(
+        800,
+        450,
+        80,
+        300
+    );
+
+
+    /* TOP CENTER WALL */
+
+    createWall(
+        800,
+        120,
+        300,
+        50
+    );
+
+
+    /* BOTTOM CENTER WALL */
+
+    createWall(
+        800,
+        780,
+        300,
+        50
+    );
+
+}
+
+
+/* =====================================================
+   WALL
+===================================================== */
+
+function createWall(
+    x,
+    z,
+    width,
+    depth
+) {
+
+    const geometry =
+        new THREE.BoxGeometry(
+            width,
+            100,
+            depth
+        );
+
+
+    const material =
+        new THREE.MeshStandardMaterial({
+            color: 0x202b3c,
+            roughness: .72,
+            metalness: .15
+        });
+
+
+    const wall =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    wall.position.set(
+        x,
+        50,
+        z
+    );
+
+
+    wall.castShadow =
+        true;
+
+    wall.receiveShadow =
+        true;
+
+
+    worldGroup.add(
+        wall
+    );
+
+}
+
+
+/* =====================================================
+   REMOTE PLAYER
+===================================================== */
+
+function updateRemotePlayer(p) {
+
+    let obj =
+        remotePlayers.get(
+            p.id
+        );
+
+
+    if (!obj) {
+
+        obj =
+            createRemotePlayer(
+                p
+            );
+
+        remotePlayers.set(
+            p.id,
+            obj
+        );
+
+        scene.add(
+            obj
+        );
+
+    }
+
+
+    obj.position.set(
+        Number(p.x) || 0,
+        45,
+        Number(p.y) || 0
+    );
+
+
+    obj.rotation.y =
+        -Number(p.angle || 0) +
+        Math.PI / 2;
+
+
+    obj.visible =
+        Number(p.hp ?? 100) > 0;
+
+}
+
+
+/* =====================================================
+   CREATE REMOTE PLAYER
+===================================================== */
+
+function createRemotePlayer(p) {
+
+    const group =
+        new THREE.Group();
+
+
+    const isBot =
+        String(p.id).toUpperCase()
+        === "BOT";
+
+
+    const color =
+        isBot
+            ? 0x9b55ff
+            : 0xff334d;
+
+
+    const bodyGeometry =
+        new THREE.CapsuleGeometry(
+            18,
+            50,
+            6,
+            12
+        );
+
+
+    const bodyMaterial =
+        new THREE.MeshStandardMaterial({
+            color,
+            roughness: .5,
+            metalness: .15
+        });
+
+
+    const body =
+        new THREE.Mesh(
+            bodyGeometry,
+            bodyMaterial
+        );
+
+
+    body.position.y =
+        45;
+
+
+    body.castShadow =
+        true;
+
+
+    group.add(
+        body
+    );
+
+
+    const headGeometry =
+        new THREE.SphereGeometry(
+            17,
+            16,
+            12
+        );
+
+
+    const head =
+        new THREE.Mesh(
+            headGeometry,
+            bodyMaterial
+        );
+
+
+    head.position.y =
+        85;
+
+
+    head.castShadow =
+        true;
+
+
+    group.add(
+        head
+    );
+
+
+    /* GUN */
+
+    const gunGeometry =
+        new THREE.BoxGeometry(
+            12,
+            12,
+            55
+        );
+
+
+    const gunMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x151820,
+            metalness: .8,
+            roughness: .3
+        });
+
+
+    const gun =
+        new THREE.Mesh(
+            gunGeometry,
+            gunMaterial
+        );
+
+
+    gun.position.set(
+        18,
+        55,
+        -25
+    );
+
+
+    group.add(
+        gun
+    );
+
+
+    return group;
+
+}
+
+
+/* =====================================================
+   GAME START
+===================================================== */
 
 function startGame() {
 
@@ -1379,333 +2032,974 @@ function startGame() {
         return;
     }
 
-    inLobby = false;
 
-    gameStarted = true;
+    gameStarted =
+        true;
+
+    inLobby =
+        false;
+
 
     menu.style.display =
         "none";
 
+
     game.style.display =
         "block";
 
-    resizeArena();
 
-    requestAnimationFrame(
-        resizeArena
+    initThree();
+
+
+    player.x =
+        350;
+
+    player.z =
+        400;
+
+    player.y =
+        0;
+
+    player.hp =
+        100;
+
+    player.velocityY =
+        0;
+
+    player.onGround =
+        true;
+
+
+    magazine =
+        30;
+
+    reserveAmmo =
+        90;
+
+    reloading =
+        false;
+
+
+    updateAmmo();
+
+}
+
+
+/* =====================================================
+   THREE RESIZE
+===================================================== */
+
+function resizeThree() {
+
+    if (!camera || !renderer) {
+        return;
+    }
+
+
+    camera.aspect =
+        window.innerWidth /
+        window.innerHeight;
+
+
+    camera.updateProjectionMatrix();
+
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
     );
 
 }
 
 
-/* =========================================
-   ARENA RESIZE
-========================================= */
+/* =====================================================
+   FPS CAMERA
+===================================================== */
 
-function resizeArena() {
+function updateCamera() {
 
-    const scaleX =
-        window.innerWidth /
-        1600;
+    if (!camera) {
+        return;
+    }
 
-    const scaleY =
-        window.innerHeight /
-        900;
 
-    const scale =
-        Math.min(
-            scaleX,
-            scaleY
-        );
+    camera.position.set(
+        player.x,
+        65 + player.y,
+        player.z
+    );
 
-    document.documentElement
-        .style
-        .setProperty(
-            "--scale",
-            scale
-        );
+
+    camera.rotation.order =
+        "YXZ";
+
+
+    camera.rotation.y =
+        player.yaw;
+
+
+    camera.rotation.x =
+        player.pitch;
 
 }
 
-window.addEventListener(
-    "resize",
-    resizeArena
+
+/* =====================================================
+   MOVEMENT
+===================================================== */
+
+function updateMovement(delta) {
+
+    if (!gameStarted) {
+        return;
+    }
+
+
+    let forward = 0;
+    let right = 0;
+
+
+    if (keys.w) forward += 1;
+    if (keys.s) forward -= 1;
+
+    if (keys.d) right += 1;
+    if (keys.a) right -= 1;
+
+
+    const length =
+        Math.sqrt(
+            forward * forward +
+            right * right
+        );
+
+
+    if (length > 0) {
+
+        forward /=
+            length;
+
+        right /=
+            length;
+
+    }
+
+
+    const speed =
+        keys.shift
+            ? 280
+            : 180;
+
+
+    const sin =
+        Math.sin(
+            player.yaw
+        );
+
+    const cos =
+        Math.cos(
+            player.yaw
+        );
+
+
+    const moveX =
+        (
+            -sin * forward +
+            cos * right
+        ) *
+        speed *
+        delta;
+
+
+    const moveZ =
+        (
+            -cos * forward -
+            sin * right
+        ) *
+        speed *
+        delta;
+
+
+    player.x +=
+        moveX;
+
+    player.z +=
+        moveZ;
+
+
+    /* BOUNDS */
+
+    player.x =
+        Math.max(
+            100,
+            Math.min(
+                1500,
+                player.x
+            )
+        );
+
+
+    player.z =
+        Math.max(
+            130,
+            Math.min(
+                770,
+                player.z
+            )
+        );
+
+
+    /* JUMP */
+
+    if (
+        keys.space &&
+        player.onGround
+    ) {
+
+        player.velocityY =
+            420;
+
+        player.onGround =
+            false;
+
+        keys.space =
+            false;
+
+    }
+
+
+    player.velocityY -=
+        1100 * delta;
+
+
+    player.y +=
+        player.velocityY *
+        delta;
+
+
+    if (player.y <= 0) {
+
+        player.y =
+            0;
+
+        player.velocityY =
+            0;
+
+        player.onGround =
+            true;
+
+    }
+
+}
+
+
+/* =====================================================
+   SEND POSITION TO SERVER
+===================================================== */
+
+let lastInputSent =
+    0;
+
+
+function sendMovement() {
+
+    if (
+        !socket ||
+        socket.readyState !==
+        WebSocket.OPEN ||
+        !gameStarted
+    ) {
+        return;
+    }
+
+
+    const now =
+        performance.now();
+
+
+    if (
+        now -
+        lastInputSent <
+        45
+    ) {
+        return;
+    }
+
+
+    lastInputSent =
+        now;
+
+
+    let dx = 0;
+    let dy = 0;
+
+
+    if (keys.w) dy -= 1;
+    if (keys.s) dy += 1;
+    if (keys.a) dx -= 1;
+    if (keys.d) dx += 1;
+
+
+    const len =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    if (len > 0) {
+
+        dx /= len;
+        dy /= len;
+
+    }
+
+
+    socket.send(
+        JSON.stringify({
+
+            type:
+                "input",
+
+            dx:
+                dx,
+
+            dy:
+                dy,
+
+            angle:
+                player.yaw
+
+        })
+    );
+
+}
+
+
+/* =====================================================
+   SHOOT
+===================================================== */
+
+function shoot() {
+
+    if (
+        !gameStarted ||
+        reloading
+    ) {
+        return;
+    }
+
+
+    if (
+        magazine <= 0
+    ) {
+
+        reload();
+
+        return;
+
+    }
+
+
+    const now =
+        performance.now();
+
+
+    if (
+        now -
+        lastShotTime <
+        110
+    ) {
+        return;
+    }
+
+
+    lastShotTime =
+        now;
+
+
+    magazine--;
+
+    updateAmmo();
+
+
+    if (
+        socket &&
+        socket.readyState ===
+        WebSocket.OPEN
+    ) {
+
+        socket.send(
+            JSON.stringify({
+
+                type:
+                    "shoot",
+
+                angle:
+                    player.yaw
+
+            })
+        );
+
+    }
+
+
+    weaponKick();
+
+
+    createMuzzleFlash();
+
+
+    if (
+        magazine === 0
+    ) {
+
+        setTimeout(
+            reload,
+            250
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   WEAPON KICK
+===================================================== */
+
+function weaponKick() {
+
+    const weapon =
+        document.getElementById(
+            "weapon"
+        );
+
+
+    weapon.style.transform =
+        "translateX(-50%) translateY(10px) rotate(-1deg)";
+
+
+    setTimeout(
+        () => {
+
+            weapon.style.transform =
+                "translateX(-50%)";
+
+        },
+        70
+    );
+
+}
+
+
+/* =====================================================
+   MUZZLE FLASH
+===================================================== */
+
+function createMuzzleFlash() {
+
+    const flash =
+        document.createElement(
+            "div"
+        );
+
+
+    flash.style.position =
+        "fixed";
+
+    flash.style.left =
+        "50%";
+
+    flash.style.top =
+        "50%";
+
+    flash.style.width =
+        "55px";
+
+    flash.style.height =
+        "55px";
+
+    flash.style.transform =
+        "translate(-50%,-50%)";
+
+    flash.style.borderRadius =
+        "50%";
+
+    flash.style.background =
+        "radial-gradient(circle, rgba(255,245,160,.9), rgba(255,120,20,.35), transparent)";
+
+    flash.style.pointerEvents =
+        "none";
+
+    flash.style.zIndex =
+        "45";
+
+
+    document.body.appendChild(
+        flash
+    );
+
+
+    setTimeout(
+        () => flash.remove(),
+        60
+    );
+
+}
+
+
+/* =====================================================
+   RELOAD
+===================================================== */
+
+function reload() {
+
+    if (
+        reloading ||
+        magazine >= 30 ||
+        reserveAmmo <= 0
+    ) {
+        return;
+    }
+
+
+    reloading =
+        true;
+
+
+    showMessage(
+        "🔄 RELOADING..."
+    );
+
+
+    setTimeout(
+        () => {
+
+            const needed =
+                30 -
+                magazine;
+
+
+            const amount =
+                Math.min(
+                    needed,
+                    reserveAmmo
+                );
+
+
+            magazine +=
+                amount;
+
+            reserveAmmo -=
+                amount;
+
+
+            reloading =
+                false;
+
+
+            updateAmmo();
+
+        },
+        1200
+    );
+
+}
+
+
+/* =====================================================
+   AMMO
+===================================================== */
+
+function updateAmmo() {
+
+    ammoText.textContent =
+        magazine +
+        " / " +
+        reserveAmmo;
+
+}
+
+
+/* =====================================================
+   HEALTH
+===================================================== */
+
+function updateHealth() {
+
+    const hp =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                player.hp
+            )
+        );
+
+
+    healthText.innerHTML =
+        "❤️ " +
+        hp +
+        '<div id="healthBar">' +
+        '<div id="healthFill"></div>' +
+        '</div>';
+
+
+    const fill =
+        document.getElementById(
+            "healthFill"
+        );
+
+
+    if (fill) {
+
+        fill.style.width =
+            hp + "%";
+
+    }
+
+}
+
+
+/* =====================================================
+   DAMAGE EFFECT
+===================================================== */
+
+function damageEffect() {
+
+    damageFlash.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        () => {
+
+            damageFlash.classList.remove(
+                "show"
+            );
+
+        },
+        80
+    );
+
+}
+
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+function animateThree() {
+
+    requestAnimationFrame(
+        animateThree
+    );
+
+
+    if (!renderer) {
+        return;
+    }
+
+
+    const delta =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+
+    if (gameStarted) {
+
+        updateMovement(
+            delta
+        );
+
+        updateCamera();
+
+        sendMovement();
+
+
+        if (firing) {
+
+            shoot();
+
+        }
+
+    }
+
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+/* =====================================================
+   MOUSE LOOK
+===================================================== */
+
+document.addEventListener(
+    "mousemove",
+    e => {
+
+        if (
+            !mouseLocked ||
+            !gameStarted
+        ) {
+            return;
+        }
+
+
+        const sensitivity =
+            0.0022;
+
+
+        player.yaw -=
+            e.movementX *
+            sensitivity;
+
+
+        player.pitch -=
+            e.movementY *
+            sensitivity;
+
+
+        const maxPitch =
+            Math.PI / 2 -
+            .08;
+
+
+        player.pitch =
+            Math.max(
+                -maxPitch,
+                Math.min(
+                    maxPitch,
+                    player.pitch
+                )
+            );
+
+    }
 );
 
 
-/* =========================================
-   UPDATE STATE
-========================================= */
+/* =====================================================
+   POINTER LOCK
+===================================================== */
 
-function updateState(data) {
+function lockMouse() {
+
+    if (!gameStarted) {
+        return;
+    }
 
 
-    /* LOBBY */
+    const canvas =
+        document.getElementById(
+            "threeCanvas"
+        );
+
 
     if (
-        !gameStarted
+        canvas.requestPointerLock
     ) {
 
-        updateLobby(
-            data.players
-        );
-
-        if (
-            data.players.length >= 2
-        ) {
-
-            startGame();
-
-        }
-
-    }
-
-
-    /* SCORE */
-
-    document.getElementById(
-        "p1Kills"
-    ).textContent =
-        data.score.p1;
-
-
-    document.getElementById(
-        "p2Kills"
-    ).textContent =
-        data.score.p2;
-
-
-    document.getElementById(
-        "centerScore"
-    ).textContent =
-        data.score.p1 +
-        " : " +
-        data.score.p2;
-
-
-    const existing =
-        new Set();
-
-
-    for (
-        const p of data.players
-    ) {
-
-        existing.add(
-            p.id
-        );
-
-
-        let el =
-            players.get(
-                p.id
-            );
-
-
-        if (!el) {
-
-            el =
-                createPlayerElement(
-                    p
-                );
-
-            players.set(
-                p.id,
-                el
-            );
-
-            entities.appendChild(
-                el
-            );
-
-        }
-
-
-        el.style.left =
-            p.x + "px";
-
-
-        el.style.top =
-            p.y + "px";
-
-
-        el.style.transform =
-            "translate(-50%,-50%) rotate(" +
-            p.angle +
-            "rad)";
-
-
-        const fill =
-            el.querySelector(
-                ".hpFill"
-            );
-
-
-        fill.style.width =
-            Math.max(
-                0,
-                p.hp
-            ) + "%";
-
-
-        el.style.opacity =
-            p.alive
-                ? "1"
-                : "0";
-
-
-        const name =
-            el.querySelector(
-                ".name"
-            );
-
-
-        name.textContent =
-            p.name;
-
-    }
-
-
-    for (
-        const [id, el]
-        of players
-    ) {
-
-        if (
-            !existing.has(id)
-        ) {
-
-            el.remove();
-
-            players.delete(
-                id
-            );
-
-        }
-
-    }
-
-
-    bullets.innerHTML =
-        "";
-
-
-    for (
-        const b of data.bullets
-    ) {
-
-        const el =
-            document.createElement(
-                "div"
-            );
-
-        el.className =
-            "bullet";
-
-
-        el.style.left =
-            b.x + "px";
-
-
-        el.style.top =
-            b.y + "px";
-
-
-        bullets.appendChild(
-            el
-        );
+        canvas.requestPointerLock();
 
     }
 
 }
 
 
-/* =========================================
-   CREATE PLAYER
-========================================= */
+document.addEventListener(
+    "pointerlockchange",
+    () => {
 
-function createPlayerElement(p) {
-
-    const el =
-        document.createElement(
-            "div"
-        );
-
-
-    let teamClass =
-        p.id === "p1"
-            ? "red"
-            : "blue";
+        mouseLocked =
+            document.pointerLockElement ===
+            document.getElementById(
+                "threeCanvas"
+            );
 
 
-    if (
-        p.id === "bot"
-    ) {
-
-        teamClass =
-            "bot";
+        startOverlay.style.display =
+            mouseLocked
+                ? "none"
+                : "flex";
 
     }
+);
 
 
-    el.className =
-        "player " +
-        teamClass;
+/* =====================================================
+   MOUSE
+===================================================== */
+
+document.addEventListener(
+    "mousedown",
+    e => {
+
+        if (
+            e.button !== 0
+        ) {
+            return;
+        }
 
 
-    const hp =
-        document.createElement(
-            "div"
-        );
-
-    hp.className =
-        "hp";
+        if (!gameStarted) {
+            return;
+        }
 
 
-    const hpFill =
-        document.createElement(
-            "div"
-        );
+        if (!mouseLocked) {
 
-    hpFill.className =
-        "hpFill";
+            lockMouse();
 
+            return;
 
-    hp.appendChild(
-        hpFill
-    );
+        }
 
 
-    el.appendChild(
-        hp
-    );
+        firing =
+            true;
+
+        shoot();
+
+    }
+);
 
 
-    const name =
-        document.createElement(
-            "div"
-        );
+document.addEventListener(
+    "mouseup",
+    e => {
 
-    name.className =
-        "name";
+        if (
+            e.button === 0
+        ) {
 
-    name.textContent =
-        p.name;
+            firing =
+                false;
 
+        }
 
-    el.appendChild(
-        name
-    );
-
-
-    return el;
-
-}
+    }
+);
 
 
-/* =========================================
+/* =====================================================
+   KEYBOARD
+===================================================== */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        const key =
+            e.key.toLowerCase();
+
+
+        if (
+            key === "w" ||
+            key === "a" ||
+            key === "s" ||
+            key === "d"
+        ) {
+
+            keys[key] =
+                true;
+
+            e.preventDefault();
+
+        }
+
+
+        if (
+            e.key === "Shift"
+        ) {
+
+            keys.shift =
+                true;
+
+        }
+
+
+        if (
+            e.code === "Space"
+        ) {
+
+            keys.space =
+                true;
+
+            e.preventDefault();
+
+        }
+
+
+        if (
+            key === "r"
+        ) {
+
+            reload();
+
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    e => {
+
+        const key =
+            e.key.toLowerCase();
+
+
+        if (
+            key === "w" ||
+            key === "a" ||
+            key === "s" ||
+            key === "d"
+        ) {
+
+            keys[key] =
+                false;
+
+        }
+
+
+        if (
+            e.key === "Shift"
+        ) {
+
+            keys.shift =
+                false;
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   START OVERLAY
+===================================================== */
+
+startOverlay.addEventListener(
+    "click",
+    () => {
+
+        lockMouse();
+
+    }
+);
+
+
+/* =====================================================
    MESSAGE
-========================================= */
+===================================================== */
 
 function showMessage(text) {
 
@@ -1732,17 +3026,24 @@ function showMessage(text) {
                 );
 
             },
-            2200
+            1800
         );
 
 }
 
 
-/* =========================================
+/* =====================================================
    GAME OVER
-========================================= */
+===================================================== */
 
 function showGameOver(id) {
+
+    gameStarted =
+        false;
+
+    firing =
+        false;
+
 
     gameOver.style.display =
         "flex";
@@ -1755,7 +3056,6 @@ function showGameOver(id) {
         winner.textContent =
             "🏆 YOU WIN";
 
-
         winnerText.textContent =
             "შენ მოიგე მატჩი!";
 
@@ -1764,39 +3064,26 @@ function showGameOver(id) {
         winner.textContent =
             "💀 YOU LOST";
 
-
         winnerText.textContent =
             "მატჩი დასრულდა.";
+
+    }
+
+
+    if (
+        document.pointerLockElement
+    ) {
+
+        document.exitPointerLock();
 
     }
 
 }
 
 
-/* =========================================
-   PLAY AGAIN
-========================================= */
-
-document.getElementById(
-    "again"
-).addEventListener(
-    "click",
-    () => {
-
-        gameOver.style.display =
-            "none";
-
-        showMessage(
-            "ახალი რაუნდი იწყება..."
-        );
-
-    }
-);
-
-
-/* =========================================
+/* =====================================================
    CREATE ROOM
-========================================= */
+===================================================== */
 
 document.getElementById(
     "create"
@@ -1812,14 +3099,17 @@ document.getElementById(
 
             connect();
 
+
             setTimeout(
                 createRoom,
-                700
+                800
             );
+
 
             return;
 
         }
+
 
         createRoom();
 
@@ -1834,9 +3124,6 @@ function createRoom() {
         socket.readyState !==
         WebSocket.OPEN
     ) {
-
-        status.textContent =
-            "სერვერთან დაკავშირება მიმდინარეობს...";
 
         return;
 
@@ -1865,9 +3152,9 @@ function createRoom() {
 }
 
 
-/* =========================================
+/* =====================================================
    JOIN ROOM
-========================================= */
+===================================================== */
 
 document.getElementById(
     "join"
@@ -1883,14 +3170,17 @@ document.getElementById(
 
             connect();
 
+
             setTimeout(
                 joinRoom,
-                700
+                800
             );
+
 
             return;
 
         }
+
 
         joinRoom();
 
@@ -1910,9 +3200,7 @@ function joinRoom() {
     const room =
         document.getElementById(
             "room"
-        ).value
-        .trim()
-        .toUpperCase();
+        ).value.trim().toUpperCase();
 
 
     if (!room) {
@@ -1943,9 +3231,9 @@ function joinRoom() {
 }
 
 
-/* =========================================
-   BOT BUTTON
-========================================= */
+/* =====================================================
+   BOT
+===================================================== */
 
 botButton.addEventListener(
     "click",
@@ -1986,9 +3274,9 @@ botButton.addEventListener(
 );
 
 
-/* =========================================
-   COPY ROOM CODE
-========================================= */
+/* =====================================================
+   COPY ROOM
+===================================================== */
 
 document.getElementById(
     "copyRoom"
@@ -2001,6 +3289,7 @@ document.getElementById(
             await navigator.clipboard.writeText(
                 roomCode
             );
+
 
             showMessage(
                 "📋 Room Code დაკოპირდა!"
@@ -2019,9 +3308,9 @@ document.getElementById(
 );
 
 
-/* =========================================
-   BACK FROM LOBBY
-========================================= */
+/* =====================================================
+   BACK
+===================================================== */
 
 document.getElementById(
     "backButton"
@@ -2029,69 +3318,49 @@ document.getElementById(
     "click",
     () => {
 
+        if (
+            socket &&
+            socket.readyState ===
+            WebSocket.OPEN
+        ) {
+
+            socket.send(
+                JSON.stringify({
+                    type:
+                        "leave_room"
+                })
+            );
+
+        }
+
+
         location.reload();
 
     }
 );
 
 
-/* =========================================
-   KEYBOARD
-========================================= */
+/* =====================================================
+   PLAY AGAIN
+===================================================== */
 
-window.addEventListener(
-    "keydown",
-    e => {
+document.getElementById(
+    "again"
+).addEventListener(
+    "click",
+    () => {
 
-        const k =
-            e.key.toLowerCase();
-
-
-        if (
-            k === "w" ||
-            k === "a" ||
-            k === "s" ||
-            k === "d"
-        ) {
-
-            keys[k] =
-                true;
-
-
-            sendInput();
-
-
-            e.preventDefault();
-
-        }
-
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    e => {
-
-        const k =
-            e.key.toLowerCase();
+        gameOver.style.display =
+            "none";
 
 
         if (
-            k === "w" ||
-            k === "a" ||
-            k === "s" ||
-            k === "d"
+            roomCode
         ) {
 
-            keys[k] =
-                false;
-
-
-            sendInput();
-
-
-            e.preventDefault();
+            showMessage(
+                "ახალი რაუნდი იწყება..."
+            );
 
         }
 
@@ -2099,222 +3368,9 @@ window.addEventListener(
 );
 
 
-/* =========================================
-   MOUSE AIM
-========================================= */
-
-window.addEventListener(
-    "mousemove",
-    e => {
-
-        const arenaRect =
-            document
-                .getElementById(
-                    "arena"
-                )
-                .getBoundingClientRect();
-
-
-        const scale =
-            parseFloat(
-                getComputedStyle(
-                    document.documentElement
-                )
-                .getPropertyValue(
-                    "--scale"
-                )
-            ) || 1;
-
-
-        mouseX =
-            (
-                e.clientX -
-                arenaRect.left
-            ) / scale;
-
-
-        mouseY =
-            (
-                e.clientY -
-                arenaRect.top
-            ) / scale;
-
-    }
-);
-
-
-/* =========================================
-   SHOOTING
-========================================= */
-
-window.addEventListener(
-    "mousedown",
-    e => {
-
-        if (
-            e.button !== 0
-        ) {
-
-            return;
-
-        }
-
-
-        if (!gameStarted) {
-            return;
-        }
-
-
-        shooting =
-            true;
-
-
-        sendInput();
-
-    }
-);
-
-
-window.addEventListener(
-    "mouseup",
-    e => {
-
-        if (
-            e.button !== 0
-        ) {
-
-            return;
-
-        }
-
-
-        shooting =
-            false;
-
-
-        sendInput();
-
-    }
-);
-
-
-/* =========================================
-   CALCULATE AIM
-========================================= */
-
-function calculateAngle() {
-
-    const me =
-        getMyPlayer();
-
-
-    if (!me) {
-
-        return 0;
-
-    }
-
-
-    return Math.atan2(
-        mouseY - me.y,
-        mouseX - me.x
-    );
-
-}
-
-
-/* =========================================
-   GET MY PLAYER
-========================================= */
-
-function getMyPlayer() {
-
-    const el =
-        players.get(
-            playerId
-        );
-
-
-    if (!el) {
-
-        return null;
-
-    }
-
-
-    return {
-
-        x:
-            parseFloat(
-                el.style.left
-            ),
-
-        y:
-            parseFloat(
-                el.style.top
-            )
-
-    };
-
-}
-
-
-/* =========================================
-   SEND INPUT
-========================================= */
-
-function sendInput() {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN
-    ) {
-
-        return;
-
-    }
-
-
-    if (!gameStarted) {
-        return;
-    }
-
-
-    socket.send(
-        JSON.stringify({
-
-            type:
-                "input",
-
-            keys:
-                keys,
-
-            angle:
-                calculateAngle(),
-
-            shooting:
-                shooting
-
-        })
-    );
-
-}
-
-
-/* =========================================
-   SEND INPUT EVERY 50ms
-========================================= */
-
-setInterval(
-    sendInput,
-    50
-);
-
-
-/* =========================================
+/* =====================================================
    RIGHT CLICK
-========================================= */
+===================================================== */
 
 document.addEventListener(
     "contextmenu",
@@ -2324,6 +3380,13 @@ document.addEventListener(
 
     }
 );
+
+
+/* =====================================================
+   INIT
+===================================================== */
+
+initThree();
 
 </script>
 
