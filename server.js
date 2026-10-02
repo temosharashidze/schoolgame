@@ -69,11 +69,11 @@ function broadcast(r,obj){for(const p of r.players.values())send(p.ws,obj)}
 function spawn(p){
   const spots=[[2,2],[13,11],[2,11],[13,2]];
   const s=spots[Math.floor(Math.random()*spots.length)];
-  p.x=s[0]+.5;p.y=s[1]+.5;p.hp=100;p.alive=true;p.cool=0;
+  p.x=s[0]+.5;p.y=s[1]+.5;p.hp=100;p.alive=true;p.cool=0;p.shooting=false;if(p.keys)p.keys={w:false,a:false,s:false,d:false};
 }
 function addBot(r){
   if(r.bot)return;
-  const bot={id:"bot",name:"BOT",ws:null,x:13.5,y:11.5,angle:Math.PI,hp:100,kills:0,alive:true,cool:0,bot:true};
+  const bot={id:"bot",name:"BOT",ws:null,x:13.5,y:11.5,angle:Math.PI,hp:100,kills:0,alive:true,cool:0,bot:true,keys:{w:false,a:false,s:false,d:false},shooting:false};
   r.bot=bot;r.players.set("bot",bot);r.started=true;
   broadcast(r,{type:"bot_joined"});
   broadcast(r,roomState(r));
@@ -125,7 +125,7 @@ wss.on("connection",ws=>{
 
     if(d.type==="create_room"){
       const r={code:code(),players:new Map(),bullets:[],started:false,bot:null};
-      const p={id:"p1",name:String(d.name||"PLAYER").slice(0,16),ws,x:2.5,y:2.5,angle:0,hp:100,kills:0,alive:true,cool:0,bot:false};
+      const p={id:"p1",name:String(d.name||"PLAYER").slice(0,16),ws,x:2.5,y:2.5,angle:0,hp:100,kills:0,alive:true,cool:0,bot:false,keys:{w:false,a:false,s:false,d:false},shooting:false};
       r.players.set(p.id,p);rooms.set(r.code,r);c.id=p.id;c.room=r;
       send(ws,{type:"room_created",room:r.code,playerId:p.id});
       send(ws,roomState(r));
@@ -152,16 +152,10 @@ wss.on("connection",ws=>{
     if(d.type==="input"){
       const r=c.room,p=r?.players.get(c.id);if(!r||!p||!p.alive)return;
       const k=d.keys||{};
-      const speed=.11;
-      let dx=0,dy=0;
-      if(k.w){dx+=Math.cos(p.angle)*speed;dy+=Math.sin(p.angle)*speed}
-      if(k.s){dx-=Math.cos(p.angle)*speed;dy-=Math.sin(p.angle)*speed}
-      if(k.a){dx+=Math.cos(p.angle-Math.PI/2)*speed;dy+=Math.sin(p.angle-Math.PI/2)*speed}
-      if(k.d){dx+=Math.cos(p.angle+Math.PI/2)*speed;dy+=Math.sin(p.angle+Math.PI/2)*speed}
-      movePlayer(p,dx,dy);
+      p.keys={w:!!k.w,a:!!k.a,s:!!k.s,d:!!k.d};
       const md=Number(d.mouseDX)||0;
-      p.angle+=md*.0025;
-      if(d.shooting)shoot(r,p);
+      if(Number.isFinite(md)) p.angle+=Math.max(-120,Math.min(120,md))*.0028;
+      p.shooting=!!d.shooting;
     }
   });
   ws.on("close",()=>removePlayer(ws));
@@ -171,7 +165,21 @@ setInterval(()=>{
   for(const r of rooms.values()){
     for(const p of r.players.values()){
       if(p.cool>0)p.cool-=TICK;
-      if(p.bot)botThink(r,p);
+      if(p.bot){
+        botThink(r,p);
+      }else if(p.alive){
+        const k=p.keys||{};
+        const speed=.105;
+        let dx=0,dy=0;
+        if(k.w){dx+=Math.cos(p.angle)*speed;dy+=Math.sin(p.angle)*speed}
+        if(k.s){dx-=Math.cos(p.angle)*speed;dy-=Math.sin(p.angle)*speed}
+        if(k.a){dx+=Math.cos(p.angle-Math.PI/2)*speed;dy+=Math.sin(p.angle-Math.PI/2)*speed}
+        if(k.d){dx+=Math.cos(p.angle+Math.PI/2)*speed;dy+=Math.sin(p.angle+Math.PI/2)*speed}
+        const len=Math.hypot(dx,dy);
+        if(len>speed){dx=dx/len*speed;dy=dy/len*speed}
+        movePlayer(p,dx,dy);
+        if(p.shooting)shoot(r,p);
+      }
     }
     for(let i=r.bullets.length-1;i>=0;i--){
       const b=r.bullets[i];
