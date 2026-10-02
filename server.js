@@ -16,7 +16,6 @@ const BULLET_SPEED = 950;
 const BULLET_DAMAGE = 25;
 
 const MAX_SCORE = 10;
-const BOT_DELAY = 5000;
 
 const server = http.createServer((req, res) => {
     let file = req.url === "/" ? "/GAME3.html" : req.url;
@@ -79,12 +78,14 @@ function createRoom() {
         code,
         players: new Map(),
         bot: null,
-        botTimer: null,
+
         bullets: [],
+
         score: {
             p1: 0,
             p2: 0
         },
+
         started: false
     };
 
@@ -102,10 +103,6 @@ function send(ws, data) {
 function broadcast(room, data) {
     for (const player of room.players.values()) {
         send(player.ws, data);
-    }
-
-    if (room.bot && room.bot.ws) {
-        send(room.bot.ws, data);
     }
 }
 
@@ -129,6 +126,7 @@ function createPlayer(id, ws, name) {
     return {
         id,
         ws,
+
         name: name || id.toUpperCase(),
 
         x: spawn.x,
@@ -164,6 +162,7 @@ function createBot() {
 
     return {
         id: "bot",
+
         name: "BOT",
 
         x: spawn.x,
@@ -181,7 +180,9 @@ function createBot() {
         lastShot: 0,
 
         targetX: spawn.x,
-        targetY: spawn.y
+        targetY: spawn.y,
+
+        respawnAt: 0
     };
 }
 
@@ -203,9 +204,14 @@ function resetPlayer(player) {
 function resetBot(bot) {
     bot.x = WORLD_W - 260;
     bot.y = WORLD_H / 2;
+
     bot.hp = 100;
+
     bot.alive = true;
+
     bot.lastShot = 0;
+
+    bot.respawnAt = 0;
 }
 
 function roomState(room) {
@@ -215,12 +221,17 @@ function roomState(room) {
         players.push({
             id: p.id,
             name: p.name,
+
             x: p.x,
             y: p.y,
+
             angle: p.angle,
+
             hp: p.hp,
+
             kills: p.kills,
             deaths: p.deaths,
+
             alive: p.alive
         });
     }
@@ -229,12 +240,17 @@ function roomState(room) {
         players.push({
             id: "bot",
             name: "BOT",
+
             x: room.bot.x,
             y: room.bot.y,
+
             angle: room.bot.angle,
+
             hp: room.bot.hp,
+
             kills: room.bot.kills,
             deaths: room.bot.deaths,
+
             alive: room.bot.alive
         });
     }
@@ -250,7 +266,9 @@ function roomState(room) {
             y: b.y
         })),
 
-        score: room.score
+        score: room.score,
+
+        lobby: room.players.size < 2 && !room.bot
     };
 }
 
@@ -263,20 +281,27 @@ function announce(room, message) {
 
 function addBot(room) {
     if (room.bot) {
-        return;
+        return false;
     }
 
     if (room.players.size >= 2) {
-        return;
+        return false;
     }
 
     room.bot = createBot();
 
-    announce(room, "🤖 მეორე მოთამაშე ვერ მოიძებნა — BOT შემოვიდა!");
+    room.started = true;
+
+    announce(
+        room,
+        "🤖 BOT შემოვიდა! თამაში იწყება!"
+    );
 
     broadcast(room, {
         type: "bot_joined"
     });
+
+    return true;
 }
 
 function removeBot(room) {
@@ -285,6 +310,8 @@ function removeBot(room) {
     }
 
     room.bot = null;
+
+    room.started = false;
 
     broadcast(room, {
         type: "bot_left"
@@ -302,7 +329,10 @@ function killPlayer(room, victim, attackerId) {
         room.score.p1++;
     }
 
-    if (attackerId === "p2" || attackerId === "bot") {
+    if (
+        attackerId === "p2" ||
+        attackerId === "bot"
+    ) {
         room.score.p2++;
     }
 
@@ -314,14 +344,16 @@ function killPlayer(room, victim, attackerId) {
 
     announce(
         room,
-        "💀 " + victim.name + " მოკლა " + attackerName
+        "💀 " +
+        victim.name +
+        " მოკლა " +
+        attackerName
     );
 
-    if (victim.deaths > 1000) {
-        victim.deaths = 0;
-    }
-
-    if (room.score.p1 >= MAX_SCORE || room.score.p2 >= MAX_SCORE) {
+    if (
+        room.score.p1 >= MAX_SCORE ||
+        room.score.p2 >= MAX_SCORE
+    ) {
         const winner =
             room.score.p1 >= MAX_SCORE
                 ? "p1"
@@ -333,28 +365,64 @@ function killPlayer(room, victim, attackerId) {
         });
 
         setTimeout(() => {
+            if (!rooms.has(room.code)) {
+                return;
+            }
+
             room.score.p1 = 0;
             room.score.p2 = 0;
 
+            room.bullets = [];
+
             for (const p of room.players.values()) {
                 resetPlayer(p);
+
                 p.kills = 0;
                 p.deaths = 0;
             }
 
             if (room.bot) {
-                resetBot(room);
+                resetBot(room.bot);
+
                 room.bot.kills = 0;
                 room.bot.deaths = 0;
             }
 
-            announce(room, "🔄 ახალი რაუნდი დაიწყო!");
+            announce(
+                room,
+                "🔄 ახალი რაუნდი დაიწყო!"
+            );
         }, 3500);
 
         return;
     }
 
     victim.respawnAt = Date.now() + 1500;
+
+    if (attackerId === "p1") {
+        const attacker = room.players.get("p1");
+
+        if (attacker) {
+            attacker.kills++;
+        }
+    }
+
+    if (
+        attackerId === "p2" ||
+        attackerId === "bot"
+    ) {
+        if (attackerId === "bot") {
+            if (room.bot) {
+                room.bot.kills++;
+            }
+        } else {
+            const attacker = room.players.get("p2");
+
+            if (attacker) {
+                attacker.kills++;
+            }
+        }
+    }
 }
 
 function distance(a, b) {
@@ -378,7 +446,9 @@ function shoot(room, shooter) {
     shooter.lastShot = now;
 
     const bullet = {
-        id: Math.random().toString(36).slice(2),
+        id: Math.random()
+            .toString(36)
+            .slice(2),
 
         owner: shooter.id,
 
@@ -412,14 +482,18 @@ function updateBot(room) {
     }
 
     if (!bot.alive) {
-        if (Date.now() >= bot.respawnAt) {
+        if (
+            bot.respawnAt &&
+            Date.now() >= bot.respawnAt
+        ) {
             resetBot(bot);
         }
 
         return;
     }
 
-    const target = room.players.values().next().value;
+    const target =
+        room.players.values().next().value;
 
     if (!target || !target.alive) {
         return;
@@ -428,13 +502,30 @@ function updateBot(room) {
     const dx = target.x - bot.x;
     const dy = target.y - bot.y;
 
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dist = Math.sqrt(
+        dx * dx +
+        dy * dy
+    );
 
-    bot.angle = Math.atan2(dy, dx);
+    if (dist <= 0) {
+        return;
+    }
+
+    bot.angle = Math.atan2(
+        dy,
+        dx
+    );
 
     if (dist > 330) {
-        bot.x += (dx / dist) * 150 / TICK_RATE;
-        bot.y += (dy / dist) * 150 / TICK_RATE;
+        bot.x +=
+            (dx / dist) *
+            150 /
+            TICK_RATE;
+
+        bot.y +=
+            (dy / dist) *
+            150 /
+            TICK_RATE;
     }
 
     if (dist < 850) {
@@ -443,12 +534,18 @@ function updateBot(room) {
 
     bot.x = Math.max(
         PLAYER_RADIUS,
-        Math.min(WORLD_W - PLAYER_RADIUS, bot.x)
+        Math.min(
+            WORLD_W - PLAYER_RADIUS,
+            bot.x
+        )
     );
 
     bot.y = Math.max(
         PLAYER_RADIUS,
-        Math.min(WORLD_H - PLAYER_RADIUS, bot.y)
+        Math.min(
+            WORLD_H - PLAYER_RADIUS,
+            bot.y
+        )
     );
 }
 
@@ -470,11 +567,15 @@ function updateRoom(room) {
 
         if (player.keys.w) dy--;
         if (player.keys.s) dy++;
+
         if (player.keys.a) dx--;
         if (player.keys.d) dx++;
 
         if (dx !== 0 || dy !== 0) {
-            const len = Math.sqrt(dx * dx + dy * dy);
+            const len = Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
 
             dx /= len;
             dy /= len;
@@ -492,12 +593,18 @@ function updateRoom(room) {
 
         player.x = Math.max(
             PLAYER_RADIUS,
-            Math.min(WORLD_W - PLAYER_RADIUS, player.x)
+            Math.min(
+                WORLD_W - PLAYER_RADIUS,
+                player.x
+            )
         );
 
         player.y = Math.max(
             PLAYER_RADIUS,
-            Math.min(WORLD_H - PLAYER_RADIUS, player.y)
+            Math.min(
+                WORLD_H - PLAYER_RADIUS,
+                player.y
+            )
         );
 
         if (player.shooting) {
@@ -507,11 +614,20 @@ function updateRoom(room) {
 
     updateBot(room);
 
-    for (let i = room.bullets.length - 1; i >= 0; i--) {
+    for (
+        let i = room.bullets.length - 1;
+        i >= 0;
+        i--
+    ) {
         const bullet = room.bullets[i];
 
-        bullet.x += bullet.vx / TICK_RATE;
-        bullet.y += bullet.vy / TICK_RATE;
+        bullet.x +=
+            bullet.vx /
+            TICK_RATE;
+
+        bullet.y +=
+            bullet.vy /
+            TICK_RATE;
 
         if (
             bullet.x < 0 ||
@@ -523,7 +639,7 @@ function updateRoom(room) {
             continue;
         }
 
-        let targets = [];
+        const targets = [];
 
         for (const p of room.players.values()) {
             targets.push(p);
@@ -536,13 +652,26 @@ function updateRoom(room) {
         let hit = false;
 
         for (const target of targets) {
-            if (!target.alive) continue;
-            if (target.id === bullet.owner) continue;
+            if (!target.alive) {
+                continue;
+            }
 
-            const dx = bullet.x - target.x;
-            const dy = bullet.y - target.y;
+            if (target.id === bullet.owner) {
+                continue;
+            }
 
-            const d = Math.sqrt(dx * dx + dy * dy);
+            const dx =
+                bullet.x -
+                target.x;
+
+            const dy =
+                bullet.y -
+                target.y;
+
+            const d = Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
 
             if (d < PLAYER_RADIUS) {
                 target.hp -= BULLET_DAMAGE;
@@ -563,7 +692,9 @@ function updateRoom(room) {
             }
         }
 
-        if (hit) continue;
+        if (hit) {
+            continue;
+        }
     }
 }
 
@@ -579,13 +710,23 @@ wss.on("connection", ws => {
         let data;
 
         try {
-            data = JSON.parse(raw.toString());
+            data = JSON.parse(
+                raw.toString()
+            );
         } catch {
             return;
         }
 
+        /*
+        ==========================
+        CREATE ROOM
+        ==========================
+        */
+
         if (data.type === "create_room") {
-            if (currentRoom) return;
+            if (currentRoom) {
+                return;
+            }
 
             const room = createRoom();
 
@@ -594,34 +735,48 @@ wss.on("connection", ws => {
             currentPlayer = createPlayer(
                 "p1",
                 ws,
-                String(data.name || "PLAYER 1").slice(0, 16)
+                String(
+                    data.name ||
+                    "PLAYER 1"
+                ).slice(0, 16)
             );
 
-            room.players.set("p1", currentPlayer);
+            room.players.set(
+                "p1",
+                currentPlayer
+            );
 
             send(ws, {
                 type: "room_created",
+
                 room: room.code,
+
                 playerId: "p1"
             });
 
-            room.botTimer = setTimeout(() => {
-                if (
-                    rooms.has(room.code) &&
-                    room.players.size < 2 &&
-                    !room.bot
-                ) {
-                    addBot(room);
-                }
-            }, BOT_DELAY);
+            /*
+            IMPORTANT:
+            აქ BOT აღარ შემოდის ავტომატურად.
+            მოთამაშე რჩება LOBBY-ში.
+            */
 
             return;
         }
 
-        if (data.type === "join_room") {
-            if (currentRoom) return;
+        /*
+        ==========================
+        JOIN ROOM
+        ==========================
+        */
 
-            const code = String(data.room || "")
+        if (data.type === "join_room") {
+            if (currentRoom) {
+                return;
+            }
+
+            const code = String(
+                data.room || ""
+            )
                 .trim()
                 .toUpperCase();
 
@@ -630,7 +785,8 @@ wss.on("connection", ws => {
             if (!room) {
                 send(ws, {
                     type: "error",
-                    message: "ოთახი ვერ მოიძებნა."
+                    message:
+                        "ოთახი ვერ მოიძებნა."
                 });
 
                 return;
@@ -639,64 +795,134 @@ wss.on("connection", ws => {
             if (room.players.size >= 2) {
                 send(ws, {
                     type: "error",
-                    message: "ოთახი უკვე სავსეა."
+                    message:
+                        "ოთახი უკვე სავსეა."
                 });
 
                 return;
             }
 
+            /*
+            თუ BOT უკვე არის,
+            რეალური მოთამაშე მას ანაცვლებს.
+            */
+
             if (room.bot) {
                 removeBot(room);
             }
-
-            clearTimeout(room.botTimer);
 
             currentRoom = room;
 
             currentPlayer = createPlayer(
                 "p2",
                 ws,
-                String(data.name || "PLAYER 2").slice(0, 16)
+                String(
+                    data.name ||
+                    "PLAYER 2"
+                ).slice(0, 16)
             );
 
-            room.players.set("p2", currentPlayer);
+            room.players.set(
+                "p2",
+                currentPlayer
+            );
+
+            room.started = true;
 
             send(ws, {
                 type: "room_joined",
+
                 room: room.code,
+
                 playerId: "p2"
             });
 
             announce(
                 room,
-                "⚔️ მეორე მოთამაშე შემოვიდა!"
+                "⚔️ მეორე მოთამაშე შემოვიდა! თამაში იწყება!"
             );
 
+            broadcast(room, {
+                type: "game_started"
+            });
+
             return;
         }
 
-        if (!currentRoom || !currentPlayer) {
-            return;
-        }
+        /*
+        ==========================
+        CALL BOT
+        ==========================
+        */
 
-        if (data.type === "input") {
-            const k = data.keys || {};
-
-            currentPlayer.keys.w = !!k.w;
-            currentPlayer.keys.a = !!k.a;
-            currentPlayer.keys.s = !!k.s;
-            currentPlayer.keys.d = !!k.d;
-
-            if (typeof data.angle === "number") {
-                currentPlayer.angle = data.angle;
+        if (data.type === "add_bot") {
+            if (!currentRoom || !currentPlayer) {
+                return;
             }
 
-            currentPlayer.shooting = !!data.shooting;
+            if (currentRoom.players.size >= 2) {
+                return;
+            }
+
+            if (currentRoom.bot) {
+                return;
+            }
+
+            addBot(currentRoom);
 
             return;
         }
 
+        /*
+        ==========================
+        INPUT
+        ==========================
+        */
+
+        if (data.type === "input") {
+            if (!currentRoom || !currentPlayer) {
+                return;
+            }
+
+            const k = data.keys || {};
+
+            currentPlayer.keys.w =
+                !!k.w;
+
+            currentPlayer.keys.a =
+                !!k.a;
+
+            currentPlayer.keys.s =
+                !!k.s;
+
+            currentPlayer.keys.d =
+                !!k.d;
+
+            if (
+                typeof data.angle ===
+                "number"
+            ) {
+                currentPlayer.angle =
+                    data.angle;
+            }
+
+            currentPlayer.shooting =
+                !!data.shooting;
+
+            return;
+        }
+
+        /*
+        ==========================
+        SHOOT
+        ==========================
+        */
+
         if (data.type === "shoot") {
+            if (!currentRoom || !currentPlayer) {
+                return;
+            }
+
             shoot(
                 currentRoom,
                 currentPlayer
@@ -706,8 +932,17 @@ wss.on("connection", ws => {
         }
     });
 
+    /*
+    ==========================
+    PLAYER DISCONNECT
+    ==========================
+    */
+
     ws.on("close", () => {
-        if (!currentRoom || !currentPlayer) {
+        if (
+            !currentRoom ||
+            !currentPlayer
+        ) {
             return;
         }
 
@@ -715,9 +950,16 @@ wss.on("connection", ws => {
             currentPlayer.id
         );
 
-        if (currentRoom.players.size === 0) {
-            clearTimeout(currentRoom.botTimer);
+        currentRoom.bullets = [];
 
+        /*
+        თუ ოთახში აღარავინ დარჩა,
+        ოთახიც წაიშლება.
+        */
+
+        if (
+            currentRoom.players.size === 0
+        ) {
             rooms.delete(
                 currentRoom.code
             );
@@ -725,27 +967,29 @@ wss.on("connection", ws => {
             return;
         }
 
+        /*
+        დარჩა ერთი მოთამაშე.
+        BOT ავტომატურად აღარ შემოვა.
+        */
+
+        if (currentRoom.bot) {
+            removeBot(currentRoom);
+        }
+
+        currentRoom.started = false;
+
         announce(
             currentRoom,
-            "👋 მოთამაშე გავიდა."
+            "👋 მოთამაშე გავიდა. ლობიში დაბრუნდი."
         );
-
-        if (
-            currentRoom.players.size === 1 &&
-            !currentRoom.bot
-        ) {
-            currentRoom.botTimer = setTimeout(() => {
-                if (
-                    currentRoom &&
-                    currentRoom.players.size === 1 &&
-                    !currentRoom.bot
-                ) {
-                    addBot(currentRoom);
-                }
-            }, BOT_DELAY);
-        }
     });
 });
+
+/*
+==========================
+GAME LOOP
+==========================
+*/
 
 setInterval(() => {
     for (const room of rooms.values()) {
@@ -758,8 +1002,17 @@ setInterval(() => {
     }
 }, 1000 / TICK_RATE);
 
-server.listen(PORT, () => {
-    console.log(
-        `RIVALS server running on port ${PORT}`
-    );
-});
+/*
+==========================
+SERVER START
+==========================
+*/
+
+server.listen(
+    PORT,
+    () => {
+        console.log(
+            `RIVALS server running on port ${PORT}`
+        );
+    }
+);
