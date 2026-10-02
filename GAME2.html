@@ -1,0 +1,3291 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPGRADER</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#06090e;
+    --panel:#10151d;
+    --panel2:#151b24;
+    --border:#29313d;
+    --text:#f3f6fa;
+    --muted:#7f8997;
+    --green:#45e6a2;
+    --yellow:#ffd83d;
+    --red:#ff4655;
+}
+
+body{
+    min-height:100vh;
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+    background:
+        radial-gradient(circle at 50% -20%,rgba(48,82,125,.22),transparent 40%),
+        linear-gradient(180deg,#070a0f,#040609);
+    overflow-x:hidden;
+}
+
+button{
+    font-family:inherit;
+}
+
+.header{
+    height:74px;
+    border-bottom:1px solid #1e252f;
+    background:rgba(7,10,15,.96);
+    display:flex;
+    align-items:center;
+    padding:0 38px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    backdrop-filter:blur(15px);
+}
+
+.logo{
+    font-size:25px;
+    font-weight:900;
+    letter-spacing:4px;
+    margin-right:60px;
+}
+
+.logo span{
+    color:var(--green);
+}
+
+.nav{
+    display:flex;
+    gap:30px;
+    height:100%;
+}
+
+.nav button{
+    background:none;
+    border:0;
+    color:#737c89;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:1px;
+    cursor:pointer;
+    position:relative;
+}
+
+.nav button:hover,
+.nav button.active{
+    color:white;
+}
+
+.nav button.active::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:2px;
+    background:var(--green);
+    box-shadow:0 0 14px rgba(69,230,162,.8);
+}
+
+.header-right{
+    margin-left:auto;
+    display:flex;
+    gap:12px;
+    align-items:center;
+}
+
+.balance{
+    height:40px;
+    min-width:125px;
+    border:1px solid #2a323d;
+    background:#11161e;
+    border-radius:5px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:800;
+}
+
+.balance b{
+    color:var(--green);
+    margin-left:5px;
+}
+
+.steam{
+    height:40px;
+    padding:0 16px;
+    color:#dce2e8;
+    background:#1a2029;
+    border:1px solid #303946;
+    border-radius:5px;
+    font-weight:800;
+}
+
+.page{
+    display:none;
+    max-width:1450px;
+    margin:auto;
+    padding:38px 30px 70px;
+}
+
+.page.active{
+    display:block;
+}
+
+.page-title{
+    font-size:26px;
+    font-weight:900;
+    margin-bottom:7px;
+}
+
+.page-subtitle{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:26px;
+}
+
+/* =========================
+   UPGRADE
+========================= */
+
+.upgrade-layout{
+    display:grid;
+    grid-template-columns:330px minmax(430px,1fr) 330px;
+    gap:22px;
+}
+
+.panel{
+    background:
+        linear-gradient(180deg,rgba(20,25,34,.98),rgba(10,13,18,.98));
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+
+.panel-head{
+    height:55px;
+    padding:0 18px;
+    border-bottom:1px solid #242b35;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.panel-head strong{
+    font-size:13px;
+    letter-spacing:.8px;
+}
+
+.panel-head span{
+    color:#6f7885;
+    font-size:11px;
+}
+
+/* =========================
+   SKIN CARDS
+========================= */
+
+.inventory{
+    min-height:560px;
+}
+
+.inventory-list{
+    padding:14px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:9px;
+    max-height:680px;
+    overflow:auto;
+}
+
+.inventory-list::-webkit-scrollbar{
+    width:5px;
+}
+
+.inventory-list::-webkit-scrollbar-thumb{
+    background:#303844;
+    border-radius:10px;
+}
+
+.skin-card{
+    height:153px;
+    position:relative;
+    overflow:hidden;
+    border-radius:6px;
+    border:1px solid #282f3a;
+    background:
+        linear-gradient(180deg,#171d26,#0c1016);
+    cursor:pointer;
+    transition:.18s;
+}
+
+.skin-card:hover{
+    transform:translateY(-2px);
+    border-color:#4a5666;
+}
+
+.skin-card.selected{
+    border-color:var(--green);
+    box-shadow:
+        inset 0 0 0 1px var(--green),
+        0 0 20px rgba(69,230,162,.13);
+}
+
+.skin-card.selected::after{
+    content:"✓";
+    position:absolute;
+    right:7px;
+    top:7px;
+    width:21px;
+    height:21px;
+    border-radius:50%;
+    background:var(--green);
+    color:#07130e;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:900;
+}
+
+.skin-image{
+    height:100px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at center,
+            rgba(80,120,160,.12),
+            transparent 65%);
+}
+
+.weapon-img{
+    width:94%;
+    max-height:82px;
+    object-fit:contain;
+    position:relative;
+    z-index:3;
+    transition:.2s;
+    user-select:none;
+    pointer-events:none;
+}
+
+.skin-card:hover .weapon-img{
+    transform:scale(1.04);
+}
+
+.skin-card-info{
+    position:absolute;
+    left:9px;
+    right:9px;
+    bottom:8px;
+    z-index:5;
+}
+
+.skin-name{
+    font-size:10px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.skin-price{
+    margin-top:3px;
+    font-size:10px;
+    color:var(--green);
+    font-weight:900;
+}
+
+.rarity-line{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:3px;
+    z-index:10;
+}
+
+/*
+   განსხვავებული skin-ების ფონები
+*/
+
+.skin-image.skin-red{
+    background:
+        repeating-linear-gradient(
+            135deg,
+            rgba(255,35,55,.32) 0 8px,
+            rgba(20,20,25,.05) 8px 17px
+        ),
+        radial-gradient(circle,#46131a,#0c1016 70%);
+}
+
+.skin-image.skin-white{
+    background:
+        linear-gradient(135deg,#e7e9ec,#535b65 42%,#12161d);
+}
+
+.skin-image.skin-neon{
+    background:
+        repeating-linear-gradient(
+            125deg,
+            rgba(255,0,120,.38) 0 6px,
+            rgba(0,255,190,.3) 6px 12px,
+            rgba(50,20,100,.2) 12px 20px
+        ),
+        #09111b;
+}
+
+.skin-image.skin-blue{
+    background:
+        linear-gradient(
+            135deg,
+            #07172d,
+            #1477c9 45%,
+            #07172d
+        );
+}
+
+.skin-image.skin-fire{
+    background:
+        radial-gradient(circle at 25% 80%,#ffcf35,transparent 18%),
+        radial-gradient(circle at 55% 70%,#ff3b18,transparent 28%),
+        linear-gradient(135deg,#3c0905,#160a09);
+}
+
+.skin-image.skin-gold{
+    background:
+        linear-gradient(
+            135deg,
+            #2d2104,
+            #c99722,
+            #fff0a0,
+            #74520c,
+            #211600
+        );
+}
+
+.skin-image.skin-green{
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #122c18 0 12px,
+            #344d23 12px 24px,
+            #192515 24px 35px
+        );
+}
+
+.skin-image.skin-purple{
+    background:
+        radial-gradient(circle at 30% 35%,#ff38ce,transparent 20%),
+        linear-gradient(135deg,#17062c,#60209a,#080b15);
+}
+
+.skin-image.skin-orange{
+    background:
+        linear-gradient(
+            135deg,
+            #331207,
+            #ff6b16,
+            #f8bd31,
+            #451507
+        );
+}
+
+.skin-image.skin-cyan{
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #071c26 0 9px,
+            #00bfe9 9px 13px,
+            #071c26 13px 22px
+        );
+}
+
+.skin-image.skin-pink{
+    background:
+        linear-gradient(
+            135deg,
+            #33061f,
+            #ed287d,
+            #7c0f50,
+            #120712
+        );
+}
+
+.skin-image.skin-black{
+    background:
+        radial-gradient(circle,#343944,#090b10 70%);
+}
+
+/* weapon colorization */
+
+.weapon-red{
+    filter:
+        sepia(1)
+        saturate(7)
+        hue-rotate(320deg)
+        brightness(.9)
+        contrast(1.25)
+        drop-shadow(0 5px 5px #000);
+}
+
+.weapon-white{
+    filter:
+        grayscale(.1)
+        brightness(1.65)
+        contrast(.9)
+        drop-shadow(0 5px 5px #000);
+}
+
+.weapon-neon{
+    filter:
+        saturate(5)
+        hue-rotate(275deg)
+        brightness(1.15)
+        contrast(1.2)
+        drop-shadow(0 0 7px rgba(255,0,170,.55));
+}
+
+.weapon-blue{
+    filter:
+        saturate(4)
+        hue-rotate(175deg)
+        brightness(.95)
+        contrast(1.25)
+        drop-shadow(0 0 6px rgba(30,150,255,.35));
+}
+
+.weapon-fire{
+    filter:
+        sepia(1)
+        saturate(8)
+        hue-rotate(345deg)
+        brightness(1.05)
+        contrast(1.25)
+        drop-shadow(0 0 7px rgba(255,70,10,.45));
+}
+
+.weapon-gold{
+    filter:
+        sepia(1)
+        saturate(5)
+        hue-rotate(5deg)
+        brightness(1.35)
+        contrast(1.05)
+        drop-shadow(0 0 7px rgba(255,205,50,.4));
+}
+
+.weapon-green{
+    filter:
+        sepia(.7)
+        saturate(4)
+        hue-rotate(70deg)
+        brightness(.9)
+        contrast(1.2)
+        drop-shadow(0 5px 5px #000);
+}
+
+.weapon-purple{
+    filter:
+        sepia(.6)
+        saturate(6)
+        hue-rotate(245deg)
+        brightness(1.05)
+        contrast(1.2)
+        drop-shadow(0 0 8px rgba(180,30,255,.4));
+}
+
+.weapon-orange{
+    filter:
+        sepia(1)
+        saturate(7)
+        hue-rotate(10deg)
+        brightness(1.1)
+        contrast(1.25)
+        drop-shadow(0 0 7px rgba(255,100,10,.4));
+}
+
+.weapon-cyan{
+    filter:
+        saturate(5)
+        hue-rotate(155deg)
+        brightness(1.1)
+        contrast(1.2)
+        drop-shadow(0 0 7px rgba(0,220,255,.45));
+}
+
+.weapon-pink{
+    filter:
+        saturate(5)
+        hue-rotate(290deg)
+        brightness(1.05)
+        contrast(1.2)
+        drop-shadow(0 0 7px rgba(255,30,150,.45));
+}
+
+.weapon-black{
+    filter:
+        grayscale(.85)
+        brightness(.55)
+        contrast(1.45)
+        drop-shadow(0 5px 6px #000);
+}
+
+/* =========================
+   CENTER
+========================= */
+
+.center-panel{
+    min-height:560px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-bottom:25px;
+}
+
+.center-top{
+    text-align:center;
+    padding-top:20px;
+}
+
+.center-top h2{
+    font-size:19px;
+}
+
+.center-top p{
+    color:#68717d;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.wheel-wrap{
+    width:390px;
+    height:390px;
+    margin:24px auto 15px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.wheel-shadow{
+    position:absolute;
+    inset:20px;
+    border-radius:50%;
+    background:#000;
+    box-shadow:
+        0 0 35px #000,
+        0 0 100px rgba(0,0,0,.75);
+}
+
+.wheel{
+    width:330px;
+    height:330px;
+    border-radius:50%;
+    position:relative;
+    z-index:2;
+    box-shadow:
+        0 0 0 8px #10141b,
+        0 0 0 10px #343c48,
+        0 0 35px rgba(0,0,0,.9);
+}
+
+.wheel::before{
+    content:"";
+    position:absolute;
+    inset:13px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.13);
+}
+
+.wheel::after{
+    content:"";
+    position:absolute;
+    inset:26px;
+    border-radius:50%;
+    background:
+        radial-gradient(circle,#1b2029,#080a0e 70%);
+    box-shadow:inset 0 0 30px #000;
+}
+
+.wheel-center{
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    z-index:10;
+    width:105px;
+    height:105px;
+    border-radius:50%;
+    border:1px solid #363e4a;
+    background:
+        radial-gradient(circle at 40% 30%,#303844,#090b10 70%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-shadow:
+        0 0 25px #000,
+        inset 0 0 20px #000;
+}
+
+.wheel-center strong{
+    font-size:27px;
+}
+
+.wheel-center small{
+    color:#6e7784;
+    font-size:9px;
+    margin-top:2px;
+}
+
+.pointer{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:0;
+    height:0;
+    z-index:20;
+    transform:rotate(0deg);
+    transform-origin:0 0;
+}
+
+.pointer-line{
+    position:absolute;
+    width:4px;
+    height:164px;
+    left:-2px;
+    top:0;
+    background:white;
+    border-radius:10px;
+    box-shadow:
+        0 0 5px white,
+        0 0 15px rgba(255,255,255,.8);
+}
+
+.pointer-head{
+    position:absolute;
+    left:-9px;
+    top:156px;
+    width:0;
+    height:0;
+    border-left:9px solid transparent;
+    border-right:9px solid transparent;
+    border-top:18px solid white;
+    filter:drop-shadow(0 0 5px white);
+}
+
+.pointer-dot{
+    position:absolute;
+    left:-9px;
+    top:-9px;
+    width:18px;
+    height:18px;
+    background:white;
+    border-radius:50%;
+    z-index:25;
+    box-shadow:
+        0 0 10px white,
+        0 0 25px rgba(255,255,255,.7);
+}
+
+.chance-buttons{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:7px;
+    max-width:430px;
+}
+
+.chance{
+    min-width:48px;
+    height:34px;
+    border-radius:5px;
+    border:1px solid #303844;
+    background:#11151c;
+    color:#9ba4b0;
+    cursor:pointer;
+    font-weight:900;
+    font-size:12px;
+}
+
+.chance:hover{
+    color:white;
+    border-color:#566170;
+}
+
+.chance.active{
+    background:var(--green);
+    border-color:var(--green);
+    color:#07150e;
+    box-shadow:0 0 18px rgba(69,230,162,.22);
+}
+
+.upgrade-btn{
+    width:360px;
+    max-width:90%;
+    height:52px;
+    margin-top:20px;
+    border:0;
+    border-radius:5px;
+    background:linear-gradient(180deg,#55efad,#28c888);
+    color:#06150e;
+    font-size:14px;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.upgrade-btn:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+.cost-info{
+    margin-top:10px;
+    color:#68717e;
+    font-size:11px;
+}
+
+/* =========================
+   TARGET
+========================= */
+
+.target-panel{
+    min-height:560px;
+}
+
+.target-content{
+    padding:20px;
+}
+
+.target-box{
+    height:330px;
+    border:1px solid #292f39;
+    border-radius:7px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle,rgba(60,90,125,.12),transparent 60%),
+        #0d1016;
+}
+
+.target-box .weapon-img{
+    max-height:145px;
+}
+
+.target-empty{
+    text-align:center;
+    color:#5e6774;
+    font-size:12px;
+}
+
+.target-name{
+    margin-top:13px;
+    font-weight:900;
+    font-size:15px;
+}
+
+.target-price{
+    margin-top:6px;
+    color:var(--green);
+    font-weight:900;
+}
+
+.target-meta{
+    margin-top:17px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.meta{
+    padding:10px;
+    border:1px solid #252c36;
+    border-radius:5px;
+    background:#10141a;
+}
+
+.meta small{
+    display:block;
+    color:#626b78;
+    font-size:9px;
+    margin-bottom:4px;
+}
+
+.meta strong{
+    font-size:11px;
+}
+
+/* =========================
+   SHOP
+========================= */
+
+.shop-grid,
+.my-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.shop-card,
+.my-card{
+    position:relative;
+    overflow:hidden;
+    border:1px solid #252c36;
+    border-radius:7px;
+    background:linear-gradient(180deg,#131821,#0b0f14);
+    transition:.18s;
+}
+
+.shop-card:hover,
+.my-card:hover{
+    transform:translateY(-3px);
+    border-color:#475261;
+}
+
+.shop-image,
+.my-image{
+    height:190px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.shop-image .weapon-img,
+.my-image .weapon-img{
+    max-height:140px;
+}
+
+.shop-info,
+.my-info{
+    padding:14px;
+    border-top:1px solid #252c36;
+}
+
+.shop-name,
+.my-name{
+    font-size:13px;
+    font-weight:900;
+}
+
+.shop-weapon{
+    color:#69727f;
+    font-size:10px;
+    margin-top:4px;
+}
+
+.shop-bottom{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:13px;
+}
+
+.shop-price,
+.my-price{
+    color:var(--green);
+    font-weight:900;
+    font-size:13px;
+}
+
+.buy-btn,
+.sell-btn{
+    height:31px;
+    padding:0 12px;
+    border-radius:4px;
+    border:1px solid #303844;
+    background:#191e27;
+    color:#e0e5eb;
+    cursor:pointer;
+    font-size:10px;
+    font-weight:900;
+}
+
+.buy-btn{
+    color:var(--green);
+    border-color:#296d55;
+}
+
+.buy-btn:hover,
+.sell-btn:hover{
+    background:#252c36;
+}
+
+.sell-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:13px;
+}
+
+.sell-value{
+    color:#68717e;
+    font-size:10px;
+}
+
+.empty{
+    grid-column:1/-1;
+    padding:80px;
+    text-align:center;
+    color:#68717e;
+    border:1px dashed #2b333e;
+    border-radius:8px;
+}
+
+/* =========================
+   RESULT
+========================= */
+
+.result-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.8);
+    backdrop-filter:blur(8px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:500;
+}
+
+.result-overlay.show{
+    display:flex;
+}
+
+.result-box{
+    width:440px;
+    max-width:90%;
+    padding:38px;
+    text-align:center;
+    border:1px solid #303845;
+    border-radius:10px;
+    background:linear-gradient(180deg,#171d26,#0c1016);
+    box-shadow:0 30px 100px rgba(0,0,0,.85);
+    animation:resultIn .35s ease;
+}
+
+@keyframes resultIn{
+    from{
+        transform:scale(.8);
+        opacity:0;
+    }
+    to{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+.result-icon{
+    font-size:55px;
+    margin-bottom:15px;
+}
+
+.result-box h2{
+    font-size:29px;
+    margin-bottom:10px;
+}
+
+.result-box.win h2{
+    color:var(--green);
+}
+
+.result-box.lose h2{
+    color:var(--red);
+}
+
+.result-box p{
+    color:#8a929f;
+    font-size:13px;
+}
+
+.result-skin{
+    margin:22px 0;
+    padding:15px;
+    border:1px solid #292f39;
+    border-radius:7px;
+    background:#0a0d12;
+}
+
+.result-skin img{
+    max-width:90%;
+    height:110px;
+    object-fit:contain;
+}
+
+.result-skin-name{
+    margin-top:8px;
+    font-weight:900;
+}
+
+.result-skin-price{
+    margin-top:5px;
+    color:var(--green);
+    font-weight:900;
+}
+
+.result-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.result-buttons button{
+    flex:1;
+    height:44px;
+    border-radius:5px;
+    border:1px solid #323945;
+    background:#171c24;
+    color:white;
+    cursor:pointer;
+    font-weight:900;
+}
+
+.result-buttons .continue{
+    background:var(--green);
+    color:#06150e;
+    border-color:var(--green);
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+    position:fixed;
+    right:25px;
+    bottom:25px;
+    z-index:800;
+    padding:14px 18px;
+    background:#161b23;
+    border:1px solid #303744;
+    border-left:3px solid var(--green);
+    border-radius:5px;
+    font-size:12px;
+    box-shadow:0 15px 40px rgba(0,0,0,.5);
+    transform:translateY(100px);
+    opacity:0;
+    transition:.3s;
+}
+
+.toast.show{
+    transform:translateY(0);
+    opacity:1;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:1150px){
+
+    .upgrade-layout{
+        grid-template-columns:290px 1fr;
+    }
+
+    .target-panel{
+        grid-column:1/-1;
+    }
+
+    .shop-grid,
+    .my-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:850px){
+
+    .header{
+        padding:0 15px;
+    }
+
+    .logo{
+        margin-right:20px;
+        font-size:19px;
+    }
+
+    .nav{
+        gap:14px;
+    }
+
+    .nav button{
+        font-size:10px;
+    }
+
+    .steam{
+        display:none;
+    }
+
+    .upgrade-layout{
+        grid-template-columns:1fr;
+    }
+
+    .target-panel{
+        grid-column:auto;
+    }
+
+    .wheel-wrap{
+        width:330px;
+        height:330px;
+    }
+
+    .wheel{
+        width:280px;
+        height:280px;
+    }
+
+    .pointer-line{
+        height:139px;
+    }
+
+    .pointer-head{
+        top:132px;
+    }
+
+    .shop-grid,
+    .my-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:550px){
+
+    .page{
+        padding:25px 12px 50px;
+    }
+
+    .header{
+        height:62px;
+    }
+
+    .logo{
+        font-size:15px;
+        letter-spacing:2px;
+    }
+
+    .nav{
+        gap:9px;
+    }
+
+    .nav button{
+        font-size:8px;
+    }
+
+    .header-right{
+        display:none;
+    }
+
+    .wheel-wrap{
+        width:290px;
+        height:290px;
+    }
+
+    .wheel{
+        width:245px;
+        height:245px;
+    }
+
+    .pointer-line{
+        height:122px;
+    }
+
+    .pointer-head{
+        top:115px;
+    }
+
+    .shop-grid,
+    .my-grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="logo">
+        UPGRADER<span>.</span>
+    </div>
+
+    <nav class="nav">
+
+        <button
+            id="navUpgrade"
+            class="active"
+            onclick="showPage('upgrade')"
+        >
+            UPGRADE
+        </button>
+
+        <button
+            id="navShop"
+            onclick="showPage('shop')"
+        >
+            SHOP
+        </button>
+
+        <button
+            id="navMy"
+            onclick="showPage('my')"
+        >
+            MY SKINS
+        </button>
+
+    </nav>
+
+    <div class="header-right">
+
+        <div class="balance">
+            $<b id="balanceText">1000.00</b>
+        </div>
+
+        <button class="steam">
+            STEAM LOGIN
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     UPGRADE
+========================= -->
+
+<section
+    class="page active"
+    id="upgradePage"
+>
+
+    <div class="page-title">
+        Upgrade
+    </div>
+
+    <div class="page-subtitle">
+        Select an item and try to upgrade it to a more valuable skin.
+    </div>
+
+
+    <div class="upgrade-layout">
+
+        <!-- INVENTORY -->
+
+        <div class="panel inventory">
+
+            <div class="panel-head">
+
+                <strong>
+                    MY SKINS
+                </strong>
+
+                <span id="inventoryCount">
+                    0 items
+                </span>
+
+            </div>
+
+            <div
+                class="inventory-list"
+                id="inventoryList"
+            ></div>
+
+        </div>
+
+
+        <!-- WHEEL -->
+
+        <div class="panel center-panel">
+
+            <div class="center-top">
+
+                <h2>
+                    UPGRADE
+                </h2>
+
+                <p>
+                    Select your chance
+                </p>
+
+            </div>
+
+
+            <div class="wheel-wrap">
+
+                <div class="wheel-shadow"></div>
+
+                <div
+                    class="wheel"
+                    id="wheel"
+                >
+
+                    <div class="wheel-center">
+
+                        <strong id="wheelPercent">
+                            25%
+                        </strong>
+
+                        <small>
+                            CHANCE
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="pointer"
+                    id="pointer"
+                >
+
+                    <div class="pointer-line"></div>
+
+                    <div class="pointer-head"></div>
+
+                    <div class="pointer-dot"></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="chance-buttons">
+
+                <button
+                    class="chance"
+                    data-percent="5"
+                >
+                    5%
+                </button>
+
+                <button
+                    class="chance"
+                    data-percent="10"
+                >
+                    10%
+                </button>
+
+                <button
+                    class="chance active"
+                    data-percent="25"
+                >
+                    25%
+                </button>
+
+                <button
+                    class="chance"
+                    data-percent="35"
+                >
+                    35%
+                </button>
+
+                <button
+                    class="chance"
+                    data-percent="50"
+                >
+                    50%
+                </button>
+
+                <button
+                    class="chance"
+                    data-percent="67"
+                >
+                    67%
+                </button>
+
+                <button
+                    class="chance"
+                    data-percent="75"
+                >
+                    75%
+                </button>
+
+            </div>
+
+
+            <button
+                class="upgrade-btn"
+                id="upgradeBtn"
+                onclick="startUpgrade()"
+                disabled
+            >
+                ▲ UPGRADE
+            </button>
+
+            <div
+                class="cost-info"
+                id="costInfo"
+            >
+                Select a skin to start.
+            </div>
+
+        </div>
+
+
+        <!-- TARGET -->
+
+        <div class="panel target-panel">
+
+            <div class="panel-head">
+
+                <strong>
+                    DESIRED ITEM
+                </strong>
+
+                <span id="targetChance">
+                    25%
+                </span>
+
+            </div>
+
+
+            <div class="target-content">
+
+                <div
+                    class="target-box"
+                    id="targetBox"
+                >
+
+                    <div class="target-empty">
+                        Select a skin<br>
+                        to generate target.
+                    </div>
+
+                </div>
+
+
+                <div class="target-meta">
+
+                    <div class="meta">
+                        <small>WEAPON</small>
+                        <strong id="targetWeapon">—</strong>
+                    </div>
+
+                    <div class="meta">
+                        <small>PRICE</small>
+                        <strong id="targetPrice">—</strong>
+                    </div>
+
+                    <div class="meta">
+                        <small>RARITY</small>
+                        <strong id="targetRarity">—</strong>
+                    </div>
+
+                    <div class="meta">
+                        <small>WEAR</small>
+                        <strong id="targetWear">—</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     SHOP
+========================= -->
+
+<section
+    class="page"
+    id="shopPage"
+>
+
+    <div class="page-title">
+        Shop
+    </div>
+
+    <div class="page-subtitle">
+        Buy skins and add them to your inventory.
+    </div>
+
+    <div
+        class="shop-grid"
+        id="shopGrid"
+    ></div>
+
+</section>
+
+
+<!-- =========================
+     MY SKINS
+========================= -->
+
+<section
+    class="page"
+    id="myPage"
+>
+
+    <div class="page-title">
+        My Skins
+    </div>
+
+    <div class="page-subtitle">
+        Your current inventory.
+    </div>
+
+    <div
+        class="my-grid"
+        id="myGrid"
+    ></div>
+
+</section>
+
+
+<!-- =========================
+     RESULT
+========================= -->
+
+<div
+    class="result-overlay"
+    id="resultOverlay"
+>
+
+    <div
+        class="result-box"
+        id="resultBox"
+    >
+
+        <div
+            class="result-icon"
+            id="resultIcon"
+        >
+            ✓
+        </div>
+
+        <h2 id="resultTitle">
+            YOU WON!
+        </h2>
+
+        <p id="resultText">
+            Congratulations.
+        </p>
+
+        <div
+            class="result-skin"
+            id="resultSkin"
+        ></div>
+
+        <div class="result-buttons">
+
+            <button onclick="closeResult()">
+                CLOSE
+            </button>
+
+            <button
+                class="continue"
+                id="continueButton"
+                onclick="continueUpgrade()"
+            >
+                ⚡ CONTINUE
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+<script>
+
+/* =========================================================
+   REAL WEAPON IMAGES
+========================================================= */
+
+const AK_IMAGE =
+"https://upload.wikimedia.org/wikipedia/commons/f/f8/AK-47.png";
+
+const M4_IMAGE =
+"https://upload.wikimedia.org/wikipedia/commons/b/b2/M4-Transparent.png";
+
+
+/* =========================================================
+   SKINS
+========================================================= */
+
+const skins = [
+
+    /* ================= AK-47 ================= */
+
+    {
+        id:1,
+        weapon:"AK-47",
+        name:"Redline",
+        price:42.50,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"red",
+        weaponClass:"weapon-red"
+    },
+
+    {
+        id:2,
+        weapon:"AK-47",
+        name:"Asiimov",
+        price:95,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"white",
+        weaponClass:"weapon-white"
+    },
+
+    {
+        id:3,
+        weapon:"AK-47",
+        name:"Neon Revolution",
+        price:76.40,
+        rarity:"Covert",
+        wear:"Minimal Wear",
+        rarityColor:"#eb4b4b",
+        theme:"neon",
+        weaponClass:"weapon-neon"
+    },
+
+    {
+        id:4,
+        weapon:"AK-47",
+        name:"Vulcan",
+        price:182,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"blue",
+        weaponClass:"weapon-blue"
+    },
+
+    {
+        id:5,
+        weapon:"AK-47",
+        name:"Fire Serpent",
+        price:395,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"fire",
+        weaponClass:"weapon-fire"
+    },
+
+    {
+        id:6,
+        weapon:"AK-47",
+        name:"Jaguar",
+        price:67.80,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"green",
+        weaponClass:"weapon-green"
+    },
+
+    {
+        id:7,
+        weapon:"AK-47",
+        name:"Bloodsport",
+        price:116.50,
+        rarity:"Covert",
+        wear:"Minimal Wear",
+        rarityColor:"#eb4b4b",
+        theme:"red",
+        weaponClass:"weapon-red"
+    },
+
+    {
+        id:8,
+        weapon:"AK-47",
+        name:"Frontside Misty",
+        price:54.90,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"cyan",
+        weaponClass:"weapon-cyan"
+    },
+
+    {
+        id:9,
+        weapon:"AK-47",
+        name:"Fuel Injector",
+        price:108,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"orange",
+        weaponClass:"weapon-orange"
+    },
+
+    {
+        id:10,
+        weapon:"AK-47",
+        name:"Point Disarray",
+        price:48.75,
+        rarity:"Classified",
+        wear:"Minimal Wear",
+        rarityColor:"#d32ce6",
+        theme:"purple",
+        weaponClass:"weapon-purple"
+    },
+
+    {
+        id:11,
+        weapon:"AK-47",
+        name:"The Empress",
+        price:88,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"gold",
+        weaponClass:"weapon-gold"
+    },
+
+    {
+        id:12,
+        weapon:"AK-47",
+        name:"Wild Lotus",
+        price:520,
+        rarity:"Covert",
+        wear:"Factory New",
+        rarityColor:"#eb4b4b",
+        theme:"pink",
+        weaponClass:"weapon-pink"
+    },
+
+
+    /* ================= M4A1-S ================= */
+
+    {
+        id:13,
+        weapon:"M4A1-S",
+        name:"Printstream",
+        price:125,
+        rarity:"Covert",
+        wear:"Minimal Wear",
+        rarityColor:"#eb4b4b",
+        theme:"white",
+        weaponClass:"weapon-white"
+    },
+
+    {
+        id:14,
+        weapon:"M4A1-S",
+        name:"Player Two",
+        price:93.50,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"pink",
+        weaponClass:"weapon-pink"
+    },
+
+    {
+        id:15,
+        weapon:"M4A1-S",
+        name:"Hyper Beast",
+        price:89,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"neon",
+        weaponClass:"weapon-neon"
+    },
+
+    {
+        id:16,
+        weapon:"M4A1-S",
+        name:"Golden Coil",
+        price:72.30,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"gold",
+        weaponClass:"weapon-gold"
+    },
+
+    {
+        id:17,
+        weapon:"M4A1-S",
+        name:"Knight",
+        price:410,
+        rarity:"Covert",
+        wear:"Factory New",
+        rarityColor:"#eb4b4b",
+        theme:"black",
+        weaponClass:"weapon-black"
+    },
+
+    {
+        id:18,
+        weapon:"M4A1-S",
+        name:"Decimator",
+        price:61.50,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"purple",
+        weaponClass:"weapon-purple"
+    },
+
+    {
+        id:19,
+        weapon:"M4A1-S",
+        name:"Chantico's Fire",
+        price:82,
+        rarity:"Covert",
+        wear:"Field-Tested",
+        rarityColor:"#eb4b4b",
+        theme:"fire",
+        weaponClass:"weapon-fire"
+    },
+
+    {
+        id:20,
+        weapon:"M4A1-S",
+        name:"Mecha Industries",
+        price:44.90,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"white",
+        weaponClass:"weapon-white"
+    },
+
+    {
+        id:21,
+        weapon:"M4A1-S",
+        name:"Cyrex",
+        price:38.70,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"red",
+        weaponClass:"weapon-red"
+    },
+
+    {
+        id:22,
+        weapon:"M4A1-S",
+        name:"Hot Rod",
+        price:210,
+        rarity:"Restricted",
+        wear:"Factory New",
+        rarityColor:"#8847ff",
+        theme:"red",
+        weaponClass:"weapon-red"
+    },
+
+    {
+        id:23,
+        weapon:"M4A1-S",
+        name:"Blue Phosphor",
+        price:315,
+        rarity:"Restricted",
+        wear:"Factory New",
+        rarityColor:"#8847ff",
+        theme:"blue",
+        weaponClass:"weapon-blue"
+    },
+
+    {
+        id:24,
+        weapon:"M4A1-S",
+        name:"Boreal Forest",
+        price:14.50,
+        rarity:"Industrial",
+        wear:"Field-Tested",
+        rarityColor:"#5e98d9",
+        theme:"green",
+        weaponClass:"weapon-green"
+    },
+
+    {
+        id:25,
+        weapon:"M4A1-S",
+        name:"Nightmare",
+        price:55,
+        rarity:"Classified",
+        wear:"Field-Tested",
+        rarityColor:"#d32ce6",
+        theme:"black",
+        weaponClass:"weapon-black"
+    },
+
+    {
+        id:26,
+        weapon:"M4A1-S",
+        name:"Atomic Alloy",
+        price:73,
+        rarity:"Classified",
+        wear:"Minimal Wear",
+        rarityColor:"#d32ce6",
+        theme:"cyan",
+        weaponClass:"weapon-cyan"
+    }
+
+];
+
+
+/* =========================================================
+   DATA
+========================================================= */
+
+let data =
+JSON.parse(
+    localStorage.getItem("upgraderData") || "null"
+);
+
+if(!data){
+
+    data = {
+
+        balance:1000,
+
+        inventory:[
+            1,
+            3,
+            6,
+            8,
+            13,
+            15,
+            20,
+            24
+
+        ]
+
+    };
+
+    saveData();
+
+}
+
+
+function saveData(){
+
+    localStorage.setItem(
+        "upgraderData",
+        JSON.stringify(data)
+    );
+
+}
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let selectedSkinId = null;
+
+let targetSkinId = null;
+
+let selectedPercent = 25;
+
+let isUpgrading = false;
+
+let continueUpgradeMode = false;
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const balanceText =
+document.getElementById("balanceText");
+
+const inventoryList =
+document.getElementById("inventoryList");
+
+const inventoryCount =
+document.getElementById("inventoryCount");
+
+const targetBox =
+document.getElementById("targetBox");
+
+const targetWeapon =
+document.getElementById("targetWeapon");
+
+const targetPrice =
+document.getElementById("targetPrice");
+
+const targetRarity =
+document.getElementById("targetRarity");
+
+const targetWear =
+document.getElementById("targetWear");
+
+const targetChance =
+document.getElementById("targetChance");
+
+const wheel =
+document.getElementById("wheel");
+
+const wheelPercent =
+document.getElementById("wheelPercent");
+
+const pointer =
+document.getElementById("pointer");
+
+const upgradeBtn =
+document.getElementById("upgradeBtn");
+
+const costInfo =
+document.getElementById("costInfo");
+
+const resultOverlay =
+document.getElementById("resultOverlay");
+
+const resultBox =
+document.getElementById("resultBox");
+
+const resultIcon =
+document.getElementById("resultIcon");
+
+const resultTitle =
+document.getElementById("resultTitle");
+
+const resultText =
+document.getElementById("resultText");
+
+const resultSkin =
+document.getElementById("resultSkin");
+
+const continueButton =
+document.getElementById("continueButton");
+
+const toast =
+document.getElementById("toast");
+
+
+/* =========================================================
+   WEAPON IMAGE
+========================================================= */
+
+function weaponImage(skin){
+
+    const src =
+        skin.weapon === "AK-47"
+        ? AK_IMAGE
+        : M4_IMAGE;
+
+
+    return `
+
+        <img
+            class="weapon-img ${skin.weaponClass}"
+            src="${src}"
+            alt="${skin.weapon} ${skin.name}"
+            loading="lazy"
+        >
+
+    `;
+
+}
+
+
+/* =========================================================
+   PRICE
+========================================================= */
+
+function money(value){
+
+    return "$" +
+        Number(value).toFixed(2);
+
+}
+
+
+/* =========================================================
+   FIND SKIN
+========================================================= */
+
+function getSkin(id){
+
+    return skins.find(
+        skin =>
+            skin.id === Number(id)
+    );
+
+}
+
+
+/* =========================================================
+   BALANCE
+========================================================= */
+
+function renderBalance(){
+
+    balanceText.textContent =
+        Number(data.balance).toFixed(2);
+
+}
+
+
+/* =========================================================
+   INVENTORY
+========================================================= */
+
+function renderInventory(){
+
+    inventoryList.innerHTML = "";
+
+
+    inventoryCount.textContent =
+        data.inventory.length +
+        (
+            data.inventory.length === 1
+            ? " item"
+            : " items"
+        );
+
+
+    if(data.inventory.length === 0){
+
+        inventoryList.innerHTML = `
+            <div class="empty">
+                Your inventory is empty.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    data.inventory.forEach(id => {
+
+        const skin =
+            getSkin(id);
+
+
+        if(!skin) return;
+
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "skin-card" +
+            (
+                selectedSkinId === skin.id
+                ? " selected"
+                : ""
+            );
+
+
+        card.innerHTML = `
+
+            <div
+                class="skin-image skin-${skin.theme}"
+            >
+
+                ${weaponImage(skin)}
+
+            </div>
+
+            <div class="skin-card-info">
+
+                <div class="skin-name">
+                    ${skin.name}
+                </div>
+
+                <div class="skin-price">
+                    ${money(skin.price)}
+                </div>
+
+            </div>
+
+            <div
+                class="rarity-line"
+                style="background:${skin.rarityColor}"
+            ></div>
+
+        `;
+
+
+        card.onclick = () => {
+
+            selectSkin(
+                skin.id
+            );
+
+        };
+
+
+        inventoryList.appendChild(
+            card
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+function selectSkin(id){
+
+    if(isUpgrading) return;
+
+
+    selectedSkinId = id;
+
+    continueUpgradeMode = false;
+
+    renderInventory();
+
+    autoSelectTarget();
+
+    updateUpgradeButton();
+
+}
+
+
+/* =========================================================
+   AUTO TARGET
+========================================================= */
+
+function autoSelectTarget(){
+
+    if(!selectedSkinId){
+
+        targetSkinId = null;
+
+        renderTarget();
+
+        return;
+    }
+
+
+    const source =
+        getSkin(selectedSkinId);
+
+
+    if(!source) return;
+
+
+    const requiredPrice =
+        source.price /
+        (selectedPercent / 100);
+
+
+    let candidates =
+        skins.filter(
+            skin =>
+                skin.price >= requiredPrice &&
+                skin.id !== source.id
+        );
+
+
+    if(candidates.length === 0){
+
+        candidates =
+            skins.filter(
+                skin =>
+                    skin.id !== source.id
+            );
+
+    }
+
+
+    candidates.sort(
+        (a,b) =>
+            Math.abs(
+                a.price -
+                requiredPrice
+            )
+            -
+            Math.abs(
+                b.price -
+                requiredPrice
+            )
+    );
+
+
+    targetSkinId =
+        candidates.length
+        ? candidates[0].id
+        : null;
+
+
+    renderTarget();
+
+}
+
+
+/* =========================================================
+   TARGET
+========================================================= */
+
+function renderTarget(){
+
+    if(!targetSkinId){
+
+        targetBox.innerHTML = `
+            <div class="target-empty">
+                Select a skin<br>
+                to generate target.
+            </div>
+        `;
+
+        targetWeapon.textContent = "—";
+        targetPrice.textContent = "—";
+        targetRarity.textContent = "—";
+        targetWear.textContent = "—";
+
+        return;
+    }
+
+
+    const skin =
+        getSkin(targetSkinId);
+
+
+    if(!skin) return;
+
+
+    targetBox.innerHTML = `
+
+        <div
+            class="skin-image skin-${skin.theme}"
+            style="width:100%;height:180px;"
+        >
+
+            ${weaponImage(skin)}
+
+        </div>
+
+        <div class="target-name">
+            ${skin.name}
+        </div>
+
+        <div class="target-price">
+            ${money(skin.price)}
+        </div>
+
+    `;
+
+
+    targetWeapon.textContent =
+        skin.weapon;
+
+    targetPrice.textContent =
+        money(skin.price);
+
+    targetRarity.textContent =
+        skin.rarity;
+
+    targetWear.textContent =
+        skin.wear;
+
+}
+
+
+/* =========================================================
+   WHEEL
+========================================================= */
+
+function updateWheel(){
+
+    wheelPercent.textContent =
+        selectedPercent + "%";
+
+
+    targetChance.textContent =
+        selectedPercent + "%";
+
+
+    const yellowSize =
+        selectedPercent / 100 * 360;
+
+
+    wheel.style.background = `
+
+        conic-gradient(
+            from 180deg,
+
+            #ffd83d 0deg,
+
+            #ffd83d ${yellowSize}deg,
+
+            #171a20 ${yellowSize}deg,
+
+            #171a20 360deg
+        )
+
+    `;
+
+
+    document
+        .querySelectorAll(".chance")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                Number(
+                    button.dataset.percent
+                ) === selectedPercent
+            );
+
+        });
+
+
+    if(selectedSkinId){
+
+        autoSelectTarget();
+
+    }
+
+
+    updateUpgradeButton();
+
+}
+
+
+/* =========================================================
+   RESET POINTER
+========================================================= */
+
+function resetPointer(){
+
+    pointer.style.transition =
+        "none";
+
+    pointer.style.transform =
+        "rotate(0deg)";
+
+    void pointer.offsetWidth;
+
+}
+
+
+/* =========================================================
+   BUTTON
+========================================================= */
+
+function updateUpgradeButton(){
+
+    if(!selectedSkinId){
+
+        upgradeBtn.disabled = true;
+
+        costInfo.textContent =
+            "Select a skin to start.";
+
+        return;
+    }
+
+
+    const source =
+        getSkin(selectedSkinId);
+
+
+    if(!source) return;
+
+
+    upgradeBtn.disabled =
+        isUpgrading;
+
+
+    costInfo.innerHTML =
+        `Using <b style="color:white">
+        ${money(source.price)}
+        </b> → ${selectedPercent}% chance`;
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+function startUpgrade(){
+
+    if(isUpgrading) return;
+
+
+    if(!selectedSkinId){
+
+        showToast(
+            "First select a skin."
+        );
+
+        return;
+    }
+
+
+    if(!targetSkinId){
+
+        showToast(
+            "No target skin available."
+        );
+
+        return;
+    }
+
+
+    const source =
+        getSkin(selectedSkinId);
+
+
+    if(!source) return;
+
+
+    isUpgrading = true;
+
+    upgradeBtn.disabled = true;
+
+
+    const index =
+        data.inventory.indexOf(
+            selectedSkinId
+        );
+
+
+    if(index !== -1){
+
+        data.inventory.splice(
+            index,
+            1
+        );
+
+    }
+
+
+    /*
+       POINTER RESULT
+
+       0 degrees = bottom.
+       Yellow zone starts from bottom.
+       Same angle is used for visual
+       and actual result.
+    */
+
+    const finalAngle =
+        Math.random() * 360;
+
+
+    const normalizedAngle =
+        (
+            finalAngle % 360 + 360
+        ) % 360;
+
+
+    const yellowSize =
+        selectedPercent / 100 * 360;
+
+
+    const won =
+        normalizedAngle <
+        yellowSize;
+
+
+    resetPointer();
+
+
+    setTimeout(() => {
+
+        pointer.style.transition =
+            "transform 4.5s cubic-bezier(.12,.72,.15,1)";
+
+
+        pointer.style.transform =
+            `rotate(${360 * 5 + finalAngle}deg)`;
+
+
+    },30);
+
+
+    saveData();
+
+    renderInventory();
+
+    renderBalance();
+
+
+    setTimeout(() => {
+
+        finishUpgrade(
+            won,
+            selectedPercent
+        );
+
+    },4550);
+
+}
+
+
+/* =========================================================
+   RESULT
+========================================================= */
+
+function finishUpgrade(
+    won,
+    percent
+){
+
+    isUpgrading = false;
+
+
+    const target =
+        getSkin(targetSkinId);
+
+
+    if(won){
+
+        data.inventory.push(
+            target.id
+        );
+
+
+        saveData();
+
+
+        resultBox.className =
+            "result-box win";
+
+
+        resultIcon.textContent =
+            "✓";
+
+
+        resultTitle.textContent =
+            "YOU WON!";
+
+
+        resultText.innerHTML =
+            `You hit the <b>${percent}%</b> winning zone.`;
+
+
+        resultSkin.innerHTML = `
+
+            <div
+                class="skin-image skin-${target.theme}"
+                style="height:130px;"
+            >
+
+                ${weaponImage(target)}
+
+            </div>
+
+            <div class="result-skin-name">
+                ${target.weapon} |
+                ${target.name}
+            </div>
+
+            <div class="result-skin-price">
+                ${money(target.price)}
+            </div>
+
+        `;
+
+
+        continueButton.style.display =
+            "block";
+
+
+        continueUpgradeMode =
+            true;
+
+
+        selectedSkinId =
+            target.id;
+
+
+    }else{
+
+        resultBox.className =
+            "result-box lose";
+
+
+        resultIcon.textContent =
+            "✕";
+
+
+        resultTitle.textContent =
+            "YOU LOST";
+
+
+        resultText.innerHTML =
+            `The pointer missed the <b>${percent}%</b> winning zone.`;
+
+
+        resultSkin.innerHTML = `
+
+            <div
+                class="skin-image skin-${target.theme}"
+                style="height:130px;"
+            >
+
+                ${weaponImage(target)}
+
+            </div>
+
+            <div class="result-skin-name">
+                ${target.weapon} |
+                ${target.name}
+            </div>
+
+            <div class="result-skin-price">
+                ${money(target.price)}
+            </div>
+
+        `;
+
+
+        continueButton.style.display =
+            "none";
+
+
+        continueUpgradeMode =
+            false;
+
+
+        selectedSkinId =
+            null;
+
+    }
+
+
+    renderInventory();
+
+    renderBalance();
+
+    renderTarget();
+
+    updateUpgradeButton();
+
+
+    resultOverlay.classList.add(
+        "show"
+    );
+
+}
+
+
+/* =========================================================
+   CONTINUE
+========================================================= */
+
+function continueUpgrade(){
+
+    resultOverlay.classList.remove(
+        "show"
+    );
+
+
+    if(!continueUpgradeMode){
+
+        return;
+    }
+
+
+    targetSkinId = null;
+
+    renderInventory();
+
+    autoSelectTarget();
+
+    updateUpgradeButton();
+
+}
+
+
+/* =========================================================
+   CLOSE
+========================================================= */
+
+function closeResult(){
+
+    resultOverlay.classList.remove(
+        "show"
+    );
+
+    updateUpgradeButton();
+
+}
+
+
+/* =========================================================
+   CHANCE BUTTONS
+========================================================= */
+
+document
+    .querySelectorAll(".chance")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                if(isUpgrading) return;
+
+
+                selectedPercent =
+                    Number(
+                        button.dataset.percent
+                    );
+
+
+                updateWheel();
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   SHOP
+========================================================= */
+
+function renderShop(){
+
+    const grid =
+        document.getElementById(
+            "shopGrid"
+        );
+
+
+    grid.innerHTML = "";
+
+
+    skins.forEach(skin => {
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "shop-card";
+
+
+        card.innerHTML = `
+
+            <div
+                class="shop-image skin-${skin.theme}"
+            >
+
+                ${weaponImage(skin)}
+
+            </div>
+
+            <div class="shop-info">
+
+                <div class="shop-name">
+                    ${skin.name}
+                </div>
+
+                <div class="shop-weapon">
+                    ${skin.weapon}
+                    ·
+                    ${skin.wear}
+                </div>
+
+                <div class="shop-bottom">
+
+                    <div class="shop-price">
+                        ${money(skin.price)}
+                    </div>
+
+                    <button
+                        class="buy-btn"
+                        onclick="buySkin(${skin.id})"
+                    >
+                        BUY
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div
+                class="rarity-line"
+                style="background:${skin.rarityColor}"
+            ></div>
+
+        `;
+
+
+        grid.appendChild(
+            card
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   BUY
+========================================================= */
+
+function buySkin(id){
+
+    const skin =
+        getSkin(id);
+
+
+    if(!skin) return;
+
+
+    if(data.balance < skin.price){
+
+        showToast(
+            "Not enough balance."
+        );
+
+        return;
+    }
+
+
+    data.balance -=
+        skin.price;
+
+
+    data.inventory.push(
+        skin.id
+    );
+
+
+    saveData();
+
+
+    renderBalance();
+
+    renderInventory();
+
+    renderShop();
+
+    renderMySkins();
+
+
+    showToast(
+        `${skin.name} added to your inventory.`
+    );
+
+}
+
+
+/* =========================================================
+   MY SKINS
+========================================================= */
+
+function renderMySkins(){
+
+    const grid =
+        document.getElementById(
+            "myGrid"
+        );
+
+
+    grid.innerHTML = "";
+
+
+    if(data.inventory.length === 0){
+
+        grid.innerHTML = `
+            <div class="empty">
+                You don't have any skins.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    data.inventory.forEach(id => {
+
+        const skin =
+            getSkin(id);
+
+
+        if(!skin) return;
+
+
+        const card =
+            document.createElement("div");
+
+
+        card.className =
+            "my-card";
+
+
+        const sellPrice =
+            skin.price * .90;
+
+
+        card.innerHTML = `
+
+            <div
+                class="my-image skin-${skin.theme}"
+            >
+
+                ${weaponImage(skin)}
+
+            </div>
+
+            <div class="my-info">
+
+                <div class="my-name">
+                    ${skin.weapon}
+                    |
+                    ${skin.name}
+                </div>
+
+                <div class="my-price">
+                    ${money(skin.price)}
+                </div>
+
+                <div class="sell-row">
+
+                    <span class="sell-value">
+                        Sell for ${money(sellPrice)}
+                    </span>
+
+                    <button
+                        class="sell-btn"
+                        onclick="sellSkin(${skin.id})"
+                    >
+                        SELL
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div
+                class="rarity-line"
+                style="background:${skin.rarityColor}"
+            ></div>
+
+        `;
+
+
+        grid.appendChild(
+            card
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   SELL
+========================================================= */
+
+function sellSkin(id){
+
+    const skin =
+        getSkin(id);
+
+
+    if(!skin) return;
+
+
+    const index =
+        data.inventory.indexOf(id);
+
+
+    if(index === -1) return;
+
+
+    data.inventory.splice(
+        index,
+        1
+    );
+
+
+    const sellPrice =
+        skin.price * .90;
+
+
+    data.balance +=
+        sellPrice;
+
+
+    if(selectedSkinId === id){
+
+        selectedSkinId = null;
+
+        targetSkinId = null;
+
+    }
+
+
+    saveData();
+
+
+    renderBalance();
+
+    renderInventory();
+
+    renderMySkins();
+
+    renderTarget();
+
+    updateUpgradeButton();
+
+
+    showToast(
+        `${skin.name} sold for ${money(sellPrice)}`
+    );
+
+}
+
+
+/* =========================================================
+   PAGES
+========================================================= */
+
+function showPage(page){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(element => {
+
+            element.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(".nav button")
+        .forEach(button => {
+
+            button.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    if(page === "upgrade"){
+
+        document
+            .getElementById("upgradePage")
+            .classList.add("active");
+
+        document
+            .getElementById("navUpgrade")
+            .classList.add("active");
+
+    }
+
+
+    if(page === "shop"){
+
+        document
+            .getElementById("shopPage")
+            .classList.add("active");
+
+        document
+            .getElementById("navShop")
+            .classList.add("active");
+
+        renderShop();
+
+    }
+
+
+    if(page === "my"){
+
+        document
+            .getElementById("myPage")
+            .classList.add("active");
+
+        document
+            .getElementById("navMy")
+            .classList.add("active");
+
+        renderMySkins();
+
+    }
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer;
+
+
+function showToast(message){
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(() => {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },2600);
+
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+renderBalance();
+
+renderInventory();
+
+renderTarget();
+
+renderShop();
+
+renderMySkins();
+
+updateWheel();
+
+resetPointer();
+
+</script>
+
+</body>
+</html>

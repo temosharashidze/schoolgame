@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coreball Game</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background: #03050c;
+    font-family: Arial, sans-serif;
+}
+
+.game {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 68% 48%,
+            #1d3158 0%,
+            #111d38 25%,
+            #080d1d 58%,
+            #02040a 100%
+        );
+}
+
+/* განათება */
+.game::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+
+    background:
+        radial-gradient(
+            circle at 15% 20%,
+            rgba(40, 110, 255, 0.20),
+            transparent 25%
+        ),
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(150, 60, 255, 0.16),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at 50% 100%,
+            rgba(0, 200, 255, 0.10),
+            transparent 32%
+        );
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ვარსკვლავები */
+.game::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,0.9) 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle,
+            rgba(130,180,255,0.75) 1px,
+            transparent 1.5px
+        ),
+        radial-gradient(
+            circle,
+            rgba(255,255,255,0.5) 1px,
+            transparent 1.5px
+        );
+
+    background-size:
+        85px 85px,
+        145px 145px,
+        220px 220px;
+
+    background-position:
+        10px 20px,
+        50px 70px,
+        100px 40px;
+
+    opacity: 0.42;
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* სათაური */
+.logo {
+    position: absolute;
+    top: 25px;
+    left: 30px;
+
+    font-size: 25px;
+    font-weight: bold;
+
+    color: white;
+
+    z-index: 20;
+
+    text-shadow:
+        0 0 10px rgba(80,160,255,0.5);
+}
+
+/* ქულა */
+.score {
+    position: absolute;
+    top: 25px;
+    right: 35px;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    color: white;
+
+    z-index: 20;
+
+    text-shadow:
+        0 0 10px rgba(80,160,255,0.5);
+}
+
+
+/* ===================================
+   სტატისტიკის პანელი
+=================================== */
+
+.stats-panel {
+    position: absolute;
+
+    left: 30px;
+    bottom: 30px;
+
+    width: 245px;
+
+    padding: 17px 20px;
+
+    background: rgba(4, 9, 24, 0.78);
+
+    border: 1px solid rgba(90, 155, 255, 0.30);
+
+    border-radius: 16px;
+
+    color: white;
+
+    font-size: 16px;
+
+    line-height: 1.9;
+
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,0.45),
+        inset 0 0 20px rgba(50,100,200,0.05);
+
+    z-index: 30;
+}
+
+.stats-title {
+    font-size: 18px;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+
+    padding-bottom: 7px;
+
+    border-bottom:
+        1px solid
+        rgba(255,255,255,0.12);
+
+    color: #8fc4ff;
+}
+
+.stats-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+.stats-row span:last-child {
+    font-weight: bold;
+
+    color: #8fc4ff;
+}
+
+
+/* ცენტრი */
+.core {
+    position: absolute;
+
+    width: 78px;
+    height: 78px;
+
+    border-radius: 50%;
+
+    background: #000;
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 27px;
+    font-weight: bold;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 10;
+
+    box-shadow:
+        0 0 20px rgba(70,140,255,0.35),
+        0 0 50px rgba(50,100,255,0.15);
+}
+
+
+/* ყველა ჩარჭობილი ობიექტი */
+#orbit {
+    position: absolute;
+    inset: 0;
+
+    z-index: 2;
+}
+
+
+/* ჯოხი */
+.rod {
+    position: absolute;
+
+    height: 7px;
+
+    background: #050505;
+
+    border-radius: 10px;
+
+    transform-origin: left center;
+
+    z-index: 3;
+}
+
+
+/* შავი მრგვალი */
+.ball {
+    position: absolute;
+
+    width: 28px;
+    height: 28px;
+
+    background: #000;
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 5;
+
+    box-shadow:
+        0 0 8px rgba(0,0,0,0.8);
+}
+
+
+/* მოთამაშის ბურთი */
+.player {
+    position: absolute;
+
+    width: 30px;
+    height: 30px;
+
+    background: #000;
+
+    border-radius: 50%;
+
+    transform: translate(-50%, -50%);
+
+    z-index: 15;
+
+    box-shadow:
+        0 0 12px rgba(80,160,255,0.35);
+}
+
+
+/* ნასროლი ბურთის ჯოხი */
+.shot-rod {
+    position: absolute;
+
+    height: 7px;
+
+    background: #111;
+
+    border-radius: 10px;
+
+    transform-origin: left center;
+
+    z-index: 3;
+
+    display: none;
+}
+
+
+/* GAME OVER */
+.game-over {
+    position: absolute;
+
+    inset: 0;
+
+    background: rgba(0,0,0,0.72);
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    z-index: 100;
+}
+
+.game-over.show {
+    display: flex;
+}
+
+.over-box {
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #e8edf7
+        );
+
+    padding: 35px 50px;
+
+    border-radius: 20px;
+
+    text-align: center;
+
+    box-shadow:
+        0 15px 50px
+        rgba(0,0,0,0.5);
+}
+
+.over-box h1 {
+    font-size: 38px;
+    margin-bottom: 15px;
+}
+
+.over-box p {
+    font-size: 22px;
+    margin-bottom: 25px;
+}
+
+.restart {
+    border: none;
+
+    background: #111;
+
+    color: white;
+
+    padding: 13px 30px;
+
+    border-radius: 10px;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
+.restart:hover {
+    background: #333;
+}
+
+
+/* =========================
+   დონე / MODE TRANSITION
+========================= */
+
+.level-effect {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    pointer-events: none;
+}
+
+.level-effect.show {
+    display: flex;
+    animation: levelFlash 0.8s ease-out;
+}
+
+.level-effect::before {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 3px solid rgba(100,190,255,0.9);
+    border-radius: 50%;
+    box-shadow:
+        0 0 20px rgba(80,170,255,0.9),
+        0 0 60px rgba(50,120,255,0.7);
+    animation: levelRing 0.8s ease-out forwards;
+}
+
+.level-message {
+    position: relative;
+    color: #fff;
+    font-size: clamp(42px, 7vw, 78px);
+    font-weight: 900;
+    text-align: center;
+    text-shadow:
+        0 0 8px #fff,
+        0 0 20px #65c8ff,
+        0 0 45px #2f8cff;
+    animation: levelText 0.8s ease-out;
+}
+
+.level-message small {
+    display: block;
+    margin-top: 8px;
+    font-size: clamp(16px, 2vw, 25px);
+    color: #bfeaff;
+    text-shadow: 0 0 15px #4ab8ff;
+}
+
+@keyframes levelRing {
+    from {
+        width: 80px;
+        height: 80px;
+        opacity: 1;
+    }
+    to {
+        width: 900px;
+        height: 900px;
+        opacity: 0;
+    }
+}
+
+@keyframes levelText {
+    0% {
+        opacity: 0;
+        transform: scale(0.55);
+    }
+    35% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+@keyframes levelFlash {
+    0%, 100% {
+        background: transparent;
+    }
+    20% {
+        background: rgba(80,170,255,0.10);
+    }
+}
+
+.game.level-shake {
+    animation: levelShake 0.55s ease-out;
+}
+
+@keyframes levelShake {
+    0%, 100% { transform: translate(0,0); }
+    15% { transform: translate(-7px,4px); }
+    30% { transform: translate(7px,-4px); }
+    45% { transform: translate(-5px,-3px); }
+    60% { transform: translate(5px,3px); }
+    75% { transform: translate(-2px,1px); }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="game" id="game">
+
+    <div class="logo">
+        Coreball Game
+    </div>
+
+    <div class="score">
+        ქულა:
+        <span id="score">0</span>
+    </div>
+
+
+    <!-- =========================
+         სტატისტიკა
+    ========================== -->
+
+    <div class="stats-panel">
+
+        <div class="stats-title">
+            🎮 თამაშის სტატისტიკა
+        </div>
+
+        <div class="stats-row">
+            <span>დონე:</span>
+            <span id="levelStat">1</span>
+        </div>
+
+        <div class="stats-row">
+            <span>სასროლი დარჩა:</span>
+            <span id="shotsLeftStat">10</span>
+        </div>
+
+        <div class="stats-row">
+            <span>სულ ნასროლი:</span>
+            <span id="shotsFiredStat">0</span>
+        </div>
+
+        <div class="stats-row">
+            <span>ცდები:</span>
+            <span id="attemptsStat">1</span>
+        </div>
+
+    </div>
+
+
+    <div class="core" id="core">
+        ∞
+    </div>
+
+    <div id="orbit"></div>
+
+    <div class="shot-rod" id="shotRod"></div>
+
+    <div class="player" id="player"></div>
+
+
+
+    <!-- =========================
+         დონეების გადასვლის ეფექტი
+    ========================== -->
+    <div class="level-effect" id="levelEffect">
+        <div class="level-message">
+            <span id="levelMessage">დონე 2</span>
+            <small>წარმატებით დასრულდა!</small>
+        </div>
+    </div>
+
+    <!-- GAME OVER -->
+
+    <div class="game-over" id="gameOver">
+
+        <div class="over-box">
+
+            <h1>
+                თქვენ წააგეთ!
+            </h1>
+
+            <p>
+                ქულა:
+                <span id="finalScore">
+                    0
+                </span>
+            </p>
+
+            <button
+                class="restart"
+                onclick="restartGame()"
+            >
+                თავიდან თამაში
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   ელემენტები
+========================= */
+
+const game =
+    document.getElementById("game");
+
+const core =
+    document.getElementById("core");
+
+const orbit =
+    document.getElementById("orbit");
+
+const player =
+    document.getElementById("player");
+
+const shotRod =
+    document.getElementById("shotRod");
+
+const scoreText =
+    document.getElementById("score");
+
+const gameOver =
+    document.getElementById("gameOver");
+
+const finalScore =
+    document.getElementById("finalScore");
+
+
+/* სტატისტიკის ელემენტები */
+
+const levelStat =
+    document.getElementById("levelStat");
+
+const shotsLeftStat =
+    document.getElementById("shotsLeftStat");
+
+const shotsFiredStat =
+    document.getElementById("shotsFiredStat");
+
+const attemptsStat =
+    document.getElementById("attemptsStat");
+
+
+/* =========================
+   ცვლადები
+========================= */
+
+let score = 0;
+
+let rotation = 0;
+
+let running = true;
+
+let shooting = false;
+
+let attached = [];
+
+
+/* ახალი სტატისტიკა */
+
+let level = 1;
+
+let shotsLeft = 10;
+
+let shotsFired = 0;
+
+let attempts = 1;
+
+
+const TARGET_SIZE = 28;
+
+
+/* =========================
+   ცენტრის პოზიცია
+========================= */
+
+function getCenter() {
+
+    return {
+
+        x:
+            game.clientWidth * 0.68,
+
+        y:
+            game.clientHeight * 0.48
+
+    };
+
+}
+
+
+/* =========================
+   ცენტრის განახლება
+========================= */
+
+function updateCore() {
+
+    const c =
+        getCenter();
+
+    core.style.left =
+        c.x + "px";
+
+    core.style.top =
+        c.y + "px";
+
+}
+
+
+/* =========================
+   ახალი ბურთი
+========================= */
+
+function createBall(
+    angle,
+    radius
+) {
+
+    const rod =
+        document.createElement("div");
+
+    rod.className =
+        "rod";
+
+
+    const ball =
+        document.createElement("div");
+
+    ball.className =
+        "ball";
+
+
+    orbit.appendChild(rod);
+
+    orbit.appendChild(ball);
+
+
+    attached.push({
+
+        angle:
+            angle,
+
+        radius:
+            radius,
+
+        ball:
+            ball,
+
+        rod:
+            rod
+
+    });
+
+}
+
+
+/* =========================
+   საწყისი ბურთები
+========================= */
+
+function createTargets() {
+
+    orbit.innerHTML = "";
+
+    attached = [];
+
+
+    /* ყოველი დონე ცოტა რთულდება */
+    const count =
+        4 + level;
+
+    const radius =
+        145;
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const angle =
+            (Math.PI * 2 / count) *
+            i;
+
+
+        createBall(
+            angle,
+            radius
+        );
+
+    }
+
+}
+
+
+/* =========================
+   ანიმაცია
+========================= */
+
+function animate() {
+
+    if (!running) return;
+
+
+    rotation += 0.006;
+
+
+    const center =
+        getCenter();
+
+
+    attached.forEach(item => {
+
+        const angle =
+            item.angle +
+            rotation;
+
+
+        const x =
+            center.x +
+            Math.cos(angle) *
+            item.radius;
+
+
+        const y =
+            center.y +
+            Math.sin(angle) *
+            item.radius;
+
+
+        item.ball.style.left =
+            x + "px";
+
+        item.ball.style.top =
+            y + "px";
+
+
+        const length =
+            item.radius -
+            TARGET_SIZE / 2;
+
+
+        item.rod.style.left =
+            center.x + "px";
+
+        item.rod.style.top =
+            center.y - 3.5 + "px";
+
+        item.rod.style.width =
+            length + "px";
+
+        item.rod.style.transform =
+            `rotate(${angle}rad)`;
+
+    });
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+/* =========================
+   მოთამაშის პოზიცია
+========================= */
+
+function resetPlayer() {
+
+    const center =
+        getCenter();
+
+
+    player.style.left =
+        center.x + "px";
+
+
+    player.style.top =
+        game.clientHeight -
+        70 +
+        "px";
+
+}
+
+
+/* =========================
+   ახალი დონის მონაცემები
+========================= */
+
+function setupLevel() {
+
+    shotsLeft =
+        8 + level * 2;
+
+    shotsFired = 0;
+
+    levelStat.textContent =
+        level;
+
+    shotsLeftStat.textContent =
+        shotsLeft;
+
+    shotsFiredStat.textContent =
+        shotsFired;
+
+    createTargets();
+
+}
+
+
+/* =========================
+   დონის დასრულების ეფექტი
+========================= */
+
+function nextLevel() {
+
+    level++;
+
+    running = true;
+    shooting = false;
+
+    rotation = 0;
+
+    setupLevel();
+
+    const effect =
+        document.getElementById("levelEffect");
+
+    const message =
+        document.getElementById("levelMessage");
+
+    message.textContent =
+        "დონე " + level;
+
+    effect.classList.remove("show");
+
+    void effect.offsetWidth;
+
+    effect.classList.add("show");
+
+    clearTimeout(window.levelEffectTimer);
+
+    window.levelEffectTimer = setTimeout(() => {
+
+        effect.classList.remove("show");
+
+    }, 850);
+
+    game.classList.add("level-shake");
+
+    setTimeout(() => {
+
+        game.classList.remove("level-shake");
+
+    }, 550);
+
+    resetPlayer();
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+/* =========================
+   სროლა
+========================= */
+
+function shoot() {
+
+    if (
+        !running ||
+        shooting ||
+        shotsLeft <= 0
+    ) {
+
+        return;
+
+    }
+
+
+    shooting = true;
+
+
+    const center =
+        getCenter();
+
+
+    let startY =
+        game.clientHeight -
+        70;
+
+
+    function move() {
+
+        if (!running) {
+
+            shooting = false;
+
+            return;
+
+        }
+
+
+        startY -= 12;
+
+
+        player.style.left =
+            center.x + "px";
+
+
+        player.style.top =
+            startY + "px";
+
+
+        if (
+            startY <=
+            center.y + 145
+        ) {
+
+            attachShot();
+
+            return;
+
+        }
+
+
+        requestAnimationFrame(
+            move
+        );
+
+    }
+
+
+    move();
+
+}
+
+
+/* =========================
+   ბურთის ჩარჭობა
+========================= */
+
+function attachShot() {
+
+    const center =
+        getCenter();
+
+
+    const radius = 145;
+
+
+    const newAngle =
+        Math.PI / 2 -
+        rotation;
+
+
+    const worldAngle =
+        newAngle +
+        rotation;
+
+
+    const newX =
+        center.x +
+        Math.cos(worldAngle) *
+        radius;
+
+
+    const newY =
+        center.y +
+        Math.sin(worldAngle) *
+        radius;
+
+
+    /* =========================
+       შეჯახება
+    ========================= */
+
+    for (
+        const item of attached
+    ) {
+
+        const angle =
+            item.angle +
+            rotation;
+
+
+        const x =
+            center.x +
+            Math.cos(angle) *
+            item.radius;
+
+
+        const y =
+            center.y +
+            Math.sin(angle) *
+            item.radius;
+
+
+        const dx =
+            newX - x;
+
+
+        const dy =
+            newY - y;
+
+
+        const distance =
+            Math.sqrt(
+                dx * dx +
+                dy * dy
+            );
+
+
+        if (
+            distance <=
+            TARGET_SIZE
+        ) {
+
+            endGame();
+
+            return;
+
+        }
+
+    }
+
+
+    /* =========================
+       ახალი ჯოხი
+    ========================= */
+
+    const rod =
+        document.createElement("div");
+
+    rod.className =
+        "rod";
+
+
+    /* =========================
+       ახალი ბურთი
+    ========================= */
+
+    const ball =
+        document.createElement("div");
+
+    ball.className =
+        "ball";
+
+
+    orbit.appendChild(rod);
+
+    orbit.appendChild(ball);
+
+
+    /* =========================
+       ჩარჭობილი ბურთი
+    ========================= */
+
+    attached.push({
+
+        angle:
+            newAngle,
+
+        radius:
+            radius,
+
+        ball:
+            ball,
+
+        rod:
+            rod
+
+    });
+
+
+    /* =========================
+       ქულა
+    ========================= */
+
+    score++;
+
+    scoreText.textContent =
+        score;
+
+
+    /* =========================
+       სასროლი
+    ========================= */
+
+    shotsLeft--;
+
+    shotsFired++;
+
+
+    shotsLeftStat.textContent =
+        shotsLeft;
+
+
+    shotsFiredStat.textContent =
+        shotsFired;
+
+
+    /* =========================
+       სროლა დასრულდა
+    ========================= */
+
+    shooting = false;
+
+    resetPlayer();
+
+
+    /* ბოლო ბურთი ჯერ ჩაერჭო,
+       შემდეგ გადავდივართ ახალ დონეზე */
+
+    if (shotsLeft <= 0) {
+
+        running = false;
+
+        setTimeout(() => {
+
+            nextLevel();
+
+        }, 700);
+
+    }
+
+}
+
+
+/* =========================
+   GAME OVER
+========================= */
+
+function endGame() {
+
+    /* დონის წარმატების ეფექტი
+       წაგების დროს აუცილებლად გაქრეს */
+
+    const effect =
+        document.getElementById("levelEffect");
+
+    effect.classList.remove("show");
+
+    clearTimeout(
+        window.levelEffectTimer
+    );
+
+
+    running = false;
+
+    shooting = false;
+
+
+    finalScore.textContent =
+        score;
+
+
+    gameOver.classList.add(
+        "show"
+    );
+
+
+    player.style.display =
+        "none";
+
+
+    shotRod.style.display =
+        "none";
+
+}
+
+
+/* =========================
+   თავიდან თამაში
+========================= */
+
+function restartGame() {
+
+    /* ძველი დონის ეფექტი
+       თავიდან თამაშისასაც გაქრეს */
+
+    const effect =
+        document.getElementById("levelEffect");
+
+    effect.classList.remove("show");
+
+    clearTimeout(
+        window.levelEffectTimer
+    );
+
+
+    /*
+       ახალი ცდა
+    */
+
+    attempts++;
+
+
+    attemptsStat.textContent =
+        attempts;
+
+
+    /*
+       თამაშის მონაცემების reset
+    */
+
+    score = 0;
+
+    rotation = 0;
+
+    level = 1;
+
+    shotsLeft = 10;
+
+    shotsFired = 0;
+
+
+    running = true;
+
+    shooting = false;
+
+
+    /* ეკრანის განახლება */
+
+    scoreText.textContent =
+        "0";
+
+
+    levelStat.textContent =
+        "1";
+
+
+    shotsLeftStat.textContent =
+        "10";
+
+
+    shotsFiredStat.textContent =
+        "0";
+
+
+    gameOver.classList.remove(
+        "show"
+    );
+
+
+    document.getElementById(
+        "levelEffect"
+    ).classList.remove(
+        "show"
+    );
+
+
+    player.style.display =
+        "block";
+
+
+    createTargets();
+
+    updateCore();
+
+    resetPlayer();
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+/* =========================
+   Resize
+========================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        updateCore();
+
+        if (!shooting) {
+
+            resetPlayer();
+
+        }
+
+    }
+);
+
+
+/* =========================
+   მოთამაშეზე დაჭერა
+========================= */
+
+player.addEventListener(
+    "click",
+    shoot
+);
+
+
+/* =========================
+   Space
+========================= */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if (
+            e.code === "Space"
+        ) {
+
+            e.preventDefault();
+
+            shoot();
+
+        }
+
+    }
+);
+
+
+/* =========================
+   დაწყება
+========================= */
+
+updateCore();
+
+createTargets();
+
+resetPlayer();
+
+requestAnimationFrame(
+    animate
+);
+
+</script>
+
+</body>
+</html>
