@@ -9,328 +9,129 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070b;color:#fff;font-family:Arial,Helvetica,sans-serif}
 body{user-select:none}
 button,input{font:inherit}
-#menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#182133,#080b12 48%,#030407);z-index:100}
+#menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#182133 0%,#080b12 48%,#030407 100%);z-index:100}
 .menuBox{width:min(520px,92vw);padding:34px;border:1px solid #29344a;border-radius:20px;background:rgba(10,14,23,.96);box-shadow:0 30px 100px rgba(0,0,0,.65)}
 .logo{text-align:center;font-size:54px;font-weight:900;letter-spacing:4px}.logo span{color:#ff334d}
 .subtitle{text-align:center;color:#8e9bb2;margin:5px 0 28px}
 input{width:100%;padding:14px 15px;margin:0 0 11px;border-radius:10px;border:1px solid #2d384d;outline:none;background:#080c14;color:#fff;font-size:16px}
 input:focus{border-color:#ff334d}
 button{width:100%;padding:14px;margin-top:9px;border:0;border-radius:10px;color:#fff;background:#ff334d;font-size:16px;font-weight:800;cursor:pointer}
-button:hover{filter:brightness(1.08)} button:disabled{opacity:.55;cursor:not-allowed}
-button.secondary{background:#151d2c}.botButton{background:linear-gradient(135deg,#7b35ff,#4d1685);border:1px solid #a86cff}
-button.copyButton,button.backButton{background:#151d2c}
-#status{min-height:22px;text-align:center;margin-top:13px;color:#ff6579}
-.small{color:#8290a8;font-size:13px;margin-top:18px;line-height:1.55;text-align:center}
-#lobby{display:none;text-align:center}
-.lobbyTitle{font-size:30px;font-weight:900;margin-bottom:8px}.lobbySubtitle{color:#8290a8;margin-bottom:22px}
+button:hover{filter:brightness(1.08)}button:disabled{opacity:.55;cursor:not-allowed}
+button.secondary,button.copyButton,button.backButton{background:#151d2c}.botButton{background:linear-gradient(135deg,#7b35ff,#4d1685);border:1px solid #a86cff}
+#status{min-height:22px;text-align:center;margin-top:13px;color:#ff6579}.small{color:#8290a8;font-size:13px;margin-top:18px;line-height:1.55;text-align:center}
+#lobby{display:none;text-align:center}.lobbyTitle{font-size:30px;font-weight:900;margin-bottom:8px}.lobbySubtitle{color:#8290a8;margin-bottom:22px}
 .roomCodeBox{padding:18px;margin-bottom:14px;border-radius:14px;border:1px solid #39465e;background:linear-gradient(145deg,#111927,#080c14)}
-.roomLabel{color:#8290a8;font-size:12px;margin-bottom:7px}.roomCode{font-size:40px;font-weight:900;letter-spacing:8px;color:#ff334d}
-.playersStatus{margin-top:16px;padding:13px;border-radius:12px;background:#080c14;border:1px solid #263249;font-weight:800}.waiting{color:#ffca58}.ready{color:#42ef8a}
-.lobbyHint{color:#6f7c92;font-size:13px;line-height:1.6;margin-top:15px}
-
-#game{display:none;position:fixed;inset:0;background:#070a10;overflow:hidden}
-#view{position:absolute;inset:0;width:100%;height:100%;display:block;background:#0b1019;cursor:crosshair}
+.roomLabel{color:#8290a8;font-size:12px;margin-bottom:7px}.roomCode{font-size:40px;font-weight:900;letter-spacing:8px;color:#ff334d}.playersStatus{margin-top:16px;padding:13px;border-radius:12px;background:#080c14;border:1px solid #263249;font-weight:800}.waiting{color:#ffca58}.ready{color:#42ef8a}.lobbyHint{color:#6f7c92;font-size:13px;line-height:1.6;margin-top:15px}
+#game{display:none;position:fixed;inset:0;background:#070a10;overflow:hidden;cursor:crosshair}
+#view{position:absolute;inset:0;width:100%;height:100%;display:block}
 #hud{position:fixed;left:16px;right:16px;top:14px;display:flex;justify-content:space-between;z-index:20;pointer-events:none}
 .hudBox{min-width:145px;padding:9px 14px;border-radius:11px;background:rgba(5,8,14,.76);border:1px solid #2a3548;text-align:center;font-weight:900;backdrop-filter:blur(7px)}
 .hudBox.red{border-color:#7e2635}.hudBox.blue{border-color:#245083}
 #centerScore{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:20;font-size:24px;font-weight:900;text-shadow:0 2px 10px #000}
 #crosshair{position:fixed;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);z-index:30;pointer-events:none}
 #crosshair:before,#crosshair:after{content:"";position:absolute;background:#fff;box-shadow:0 0 4px #000}
-#crosshair:before{width:2px;height:24px;left:11px;top:0}.crosshairDot{}
-#crosshair:after{height:2px;width:24px;left:0;top:11px}
-#hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:25;color:#a8b2c2;font-size:12px;text-shadow:0 2px 5px #000;pointer-events:none}
-#damage{position:fixed;inset:0;border:0 solid rgba(255,30,50,0);pointer-events:none;z-index:24;transition:border .08s}
-#damage.flash{border:8px solid rgba(255,30,50,.35)}
-#message{position:fixed;left:50%;top:68%;transform:translate(-50%,-50%) scale(.95);padding:12px 22px;border-radius:12px;background:rgba(5,8,14,.9);border:1px solid #334158;font-weight:900;opacity:0;transition:.2s;z-index:50;pointer-events:none}
-#message.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-#gameOver{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);z-index:100}
-.gameOverBox{width:min(430px,90vw);text-align:center;padding:38px;border-radius:20px;background:#0b1019;border:1px solid #2b3850}
-.gameOverBox h1{font-size:44px;margin:0 0 12px}
-#respawn{color:#8e9bb2;margin-top:10px;font-size:14px}
+#crosshair:before{width:2px;height:24px;left:11px;top:0}#crosshair:after{height:2px;width:24px;left:0;top:11px}
+#hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:25;color:#a8b2c2;font-size:12px;text-shadow:0 2px 5px #000;pointer-events:none;white-space:nowrap}
+#damage{position:fixed;inset:0;border:0 solid rgba(255,30,50,0);pointer-events:none;z-index:24;transition:border .08s}.flash{border:8px solid rgba(255,30,50,.35)!important}
+#message{position:fixed;left:50%;top:68%;transform:translate(-50%,-50%) scale(.95);padding:12px 22px;border-radius:12px;background:rgba(5,8,14,.9);border:1px solid #334158;font-weight:900;opacity:0;transition:.2s;z-index:50;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,-50%) scale(1)!important}
+#gameOver{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);z-index:100}.gameOverBox{width:min(430px,90vw);text-align:center;padding:38px;border-radius:20px;background:#0b1019;border:1px solid #2b3850}.gameOverBox h1{font-size:44px;margin:0 0 12px}
+#hitMarker{position:fixed;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%);z-index:31;pointer-events:none;opacity:0}.hit{opacity:1!important}.hit:before,.hit:after{content:"";position:absolute;left:16px;top:0;width:2px;height:34px;background:#ffdf55}.hit:after{transform:rotate(90deg)}
 </style>
 </head>
 <body>
-
-<div id="menu">
-  <div class="menuBox">
-    <div id="mainMenu">
-      <div class="logo">RI<span>V</span>ALS</div>
-      <div class="subtitle">schoolgame first-person multiplayer</div>
-      <input id="name" maxlength="16" placeholder="შენი სახელი">
-      <button id="create">CREATE ROOM</button>
-      <input id="room" maxlength="5" placeholder="Room Code" style="text-transform:uppercase">
-      <button id="join" class="secondary">JOIN ROOM</button>
-      <div id="status"></div>
-      <div class="small">WASD — მოძრაობა · Mouse — დამიზნება · Left Click — სროლა<br>პირველი 10 kill იგებს</div>
-    </div>
-
-    <div id="lobby">
-      <div class="logo">RI<span>V</span>ALS</div>
-      <div class="lobbyTitle">🎮 LOBBY</div>
-      <div class="lobbySubtitle">დაელოდე მეგობარს ან ჩართე BOT</div>
-      <div class="roomCodeBox"><div class="roomLabel">ROOM CODE</div><div class="roomCode" id="lobbyRoomCode">-----</div></div>
-      <button id="copyRoom" class="copyButton">📋 კოდის კოპირება</button>
-      <div id="playersStatus" class="playersStatus waiting">👤 1 / 2 მოთამაშე</div>
-      <button id="botButton" class="botButton">🤖 BOT-ის გამოძახება</button>
-      <button id="backButton" class="backButton">← უკან</button>
-      <div class="lobbyHint" id="lobbyHint">გაუგზავნე Room Code მეგობარს,<br>ან გამოიძახე BOT.</div>
-    </div>
+<div id="menu"><div class="menuBox">
+  <div id="mainMenu">
+    <div class="logo">RI<span>V</span>ALS</div>
+    <div class="subtitle">schoolgame first-person multiplayer</div>
+    <input id="name" maxlength="16" placeholder="შენი სახელი">
+    <button id="create">CREATE ROOM</button>
+    <input id="room" maxlength="5" placeholder="Room Code" style="text-transform:uppercase">
+    <button id="join" class="secondary">JOIN ROOM</button>
+    <div id="status"></div>
+    <div class="small">WASD — მოძრაობა · SHIFT — სირბილი · Mouse — კამერა · CLICK — სროლა<br>პირველი 10 kill იგებს</div>
   </div>
-</div>
+  <div id="lobby">
+    <div class="logo">RI<span>V</span>ALS</div><div class="lobbyTitle">🎮 LOBBY</div>
+    <div class="lobbySubtitle">დაელოდე მეგობარს ან ჩართე BOT</div>
+    <div class="roomCodeBox"><div class="roomLabel">ROOM CODE</div><div class="roomCode" id="lobbyRoomCode">-----</div></div>
+    <button id="copyRoom" class="copyButton">📋 კოდის კოპირება</button>
+    <div id="playersStatus" class="playersStatus waiting">👤 1 / 2 მოთამაშე</div>
+    <button id="botButton" class="botButton">🤖 BOT-ის გამოძახება</button>
+    <button id="backButton" class="backButton">← უკან</button>
+    <div class="lobbyHint" id="lobbyHint">გაუგზავნე Room Code მეგობარს,<br>ან გამოიძახე BOT.</div>
+  </div>
+</div></div>
 
 <div id="game">
   <canvas id="view"></canvas>
-  <div id="hud">
-    <div class="hudBox red"><span id="p1Name">PLAYER 1</span><br><span id="p1Kills">0</span></div>
-    <div id="centerScore">0 : 0</div>
-    <div class="hudBox blue"><span id="p2Name">PLAYER 2</span><br><span id="p2Kills">0</span></div>
-  </div>
-  <div id="crosshair"></div>
-  <div id="damage"></div>
-  <div id="message"></div>
-  <div id="hint">WASD • SHIFT sprint • SPACE jump • R reload • CLICK shoot • ESC cursor</div>
+  <div id="hud"><div class="hudBox red"><span id="p1Name">PLAYER 1</span><br><span id="p1Kills">0</span></div><div id="centerScore">0 : 0</div><div class="hudBox blue"><span id="p2Name">PLAYER 2</span><br><span id="p2Kills">0</span></div></div>
+  <div id="crosshair"></div><div id="hitMarker"></div><div id="damage"></div><div id="message"></div>
+  <div id="hint">WASD • SHIFT sprint • R reload • CLICK shoot • ESC cursor</div>
 </div>
-
-<div id="gameOver">
-  <div class="gameOverBox">
-    <h1 id="winner">YOU WIN</h1>
-    <div id="winnerText">მატჩი დასრულდა</div>
-    <div id="respawn"></div>
-    <button id="again">BACK TO MENU</button>
-  </div>
-</div>
+<div id="gameOver"><div class="gameOverBox"><h1 id="winner">YOU WIN</h1><div id="winnerText">მატჩი დასრულდა</div><button id="again">BACK TO MENU</button></div></div>
 
 <script>
 const SERVER_URL="wss://schoolgame-rivals.onrender.com";
-const MAP_W=1600, MAP_H=900;
-const FOV=Math.PI/2.65;
+const MAP_W=1600,MAP_H=900;
+const FOV=Math.PI/2.25;
 const WALLS=[
-  {x:0,y:0,w:1600,h:35},{x:0,y:865,w:1600,h:35},
-  {x:0,y:0,w:35,h:900},{x:1565,y:0,w:35,h:900},
-  {x:650,y:100,w:300,h:35},{x:650,y:765,w:300,h:35},{x:770,y:300,w:60,h:300}
+ {x:0,y:0,w:1600,h:35},{x:0,y:865,w:1600,h:35},{x:0,y:0,w:35,h:900},{x:1565,y:0,w:35,h:900},
+ {x:650,y:100,w:300,h:35},{x:650,y:765,w:300,h:35},{x:770,y:300,w:60,h:300}
 ];
 let socket=null,playerId=null,roomCode=null,gameStarted=false,inLobby=false;
 let state={players:[],bullets:[],score:{p1:0,p2:0}};
-let localAngle=0,shooting=false,lastFrame=0,msgTimer=0;
+let localAngle=0,shooting=false,msgTimer=0,lastDamage=0,lastShotVisual=0;
 const keys={w:false,a:false,s:false,d:false,shift:false};
 const canvas=document.getElementById("view"),ctx=canvas.getContext("2d");
 const menu=document.getElementById("menu"),mainMenu=document.getElementById("mainMenu"),lobby=document.getElementById("lobby"),game=document.getElementById("game");
-const status=document.getElementById("status"),message=document.getElementById("message"),gameOver=document.getElementById("gameOver");
-const nameInput=document.getElementById("name"),roomInput=document.getElementById("room"),botButton=document.getElementById("botButton");
-const depth=[];
-
-function connect(after){
-  if(socket && socket.readyState===WebSocket.OPEN){after();return}
-  status.textContent="სერვერთან დაკავშირება...";
-  socket=new WebSocket(SERVER_URL);
-  socket.onopen=()=>{status.textContent="სერვერთან დაკავშირებულია.";after()};
-  socket.onerror=()=>status.textContent="სერვერთან დაკავშირება ვერ მოხერხდა.";
-  socket.onclose=()=>{if(gameStarted) showMessage("❌ სერვერთან კავშირი გაწყდა");else status.textContent="სერვერი მიუწვდომელია."};
-  socket.onmessage=e=>{try{handle(JSON.parse(e.data))}catch{}};
-}
-function send(obj){if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(obj))}
+const status=document.getElementById("status"),message=document.getElementById("message"),gameOver=document.getElementById("gameOver"),nameInput=document.getElementById("name"),roomInput=document.getElementById("room"),botButton=document.getElementById("botButton"),damage=document.getElementById("damage"),hitMarker=document.getElementById("hitMarker");
+let depth=[];
+function connect(after){if(socket&&socket.readyState===WebSocket.OPEN){after();return}status.textContent="სერვერთან დაკავშირება...";socket=new WebSocket(SERVER_URL);socket.onopen=()=>{status.textContent="სერვერთან დაკავშირებულია.";after()};socket.onerror=()=>status.textContent="სერვერთან დაკავშირება ვერ მოხერხდა.";socket.onclose=()=>{if(gameStarted)showMessage("❌ სერვერთან კავშირი გაწყდა");else status.textContent="სერვერი მიუწვდომელია."};socket.onmessage=e=>{try{handle(JSON.parse(e.data))}catch{}}}
+function send(o){if(socket&&socket.readyState===WebSocket.OPEN)socket.send(JSON.stringify(o))}
 function handle(d){
-  if(d.type==="room_created"){roomCode=d.room;playerId=d.playerId;openLobby();return}
-  if(d.type==="room_joined"){roomCode=d.room;playerId=d.playerId;return}
-  if(d.type==="error"){status.textContent=d.message;return}
-  if(d.type==="bot_joined"){showMessage("🤖 BOT შემოვიდა");return}
-  if(d.type==="bot_left"){showMessage("👤 მოთამაშე შემოვიდა");return}
-  if(d.type==="message"){showMessage(d.message);return}
-  if(d.type==="state"){state=d;updateHud();if(!gameStarted&&d.players.length>=2)startGame();return}
-  if(d.type==="game_over"){showGameOver(d.winner);return}
+ if(d.type==="room_created"){roomCode=d.room;playerId=d.playerId;openLobby();return}
+ if(d.type==="room_joined"){roomCode=d.room;playerId=d.playerId;return}
+ if(d.type==="error"){status.textContent=d.message;return}
+ if(d.type==="bot_joined"){showMessage("🤖 BOT შემოვიდა");return}
+ if(d.type==="bot_left"){showMessage("👤 მოთამაშე შემოვიდა");return}
+ if(d.type==="message"){showMessage(d.message);if(String(d.message).includes("HIT"))showHit();return}
+ if(d.type==="state"){const oldMe=state.players.find(p=>p.id===playerId);state=d;updateHud();if(oldMe&&oldMe.hp>state.players.find(p=>p.id===playerId)?.hp)flashDamage();if(!gameStarted&&d.players.length>=2)startGame();return}
+ if(d.type==="game_over"){showGameOver(d.winner);return}
 }
-function openLobby(){
-  mainMenu.style.display="none";lobby.style.display="block";inLobby=true;gameStarted=false;
-  document.getElementById("lobbyRoomCode").textContent=roomCode;
-  botButton.disabled=false;botButton.textContent="🤖 BOT-ის გამოძახება";
-}
-function startGame(){
-  if(gameStarted)return;
-  gameStarted=true;inLobby=false;menu.style.display="none";game.style.display="block";
-  resize();requestAnimationFrame(resize);canvas.focus();
-  const me=state.players.find(p=>p.id===playerId);if(me)localAngle=me.angle||0;
-  render(performance.now());
-}
-function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)}
+function openLobby(){mainMenu.style.display="none";lobby.style.display="block";inLobby=true;gameStarted=false;document.getElementById("lobbyRoomCode").textContent=roomCode;botButton.disabled=false;botButton.textContent="🤖 BOT-ის გამოძახება"}
+function startGame(){if(gameStarted)return;gameStarted=true;inLobby=false;menu.style.display="none";game.style.display="block";resize();const meP=state.players.find(p=>p.id===playerId);if(meP)localAngle=meP.angle||0;render()}
+function resize(){const dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,innerWidth*dpr);canvas.height=Math.max(1,innerHeight*dpr);canvas.style.width=innerWidth+"px";canvas.style.height=innerHeight+"px";ctx.setTransform(dpr,0,0,dpr,0,0)}
 addEventListener("resize",resize);
 function me(){return state.players.find(p=>p.id===playerId)}
-function updateHud(){
-  const p1=state.players.find(p=>p.id==="p1"),p2=state.players.find(p=>p.id==="p2"||p.id==="bot");
-  document.getElementById("p1Name").textContent=p1?.name||"PLAYER 1";
-  document.getElementById("p2Name").textContent=p2?.name||"PLAYER 2";
-  document.getElementById("p1Kills").textContent=state.score?.p1||0;
-  document.getElementById("p2Kills").textContent=state.score?.p2||0;
-  document.getElementById("centerScore").textContent=(state.score?.p1||0)+" : "+(state.score?.p2||0);
-}
-function showMessage(t){
-  message.textContent=t;message.classList.add("show");clearTimeout(msgTimer);msgTimer=setTimeout(()=>message.classList.remove("show"),1700);
-}
-function showGameOver(id){
-  gameOver.style.display="flex";
-  document.getElementById("winner").textContent=id===playerId?"🏆 YOU WIN":"💀 YOU LOST";
-  document.getElementById("winnerText").textContent=id===playerId?"შენ მოიგე მატჩი!":"მატჩი დასრულდა.";
-}
-function flashDamage(){const d=document.getElementById("damage");d.classList.add("flash");setTimeout(()=>d.classList.remove("flash"),90)}
+function updateHud(){const p1=state.players.find(p=>p.id==="p1"),p2=state.players.find(p=>p.id==="p2"||p.id==="bot");document.getElementById("p1Name").textContent=p1?.name||"PLAYER 1";document.getElementById("p2Name").textContent=p2?.name||"PLAYER 2";document.getElementById("p1Kills").textContent=state.score?.p1||0;document.getElementById("p2Kills").textContent=state.score?.p2||0;document.getElementById("centerScore").textContent=(state.score?.p1||0)+" : "+(state.score?.p2||0)}
+function showMessage(t){message.textContent=t;message.classList.add("show");clearTimeout(msgTimer);msgTimer=setTimeout(()=>message.classList.remove("show"),1700)}
+function showGameOver(id){gameOver.style.display="flex";document.getElementById("winner").textContent=id===playerId?"🏆 YOU WIN":"💀 YOU LOST";document.getElementById("winnerText").textContent=id===playerId?"შენ მოიგე მატჩი!":"მატჩი დასრულდა."}
+function flashDamage(){damage.classList.add("flash");setTimeout(()=>damage.classList.remove("flash"),100)}
+function showHit(){hitMarker.classList.add("hit");setTimeout(()=>hitMarker.classList.remove("hit"),90)}
 
 document.getElementById("create").onclick=()=>connect(()=>send({type:"create_room",name:nameInput.value.trim()||"PLAYER 1"}));
-document.getElementById("join").onclick=()=>{
-  const r=roomInput.value.trim().toUpperCase();if(!r){status.textContent="შეიყვანე Room Code.";return}
-  connect(()=>send({type:"join_room",room:r,name:nameInput.value.trim()||"PLAYER 2"}));
-};
+document.getElementById("join").onclick=()=>{const r=roomInput.value.trim().toUpperCase();if(!r){status.textContent="შეიყვანე Room Code.";return}connect(()=>send({type:"join_room",room:r,name:nameInput.value.trim()||"PLAYER 2"}))};
 botButton.onclick=()=>{botButton.disabled=true;botButton.textContent="🤖 BOT შემოდის...";send({type:"add_bot"})};
 document.getElementById("copyRoom").onclick=async()=>{try{await navigator.clipboard.writeText(roomCode);showMessage("📋 კოდი დაკოპირდა")}catch{showMessage(roomCode)}};
-document.getElementById("backButton").onclick=()=>location.reload();
-document.getElementById("again").onclick=()=>location.reload();
-
-addEventListener("keydown",e=>{
-  const k=e.key.toLowerCase();
-  if(["w","a","s","d","shift"].includes(k)){keys[k]=true;sendInput();e.preventDefault()}
-  if(k==="r"&&gameStarted){send({type:"reload"});e.preventDefault()}
-});
+document.getElementById("backButton").onclick=()=>location.reload();document.getElementById("again").onclick=()=>location.reload();
+addEventListener("keydown",e=>{const k=e.key.toLowerCase();if(["w","a","s","d","shift"].includes(k)){keys[k]=true;sendInput();e.preventDefault()}if(k==="r"&&gameStarted){send({type:"reload"});e.preventDefault()}});
 addEventListener("keyup",e=>{const k=e.key.toLowerCase();if(["w","a","s","d","shift"].includes(k)){keys[k]=false;sendInput();e.preventDefault()}});
 canvas.addEventListener("click",()=>{if(gameStarted){canvas.requestPointerLock?.();shooting=true;sendInput()}});
-addEventListener("mousedown",e=>{if(e.button===0&&gameStarted){shooting=true;sendInput()}});
-addEventListener("mouseup",e=>{if(e.button===0){shooting=false;sendInput()}});
-addEventListener("mousemove",e=>{
-  if(gameStarted && document.pointerLockElement===canvas){
-    localAngle += e.movementX*0.0027;
-    sendInput();
-  }
-});
-document.addEventListener("pointerlockchange",()=>{});
-document.addEventListener("contextmenu",e=>e.preventDefault());
-
-function sendInput(){
-  if(!gameStarted)return;
-  send({type:"input",keys,angle:localAngle,shooting});
-}
-setInterval(sendInput,50);
-
-function pointInRect(x,y,r){return x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.h}
-function segmentDist(ax,ay,bx,by,px,py){
-  const dx=bx-ax,dy=by-ay,t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/(dx*dx+dy*dy||1)));
-  return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
-}
-function rayRectDist(ox,oy,ang,r){
-  const dx=Math.cos(ang),dy=Math.sin(ang);let best=Infinity;
-  const sides=[
-    [r.x,r.y,r.x+r.w,r.y],[r.x,r.y+r.h,r.x+r.w,r.y+r.h],
-    [r.x,r.y,r.x,r.y+r.h],[r.x+r.w,r.y,r.x+r.w,r.y+r.h]
-  ];
-  for(const [x1,y1,x2,y2] of sides){
-    const sx=x2-x1,sy=y2-y1,den=(-dx*sy+dy*sx);
-    if(Math.abs(den)<1e-8)continue;
-    const t=(-((ox-x1)*sy)+(oy-y1)*sx)/den;
-    const u=(-(dy)*(ox-x1)+dx*(oy-y1))/den;
-    if(t>1&&u>=0&&u<=1)best=Math.min(best,t);
-  }
-  return best;
-}
-function wallDistance(x,y,ang){
-  let d=Infinity;for(const r of WALLS)d=Math.min(d,rayRectDist(x,y,ang,r));return d;
-}
+addEventListener("mousedown",e=>{if(e.button===0&&gameStarted){shooting=true;sendInput()}});addEventListener("mouseup",e=>{if(e.button===0){shooting=false;sendInput()}});
+addEventListener("mousemove",e=>{if(gameStarted&&document.pointerLockElement===canvas){localAngle+=e.movementX*0.0025;sendInput()}});document.addEventListener("contextmenu",e=>e.preventDefault());
+function sendInput(){if(gameStarted)send({type:"input",keys,angle:localAngle,shooting})}setInterval(sendInput,50);
 function norm(a){while(a>Math.PI)a-=Math.PI*2;while(a<-Math.PI)a+=Math.PI*2;return a}
-function visibleEnemy(p,meP){
-  const dx=p.x-meP.x,dy=p.y-meP.y,dist=Math.hypot(dx,dy),rel=norm(Math.atan2(dy,dx)-localAngle);
-  if(Math.abs(rel)>FOV*.62||dist<20)return null;
-  const wall=wallDistance(meP.x,meP.y,Math.atan2(dy,dx));
-  if(wall<dist-12)return null;
-  return {dist,rel};
-}
-function drawWorld(){
-  const W=innerWidth,H=innerHeight;
-  const m=me();
-  ctx.clearRect(0,0,W,H);
-  const sky=ctx.createLinearGradient(0,0,0,H*.55);sky.addColorStop(0,"#0a101b");sky.addColorStop(1,"#182334");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.55);
-  const floor=ctx.createLinearGradient(0,H*.45,0,H);floor.addColorStop(0,"#111a25");floor.addColorStop(1,"#060a10");ctx.fillStyle=floor;ctx.fillRect(0,H*.45,W,H*.55);
-  if(!m)return;
-  const columns=Math.min(420,Math.max(220,Math.floor(W/3)));
-  depth.length=columns;
-  for(let i=0;i<columns;i++){
-    const rel=(i/(columns-1)-.5)*FOV;
-    const ang=localAngle+rel;
-    let d=wallDistance(m.x,m.y,ang);
-    if(!isFinite(d))d=2000;
-    const corrected=d*Math.cos(rel);
-    depth[i]=corrected;
-    const wh=Math.min(H*1.8,(H*300)/Math.max(corrected,1));
-    const y=H*.47-wh/2;
-    const shade=Math.max(22,Math.min(105,125-corrected*.045));
-    ctx.fillStyle=`rgb(${Math.round(shade*.55)},${Math.round(shade*.7)},${Math.round(shade*.9)})`;
-    const x=i*W/columns;
-    ctx.fillRect(x,y,Math.ceil(W/columns)+1,wh);
-  }
-  drawFloorGrid(m,W,H);
-}
-function drawFloorGrid(m,W,H){
-  ctx.save();ctx.globalAlpha=.18;ctx.strokeStyle="#54708e";ctx.lineWidth=1;
-  const step=80;
-  for(let yy=step;yy<1600;yy+=step){
-    const y=H*.48+H*.48*(1-Math.exp(-yy/430));
-    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-  }
-  for(let x=-800;x<=800;x+=80){
-    const bottomX=W/2+x*(W/2)/420;
-    const topX=W/2+x*.05;
-    ctx.beginPath();ctx.moveTo(topX,H*.49);ctx.lineTo(bottomX,H);ctx.stroke();
-  }
-  ctx.restore();
-}
-function drawEnemies(){
-  const m=me();if(!m)return;const W=innerWidth,H=innerHeight;
-  const arr=[];
-  for(const p of state.players){if(p.id===playerId||!p.alive)continue;const v=visibleEnemy(p,m);if(v)arr.push({...p,...v})}
-  arr.sort((a,b)=>b.dist-a.dist);
-  for(const p of arr){
-    const sx=W/2+(p.rel/FOV)*W;
-    const size=Math.min(H*1.15,(H*260)/p.dist);
-    const bottom=H*.56+size*.18;
-    const top=bottom-size;
-    const idx=Math.floor((sx/W)*(depth.length-1));const wd=depth[Math.max(0,Math.min(depth.length-1,idx))]||9999;
-    if(p.dist>wd+10)continue;
-    ctx.save();
-    ctx.translate(sx,top);
-    const s=size/220;
-    ctx.scale(s,s);
-    ctx.shadowBlur=18;ctx.shadowColor=p.id==="bot"?"#a86cff":"#ff334d";
-    ctx.fillStyle=p.id==="bot"?"#713cff":"#d92743";
-    ctx.beginPath();ctx.arc(0,38,31,0,Math.PI*2);ctx.fill();
-    ctx.shadowBlur=0;ctx.fillStyle="#141722";ctx.fillRect(-42,70,84,105);
-    ctx.fillStyle=p.id==="bot"?"#b77cff":"#ff6678";ctx.fillRect(-36,72,72,12);
-    ctx.fillStyle="#080a0f";ctx.fillRect(-22,100,18,38);ctx.fillRect(4,100,18,38);
-    ctx.fillStyle="#202733";ctx.fillRect(35,105,62,12);
-    ctx.fillStyle="#fff";ctx.font="bold 18px Arial";ctx.textAlign="center";ctx.fillText(p.name||"ENEMY",0,-5);
-    ctx.fillStyle="#181b22";ctx.fillRect(-45,-28,90,8);ctx.fillStyle="#32e875";ctx.fillRect(-45,-28,90*Math.max(0,p.hp)/100,8);
-    ctx.restore();
-  }
-}
-function drawBullets(){
-  const m=me();if(!m)return;const W=innerWidth,H=innerHeight;
-  for(const b of state.bullets||[]){
-    const dx=b.x-m.x,dy=b.y-m.y,d=Math.hypot(dx,dy),rel=norm(Math.atan2(dy,dx)-localAngle);
-    if(Math.abs(rel)>FOV*.55||d<1)continue;
-    const wall=wallDistance(m.x,m.y,Math.atan2(dy,dx));if(wall<d-8)continue;
-    const sx=W/2+(rel/FOV)*W,sy=H*.48-(b.z||0)*.5;
-    const r=Math.max(2,8*(220/d));ctx.fillStyle="#fff";ctx.shadowBlur=12;ctx.shadowColor="#ffb52e";ctx.beginPath();ctx.arc(sx,sy,r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-  }
-}
-function drawWeapon(){
-  const W=innerWidth,H=innerHeight;ctx.save();ctx.translate(W/2,H);
-  const bob=(keys.w||keys.a||keys.s||keys.d)?Math.sin(performance.now()/85)*5:0;ctx.translate(0,bob);
-  ctx.fillStyle="#0b0f16";ctx.fillRect(-110,-115,220,65);
-  ctx.fillStyle="#1c2532";ctx.fillRect(-82,-128,164,28);
-  ctx.fillStyle="#3b4654";ctx.fillRect(-66,-123,132,13);
-  ctx.fillStyle="#0b0e14";ctx.fillRect(-18,-163,36,40);
-  ctx.fillStyle="#171d27";ctx.fillRect(72,-112,95,20);
-  ctx.fillStyle="#242d3a";ctx.fillRect(-30,-70,42,70);
-  ctx.fillStyle="#0b0f15";ctx.fillRect(2,-68,25,68);
-  ctx.restore();
-}
-function render(t){
-  if(!gameStarted)return;
-  drawWorld();drawEnemies();drawBullets();drawWeapon();
-  requestAnimationFrame(render);
-}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function rayRectDist(ox,oy,ang,r){const dx=Math.cos(ang),dy=Math.sin(ang);let best=Infinity;const sides=[[r.x,r.y,r.x+r.w,r.y],[r.x,r.y+r.h,r.x+r.w,r.y+r.h],[r.x,r.y,r.x,r.y+r.h],[r.x+r.w,r.y,r.x+r.w,r.y+r.h]];for(const [x1,y1,x2,y2] of sides){const sx=x2-x1,sy=y2-y1,den=(-dx*sy+dy*sx);if(Math.abs(den)<1e-8)continue;const t=(-((ox-x1)*sy)+(oy-y1)*sx)/den;const u=(-(dy)*(ox-x1)+dx*(oy-y1))/den;if(t>0&&u>=0&&u<=1)best=Math.min(best,t)}return best}
+function wallDistance(x,y,a){let d=Infinity;for(const r of WALLS)d=Math.min(d,rayRectDist(x,y,a,r));return d}
+function clearSight(a,b){const dx=b.x-a.x,dy=b.y-a.y,dist=Math.hypot(dx,dy),steps=Math.ceil(dist/8);for(let i=1;i<steps;i++){const t=i/steps,x=a.x+dx*t,y=a.y+dy*t;for(const w of WALLS)if(x>w.x&&x<w.x+w.w&&y>w.y&&y<w.y+w.h)return false}return true}
+function visibleEnemy(p,m){const dx=p.x-m.x,dy=p.y-m.y,dist=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),rel=norm(ang-localAngle);if(dist<10||Math.abs(rel)>FOV/2)return null;if(!clearSight(m,p))return null;return{dist,rel,ang}}
+function drawWorld(){const W=innerWidth,H=innerHeight,m=me();ctx.clearRect(0,0,W,H);const sky=ctx.createLinearGradient(0,0,0,H*.55);sky.addColorStop(0,"#070c15");sky.addColorStop(.65,"#111a28");sky.addColorStop(1,"#202d3d");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*.53);const floor=ctx.createLinearGradient(0,H*.46,0,H);floor.addColorStop(0,"#1b2634");floor.addColorStop(1,"#05080d");ctx.fillStyle=floor;ctx.fillRect(0,H*.46,W,H*.54);if(!m)return;const cols=Math.min(900,Math.max(360,Math.floor(W/2)));depth.length=cols;for(let i=0;i<cols;i++){const rel=(i/(cols-1)-.5)*FOV;const d=wallDistance(m.x,m.y,localAngle+rel);const corrected=d*Math.cos(rel);depth[i]=corrected;const wh=Math.min(H*1.9,(H*420)/Math.max(corrected,1));const y=H*.48-wh/2;const shade=clamp(118-corrected*.055,28,110);ctx.fillStyle=`rgb(${Math.round(shade*.48)},${Math.round(shade*.64)},${Math.round(shade*.82)})`;ctx.fillRect(i*W/cols,y,Math.ceil(W/cols)+1,wh)}drawFloorGrid(W,H)}
+function drawFloorGrid(W,H){ctx.save();ctx.globalAlpha=.22;ctx.strokeStyle="#5b7590";ctx.lineWidth=1;for(let yy=60;yy<1700;yy+=70){const y=H*.49+(H*.5)*(1-Math.exp(-yy/390));ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}for(let x=-1000;x<=1000;x+=80){ctx.beginPath();ctx.moveTo(W/2+x*.055,H*.49);ctx.lineTo(W/2+x*(W/2)/520,H);ctx.stroke()}ctx.restore()}
+function drawEnemies(){const m=me();if(!m)return;const W=innerWidth,H=innerHeight,arr=[];for(const p of state.players){if(p.id===playerId||!p.alive)continue;const v=visibleEnemy(p,m);if(v)arr.push({...p,...v})}arr.sort((a,b)=>b.dist-a.dist);for(const p of arr){const sx=W/2+(p.rel/(FOV/2))*(W/2);const size=clamp((H*430)/p.dist,70,H*.78);const bottom=H*.61;const top=bottom-size;const idx=clamp(Math.floor((sx/W)*(depth.length-1)),0,depth.length-1);if(p.dist>depth[idx]+12)continue;ctx.save();ctx.translate(sx,top);const s=size/220;ctx.scale(s,s);ctx.shadowBlur=22;ctx.shadowColor=p.id==="bot"?"#9c5cff":"#ff334d";ctx.fillStyle=p.id==="bot"?"#6d35d6":"#d72b43";ctx.beginPath();ctx.arc(0,34,28,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle="#10151f";ctx.fillRect(-38,62,76,104);ctx.fillStyle=p.id==="bot"?"#bd8aff":"#ff687b";ctx.fillRect(-31,68,62,8);ctx.fillStyle="#070a0f";ctx.fillRect(-20,100,16,52);ctx.fillRect(4,100,16,52);ctx.fillStyle="#252d38";ctx.fillRect(31,91,58,11);ctx.fillStyle="#fff";ctx.font="bold 16px Arial";ctx.textAlign="center";ctx.fillText(p.name||"BOT",0,-7);ctx.fillStyle="#171b22";ctx.fillRect(-43,-27,86,7);ctx.fillStyle="#35eb78";ctx.fillRect(-43,-27,86*clamp(p.hp/100,0,1),7);ctx.restore()}}
+function drawBullets(){const m=me();if(!m)return;const W=innerWidth,H=innerHeight;for(const b of state.bullets||[]){const dx=b.x-m.x,dy=b.y-m.y,d=Math.hypot(dx,dy),rel=norm(Math.atan2(dy,dx)-localAngle);if(d<8||Math.abs(rel)>FOV/2)continue;if(!clearSight(m,{x:b.x,y:b.y}))continue;const sx=W/2+(rel/(FOV/2))*(W/2);const idx=clamp(Math.floor((sx/W)*(depth.length-1)),0,depth.length-1);if(d>depth[idx]+5)continue;const size=clamp(9*(300/d),2,7);const sy=H*.51-Math.min(160,d*.04);ctx.fillStyle="#fff";ctx.shadowBlur=14;ctx.shadowColor="#ffb52e";ctx.beginPath();ctx.arc(sx,sy,size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0}}
+function drawWeapon(){const W=innerWidth,H=innerHeight,bob=(keys.w||keys.a||keys.s||keys.d)?Math.sin(performance.now()/90)*4:0;ctx.save();ctx.translate(W/2+bob,H+4);ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(-105,-142,210,72);ctx.fillStyle="#0a0e14";ctx.beginPath();ctx.moveTo(-82,-132);ctx.lineTo(72,-132);ctx.lineTo(96,-101);ctx.lineTo(-75,-101);ctx.closePath();ctx.fill();ctx.fillStyle="#252e3b";ctx.fillRect(-66,-126,125,14);ctx.fillStyle="#4a5665";ctx.fillRect(-52,-122,98,5);ctx.fillStyle="#111721";ctx.fillRect(48,-115,105,18);ctx.fillStyle="#1d2631";ctx.fillRect(-20,-91,34,95);ctx.fillStyle="#0b0f15";ctx.fillRect(7,-91,17,95);ctx.fillStyle="#090c12";ctx.fillRect(-12,-155,29,30);ctx.restore()}
+function render(){if(!gameStarted)return;drawWorld();drawEnemies();drawBullets();drawWeapon();requestAnimationFrame(render)}
 resize();
 </script>
 </body>

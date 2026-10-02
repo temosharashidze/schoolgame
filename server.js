@@ -65,9 +65,9 @@ function clearLine(x1,y1,x2,y2){
 }
 function spawnPoint(slot){
   const points = slot===1 ? [
-    {x:220,y:450},{x:250,y:300},{x:250,y:600}
+    {x:300,y:200},{x:300,y:700},{x:500,y:200}
   ] : [
-    {x:1380,y:450},{x:1350,y:300},{x:1350,y:600}
+    {x:1300,y:200},{x:1300,y:700},{x:1100,y:200}
   ];
   return points[Math.floor(Math.random()*points.length)];
 }
