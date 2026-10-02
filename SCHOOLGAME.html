@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>schoolgame | თამაშების საიტი</title>
+
+<meta
+    name="description"
+    content="schoolgame - თამაშების საიტი. ითამაშე Coreball, CS2 Upgrader, RIVALS და სხვა საინტერესო თამაშები."
+>
+
+<meta
+    name="keywords"
+    content="schoolgame, school game, თამაშები, Coreball, CS2 Upgrader, RIVALS"
+>
+
+<meta
+    name="robots"
+    content="index, follow"
+>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #172033 0%,
+            #080b12 45%,
+            #030407 100%
+        );
+
+    color: white;
+}
+
+body {
+    min-height: 100vh;
+}
+
+.container {
+    width: min(1100px, 92%);
+
+    margin: 0 auto;
+
+    padding: 70px 0;
+}
+
+h1 {
+    text-align: center;
+
+    font-size:
+        clamp(36px, 6vw, 64px);
+
+    margin:
+        0 0 12px;
+
+    font-weight: 900;
+}
+
+.subtitle {
+    text-align: center;
+
+    color: #8e9bb2;
+
+    font-size: 18px;
+
+    margin-bottom: 50px;
+}
+
+.games {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(240px, 1fr)
+        );
+
+    gap: 22px;
+}
+
+.game {
+    min-height: 180px;
+
+    border: 1px solid #29344a;
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #111827,
+            #080c14
+        );
+
+    color: white;
+
+    font-size: 25px;
+
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s,
+        border-color .2s,
+        box-shadow .2s;
+
+    box-shadow:
+        0 15px 45px
+        rgba(0,0,0,.35);
+}
+
+.game:hover {
+    transform:
+        translateY(-7px);
+
+    border-color:
+        #ff334d;
+
+    box-shadow:
+        0 20px 60px
+        rgba(255,51,77,.18);
+}
+
+.upgrader-game:hover {
+    border-color:
+        #4d9cff;
+
+    box-shadow:
+        0 20px 60px
+        rgba(77,156,255,.18);
+}
+
+.rivals-game:hover {
+    border-color:
+        #ff334d;
+
+    box-shadow:
+        0 20px 60px
+        rgba(255,51,77,.25);
+}
+
+.footer {
+    text-align: center;
+
+    margin-top: 55px;
+
+    color: #59657a;
+
+    font-size: 14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        🎮 მოგესალმებით schoolgame-ზე!
+    </h1>
+
+    <div class="subtitle">
+        აირჩიე თამაში და დაიწყე თამაში
+    </div>
+
+    <div class="games">
+
+        <!-- COREBALL -->
+
+        <button
+            class="game"
+            onclick="openCoreball()"
+        >
+            ⚫ Coreball
+        </button>
+
+
+        <!-- CS2 UPGRADER -->
+
+        <button
+            class="game upgrader-game"
+            onclick="openUpgrader()"
+        >
+            🔫 CS2 UPGRADER
+        </button>
+
+
+        <!-- RIVALS -->
+
+        <button
+            class="game rivals-game"
+            onclick="openRivals()"
+        >
+            🔫 RIVALS
+        </button>
+
+    </div>
+
+    <div class="footer">
+        © 2026 schoolgame
+    </div>
+
+</div>
+
+<script>
+
+function openCoreball() {
+
+    window.location.href =
+        "GAME.html";
+
+}
+
+
+function openUpgrader() {
+
+    window.location.href =
+        "GAME2.html";
+
+}
+
+
+function openRivals() {
+
+    window.location.href =
+        "GAME3.html";
+
+}
+
+</script>
+
+</body>
+</html>
