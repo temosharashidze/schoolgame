@@ -17,8 +17,8 @@ html,body{
     height:100%;
     overflow:hidden;
     background:#05070b;
-    font-family:Arial,Helvetica,sans-serif;
     color:white;
+    font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
@@ -31,7 +31,10 @@ canvas{
     width:100%;
     height:100%;
     display:block;
-    background:#080b12;
+}
+
+.hidden{
+    display:none!important;
 }
 
 #menu,
@@ -44,45 +47,54 @@ canvas{
     align-items:center;
     justify-content:center;
     background:
-        radial-gradient(circle at center,rgba(35,50,80,.22),transparent 45%),
-        linear-gradient(135deg,#05070b,#0a0e16 55%,#030406);
+        radial-gradient(circle at center,rgba(40,60,100,.18),transparent 50%),
+        linear-gradient(135deg,#04060a,#0b1019,#030406);
 }
 
 .panel{
     width:min(500px,92vw);
     padding:35px;
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(8,11,18,.94);
-    box-shadow:
-        0 25px 80px rgba(0,0,0,.65),
-        inset 0 1px 0 rgba(255,255,255,.04);
     border-radius:18px;
     text-align:center;
+    background:rgba(8,11,18,.96);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 25px 80px rgba(0,0,0,.7);
 }
 
 .logo{
     font-size:46px;
     font-weight:900;
     letter-spacing:4px;
-    margin-bottom:8px;
 }
 
 .sub{
-    color:#8e9aaa;
-    margin-bottom:30px;
+    margin-top:8px;
+    margin-bottom:25px;
+    color:#8792a3;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.12);
+    background:#0c1119;
+    color:white;
+    outline:none;
+    font-size:16px;
 }
 
 button{
     width:100%;
-    border:0;
-    padding:15px 18px;
+    padding:15px;
     margin-top:12px;
+    border:0;
     border-radius:10px;
     background:#e8edf5;
     color:#05070b;
+    font-size:16px;
     font-weight:900;
     cursor:pointer;
-    font-size:16px;
 }
 
 button:hover{
@@ -95,19 +107,30 @@ button.secondary{
     border:1px solid rgba(255,255,255,.1);
 }
 
-input{
-    width:100%;
-    padding:14px;
-    border-radius:9px;
-    border:1px solid rgba(255,255,255,.1);
-    background:#0d121b;
-    color:white;
-    outline:none;
-    margin-top:8px;
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
 }
 
-.hidden{
-    display:none!important;
+.info{
+    margin-top:20px;
+    color:#687486;
+    font-size:12px;
+    line-height:1.7;
+}
+
+#loading{
+    position:fixed;
+    z-index:100;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    padding:15px 22px;
+    border-radius:10px;
+    background:rgba(0,0,0,.9);
+    color:white;
+    font-weight:bold;
+    display:none;
 }
 
 #hud{
@@ -122,20 +145,19 @@ input{
     top:18px;
     left:50%;
     transform:translateX(-50%);
-    min-width:240px;
     text-align:center;
 }
 
 #score{
-    font-size:24px;
+    font-size:25px;
     font-weight:900;
-    text-shadow:0 3px 15px #000;
+    text-shadow:0 3px 15px black;
 }
 
 #status{
+    color:#a8b2c0;
+    font-size:12px;
     margin-top:5px;
-    color:#aeb7c5;
-    font-size:13px;
 }
 
 #crosshair{
@@ -147,12 +169,11 @@ input{
     transform:translate(-50%,-50%);
 }
 
-#crosshair span,
 #crosshair:before,
 #crosshair:after{
     content:"";
     position:absolute;
-    background:#fff;
+    background:white;
     box-shadow:0 0 5px rgba(255,255,255,.7);
 }
 
@@ -184,12 +205,11 @@ input{
 }
 
 #healthBar{
-    height:12px;
     width:100%;
-    background:#1a1e25;
-    border-radius:20px;
+    height:12px;
     overflow:hidden;
-    border:1px solid rgba(255,255,255,.12);
+    border-radius:20px;
+    background:#191e26;
 }
 
 #healthFill{
@@ -212,14 +232,13 @@ input{
 }
 
 #ammo{
-    font-size:17px;
-    color:#aab3c0;
+    color:#aeb7c3;
 }
 
 #hint{
     position:absolute;
-    left:50%;
     bottom:22px;
+    left:50%;
     transform:translateX(-50%);
     color:rgba(255,255,255,.45);
     font-size:12px;
@@ -229,8 +248,8 @@ input{
     position:absolute;
     left:50%;
     top:50%;
-    width:38px;
-    height:38px;
+    width:34px;
+    height:34px;
     transform:translate(-50%,-50%);
     opacity:0;
 }
@@ -247,7 +266,7 @@ input{
 #damageFlash{
     position:absolute;
     inset:0;
-    background:rgba(255,0,30,.15);
+    background:rgba(255,0,30,.16);
     opacity:0;
 }
 
@@ -256,32 +275,10 @@ input{
     left:50%;
     top:40%;
     transform:translate(-50%,-50%);
-    font-size:38px;
+    font-size:40px;
     font-weight:900;
-    text-align:center;
     opacity:0;
     text-shadow:0 5px 30px black;
-}
-
-#loading{
-    position:fixed;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    z-index:50;
-    color:white;
-    font-weight:bold;
-    background:rgba(0,0,0,.75);
-    padding:15px 22px;
-    border-radius:10px;
-    display:none;
-}
-
-#miniInfo{
-    margin-top:18px;
-    color:#687486;
-    font-size:12px;
-    line-height:1.6;
 }
 
 @media(max-width:700px){
@@ -311,55 +308,142 @@ input{
 
 <canvas id="game"></canvas>
 
+<!-- MENU -->
+
 <div id="menu">
+
     <div class="panel">
-        <div class="logo">RIVALS</div>
-        <div class="sub">SCHOOLGAME FPS</div>
 
-        <input id="nameInput" placeholder="მოთამაშის სახელი" maxlength="16">
+        <div class="logo">
+            RIVALS
+        </div>
 
-        <button id="createBtn">CREATE MATCH</button>
-        <button id="joinBtn" class="secondary">JOIN MATCH</button>
+        <div class="sub">
+            SCHOOLGAME FPS
+        </div>
 
-        <div id="miniInfo">
+        <input
+            id="nameInput"
+            maxlength="16"
+            placeholder="მოთამაშის სახელი"
+        >
+
+        <button id="createBtn">
+            CREATE MATCH
+        </button>
+
+        <button
+            id="joinBtn"
+            class="secondary"
+        >
+            JOIN MATCH
+        </button>
+
+        <div class="info">
             WASD — მოძრაობა<br>
             SHIFT — სირბილი<br>
             SPACE — ხტომა<br>
-            მაუსი — ხედვა<br>
+            მაუსი — კამერა<br>
             LEFT CLICK — სროლა
         </div>
+
     </div>
+
 </div>
+
+
+<!-- LOBBY -->
 
 <div id="lobby" class="hidden">
-    <div class="panel">
-        <div class="logo" style="font-size:32px">MATCH</div>
-        <div id="roomText" class="sub">ოთახი იქმნება...</div>
 
-        <button id="botBtn">PLAY VS BOT</button>
-        <button id="copyBtn" class="secondary">COPY ROOM CODE</button>
-        <button id="backBtn" class="secondary">BACK</button>
+    <div class="panel">
+
+        <div
+            class="logo"
+            style="font-size:34px"
+        >
+            MATCH
+        </div>
+
+        <div
+            id="roomText"
+            class="sub"
+        >
+            ROOM: -
+        </div>
+
+        <button id="botBtn">
+            PLAY VS BOT
+        </button>
+
+        <button
+            id="copyBtn"
+            class="secondary"
+        >
+            COPY ROOM CODE
+        </button>
+
+        <button
+            id="backBtn"
+            class="secondary"
+        >
+            BACK
+        </button>
+
     </div>
+
 </div>
 
+
+<!-- GAME OVER -->
+
 <div id="gameOver" class="hidden">
+
     <div class="panel">
-        <div id="gameOverTitle" class="logo" style="font-size:38px">
+
+        <div
+            id="gameOverTitle"
+            class="logo"
+            style="font-size:36px"
+        >
             GAME OVER
         </div>
 
-        <div id="gameOverText" class="sub"></div>
+        <div
+            id="gameOverText"
+            class="sub"
+        ></div>
 
-        <button id="againBtn">PLAY AGAIN</button>
-        <button id="menuBtn" class="secondary">MENU</button>
+        <button id="againBtn">
+            PLAY AGAIN
+        </button>
+
+        <button
+            id="menuBtn"
+            class="secondary"
+        >
+            MENU
+        </button>
+
     </div>
+
 </div>
+
+
+<!-- HUD -->
 
 <div id="hud" class="hidden">
 
     <div id="topHud">
-        <div id="score">0 : 0</div>
-        <div id="status">WAITING</div>
+
+        <div id="score">
+            0 : 0
+        </div>
+
+        <div id="status">
+            CONNECTING
+        </div>
+
     </div>
 
     <div id="crosshair"></div>
@@ -371,84 +455,133 @@ input{
     <div id="message"></div>
 
     <div id="healthBox">
-        <div id="healthText">100 HP</div>
-        <div id="healthBar">
-            <div id="healthFill"></div>
+
+        <div id="healthText">
+            100 HP
         </div>
+
+        <div id="healthBar">
+
+            <div id="healthFill"></div>
+
+        </div>
+
     </div>
 
     <div id="weaponBox">
-        <div id="weaponName">RIFLE</div>
-        <div id="ammo">30 / ∞</div>
+
+        <div id="weaponName">
+            RIFLE
+        </div>
+
+        <div id="ammo">
+            30 / ∞
+        </div>
+
     </div>
 
     <div id="hint">
         CLICK TO LOCK MOUSE · WASD MOVE · SHIFT RUN · SPACE JUMP
     </div>
+
 </div>
 
-<div id="loading">Connecting...</div>
+
+<div id="loading">
+    Connecting...
+</div>
+
 
 <script>
 
-/* =========================================================
-   CONNECTION
-========================================================= */
+/* =====================================================
+   SERVER
+===================================================== */
 
 const SERVER_URL =
     "wss://schoolgame-rivals.onrender.com";
 
+
+/* =====================================================
+   STATE
+===================================================== */
+
 let socket = null;
 
+let socketReady = false;
+
+let pendingAction = null;
+
 let roomCode = "";
+
 let myId = null;
+
 let myName = "Player";
 
 let players = {};
-let bullets = [];
 
 let gameRunning = false;
-let gameStarted = false;
 
 let scoreA = 0;
 let scoreB = 0;
 
 
-/* =========================================================
+/* =====================================================
    DOM
-========================================================= */
+===================================================== */
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("game");
 
-const menu = document.getElementById("menu");
-const lobby = document.getElementById("lobby");
-const gameOver = document.getElementById("gameOver");
-const hud = document.getElementById("hud");
+const ctx =
+    canvas.getContext("2d");
 
-const loading = document.getElementById("loading");
+const menu =
+    document.getElementById("menu");
 
-const nameInput = document.getElementById("nameInput");
+const lobby =
+    document.getElementById("lobby");
 
-const roomText = document.getElementById("roomText");
+const gameOver =
+    document.getElementById("gameOver");
 
-const scoreEl = document.getElementById("score");
-const statusEl = document.getElementById("status");
+const hud =
+    document.getElementById("hud");
 
-const healthText = document.getElementById("healthText");
-const healthFill = document.getElementById("healthFill");
+const loading =
+    document.getElementById("loading");
 
-const weaponName = document.getElementById("weaponName");
-const ammoEl = document.getElementById("ammo");
+const nameInput =
+    document.getElementById("nameInput");
 
-const hitMarker = document.getElementById("hitMarker");
-const damageFlash = document.getElementById("damageFlash");
-const messageEl = document.getElementById("message");
+const roomText =
+    document.getElementById("roomText");
+
+const scoreEl =
+    document.getElementById("score");
+
+const statusEl =
+    document.getElementById("status");
+
+const healthText =
+    document.getElementById("healthText");
+
+const healthFill =
+    document.getElementById("healthFill");
+
+const hitMarker =
+    document.getElementById("hitMarker");
+
+const damageFlash =
+    document.getElementById("damageFlash");
+
+const messageEl =
+    document.getElementById("message");
 
 
-/* =========================================================
+/* =====================================================
    CANVAS
-========================================================= */
+===================================================== */
 
 let W = innerWidth;
 let H = innerHeight;
@@ -458,36 +591,53 @@ function resize(){
     W = innerWidth;
     H = innerHeight;
 
-    canvas.width = Math.max(640, Math.floor(W * devicePixelRatio));
-    canvas.height = Math.max(360, Math.floor(H * devicePixelRatio));
+    const dpr =
+        Math.min(
+            2,
+            window.devicePixelRatio || 1
+        );
 
-    canvas.style.width = W + "px";
-    canvas.style.height = H + "px";
+    canvas.width =
+        Math.floor(W*dpr);
+
+    canvas.height =
+        Math.floor(H*dpr);
+
+    canvas.style.width =
+        W+"px";
+
+    canvas.style.height =
+        H+"px";
 
     ctx.setTransform(
-        devicePixelRatio,
+        dpr,
         0,
         0,
-        devicePixelRatio,
+        dpr,
         0,
         0
     );
 }
 
-addEventListener("resize", resize);
+addEventListener(
+    "resize",
+    resize
+);
+
 resize();
 
 
-/* =========================================================
+/* =====================================================
    PLAYER
-========================================================= */
+===================================================== */
 
 let me = {
-    x: 4.5,
-    y: 4.5,
-    z: 0,
 
-    vx:0,
+    x:13.5,
+    y:13.5,
+
+    z:0,
+
     vy:0,
 
     angle:0,
@@ -498,112 +648,118 @@ let me = {
 };
 
 
-/* =========================================================
+/* =====================================================
    INPUT
-========================================================= */
+===================================================== */
 
 const keys = {};
 
-addEventListener("keydown", e => {
-
-    keys[e.code] = true;
-
-    if(
-        ["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)
-    ){
-        e.preventDefault();
-    }
-
-    if(e.code === "Space"){
-        jump();
-    }
-});
-
-addEventListener("keyup", e => {
-    keys[e.code] = false;
-});
-
-
-/* =========================================================
-   MOUSE LOOK
-========================================================= */
-
 let mouseDown = false;
 
-canvas.addEventListener("click", () => {
+addEventListener(
+    "keydown",
+    e=>{
 
-    if(!gameRunning) return;
-
-    if(document.pointerLockElement !== canvas){
-
-        canvas.requestPointerLock().catch(()=>{});
-
-    }else{
-
-        shoot();
-    }
-});
-
-canvas.addEventListener("mousedown", e => {
-
-    if(e.button === 0){
-
-        mouseDown = true;
+        keys[e.code]=true;
 
         if(
-            document.pointerLockElement === canvas
+            e.code==="Space" ||
+            e.code==="ArrowUp" ||
+            e.code==="ArrowDown" ||
+            e.code==="ArrowLeft" ||
+            e.code==="ArrowRight"
         ){
+            e.preventDefault();
+        }
+
+        if(e.code==="Space"){
+            jump();
+        }
+
+    }
+);
+
+addEventListener(
+    "keyup",
+    e=>{
+        keys[e.code]=false;
+    }
+);
+
+
+/* =====================================================
+   MOUSE
+===================================================== */
+
+canvas.addEventListener(
+    "click",
+    ()=>{
+
+        if(!gameRunning)
+            return;
+
+        if(
+            document.pointerLockElement !== canvas
+        ){
+
+            canvas.requestPointerLock()
+                .catch(()=>{});
+
+        }else{
+
             shoot();
         }
     }
-});
+);
 
-canvas.addEventListener("mouseup", e => {
+canvas.addEventListener(
+    "mousedown",
+    e=>{
 
-    if(e.button === 0){
-        mouseDown = false;
+        if(e.button===0){
+
+            mouseDown=true;
+
+            if(
+                document.pointerLockElement === canvas
+            ){
+                shoot();
+            }
+        }
     }
-});
+);
 
-document.addEventListener("mousemove", e => {
+canvas.addEventListener(
+    "mouseup",
+    e=>{
 
-    if(!gameRunning) return;
-
-    if(document.pointerLockElement !== canvas) return;
-
-    me.angle += e.movementX * 0.0028;
-
-});
-
-
-/* =========================================================
-   CAMERA
-========================================================= */
-
-let cameraBob = 0;
-
-function jump(){
-
-    if(!gameRunning) return;
-
-    if(me.grounded){
-
-        me.vy = 5.8;
-        me.grounded = false;
+        if(e.button===0){
+            mouseDown=false;
+        }
     }
-}
+);
+
+document.addEventListener(
+    "mousemove",
+    e=>{
+
+        if(!gameRunning)
+            return;
+
+        if(
+            document.pointerLockElement !== canvas
+        )
+            return;
+
+        me.angle +=
+            e.movementX*.0028;
+    }
+);
 
 
-/* =========================================================
-   ARENA MAP
-=========================================================
-
-   0 = floor
-   1 = wall
-   2 = cover
-   3 = tall cover
-   4 = special wall
-*/
+/* =====================================================
+   MAP
+===================================================== */
 
 const MAP = [
 
@@ -637,233 +793,301 @@ const MAP = [
 
 ];
 
-const MAP_W = MAP[0].length;
-const MAP_H = MAP.length;
+const MAP_W =
+    MAP[0].length;
 
+const MAP_H =
+    MAP.length;
 
-/* =========================================================
-   COLLISION
-========================================================= */
 
 function cell(x,y){
 
-    const ix = Math.floor(x);
-    const iy = Math.floor(y);
+    const xx =
+        Math.floor(x);
+
+    const yy =
+        Math.floor(y);
 
     if(
-        iy < 0 ||
-        iy >= MAP_H ||
-        ix < 0 ||
-        ix >= MAP_W
+        xx<0 ||
+        yy<0 ||
+        xx>=MAP_W ||
+        yy>=MAP_H
     ){
         return "1";
     }
 
-    return MAP[iy][ix];
+    return MAP[yy][xx];
 }
+
 
 function solid(x,y){
 
-    const c = cell(x,y);
+    const c =
+        cell(x,y);
 
-    return c === "1" ||
-           c === "2" ||
-           c === "3" ||
-           c === "4";
+    return (
+        c==="1" ||
+        c==="2" ||
+        c==="3" ||
+        c==="4"
+    );
 }
+
 
 function canMove(x,y){
 
-    const r = .22;
+    const r=.22;
 
-    return !solid(x-r,y-r) &&
-           !solid(x+r,y-r) &&
-           !solid(x-r,y+r) &&
-           !solid(x+r,y+r);
+    return (
+        !solid(x-r,y-r) &&
+        !solid(x+r,y-r) &&
+        !solid(x-r,y+r) &&
+        !solid(x+r,y+r)
+    );
 }
 
 
-/* =========================================================
+/* =====================================================
    MOVEMENT
-========================================================= */
+===================================================== */
 
-let lastMove = performance.now();
+function jump(){
+
+    if(
+        gameRunning &&
+        me.grounded
+    ){
+
+        me.vy=5.8;
+
+        me.grounded=false;
+    }
+}
+
 
 function updateMovement(dt){
 
-    if(!gameRunning) return;
+    if(!gameRunning)
+        return;
 
-    let forward = 0;
-    let strafe = 0;
+    let forward=0;
+    let strafe=0;
 
-    if(keys["KeyW"] || keys["ArrowUp"])
-        forward += 1;
+    if(
+        keys["KeyW"] ||
+        keys["ArrowUp"]
+    )
+        forward++;
 
-    if(keys["KeyS"] || keys["ArrowDown"])
-        forward -= 1;
+    if(
+        keys["KeyS"] ||
+        keys["ArrowDown"]
+    )
+        forward--;
 
-    if(keys["KeyA"] || keys["ArrowLeft"])
-        strafe -= 1;
+    if(
+        keys["KeyD"] ||
+        keys["ArrowRight"]
+    )
+        strafe++;
 
-    if(keys["KeyD"] || keys["ArrowRight"])
-        strafe += 1;
+    if(
+        keys["KeyA"] ||
+        keys["ArrowLeft"]
+    )
+        strafe--;
 
-    const len = Math.hypot(forward,strafe);
+    const length =
+        Math.hypot(
+            forward,
+            strafe
+        );
 
-    if(len > 0){
+    if(length){
 
-        forward /= len;
-        strafe /= len;
+        forward/=length;
+        strafe/=length;
     }
 
-    let speed = 3.5;
+    let speed=3.5;
 
-    if(keys["ShiftLeft"] || keys["ShiftRight"]){
-        speed = 5.4;
+    if(
+        keys["ShiftLeft"] ||
+        keys["ShiftRight"]
+    ){
+        speed=5.5;
     }
 
-    const cos = Math.cos(me.angle);
-    const sin = Math.sin(me.angle);
+    const cos =
+        Math.cos(me.angle);
+
+    const sin =
+        Math.sin(me.angle);
 
     const dx =
-        (cos * forward - sin * strafe) *
-        speed *
+        (
+            cos*forward -
+            sin*strafe
+        )*
+        speed*
         dt;
 
     const dy =
-        (sin * forward + cos * strafe) *
-        speed *
+        (
+            sin*forward +
+            cos*strafe
+        )*
+        speed*
         dt;
 
-    if(canMove(me.x + dx, me.y)){
-        me.x += dx;
+    if(
+        canMove(
+            me.x+dx,
+            me.y
+        )
+    ){
+        me.x+=dx;
     }
 
-    if(canMove(me.x, me.y + dy)){
-        me.y += dy;
+    if(
+        canMove(
+            me.x,
+            me.y+dy
+        )
+    ){
+        me.y+=dy;
     }
 
-    if(len > 0){
-        cameraBob += dt * speed * 8;
+    me.vy -=
+        14*dt;
+
+    me.z +=
+        me.vy*dt;
+
+    if(me.z<=0){
+
+        me.z=0;
+        me.vy=0;
+        me.grounded=true;
     }
-
-    /* gravity */
-
-    me.vy -= 14 * dt;
-
-    me.z += me.vy * dt;
-
-    if(me.z <= 0){
-
-        me.z = 0;
-        me.vy = 0;
-        me.grounded = true;
-    }
-
 }
 
 
-/* =========================================================
+/* =====================================================
    SERVER INPUT
-========================================================= */
+===================================================== */
 
-let inputTimer = 0;
+let inputTimer=0;
 
 function sendInput(dt){
 
-    inputTimer += dt;
+    inputTimer+=dt;
 
-    if(inputTimer < .04) return;
-
-    inputTimer = 0;
-
-    if(!socket || socket.readyState !== WebSocket.OPEN)
+    if(inputTimer<.04)
         return;
 
-    socket.send(JSON.stringify({
+    inputTimer=0;
 
-        type:"input",
-
-        x:me.x,
-        y:me.y,
-        angle:me.angle,
-
-        shooting:mouseDown,
-
-        keys:{
-            w:!!keys["KeyW"],
-            a:!!keys["KeyA"],
-            s:!!keys["KeyS"],
-            d:!!keys["KeyD"]
-        }
-    }));
-}
-
-
-/* =========================================================
-   SHOOTING
-========================================================= */
-
-let lastShot = 0;
-
-const FIRE_RATE = 105;
-
-function shoot(){
-
-    if(!gameRunning) return;
-
-    const now = performance.now();
-
-    if(now - lastShot < FIRE_RATE)
+    if(
+        !socket ||
+        socket.readyState !== WebSocket.OPEN
+    )
         return;
 
-    lastShot = now;
+    socket.send(
+        JSON.stringify({
 
-    if(socket && socket.readyState === WebSocket.OPEN){
+            type:"input",
 
-        socket.send(JSON.stringify({
-
-            type:"shoot",
+            x:me.x,
+            y:me.y,
 
             angle:me.angle,
 
-            x:me.x,
-            y:me.y
-        }));
+            shooting:mouseDown,
+
+            keys:{
+                w:!!keys["KeyW"],
+                a:!!keys["KeyA"],
+                s:!!keys["KeyS"],
+                d:!!keys["KeyD"]
+            }
+        })
+    );
+}
+
+
+/* =====================================================
+   SHOOT
+===================================================== */
+
+let lastShot=0;
+
+function shoot(){
+
+    if(!gameRunning)
+        return;
+
+    const now =
+        performance.now();
+
+    if(
+        now-lastShot<105
+    )
+        return;
+
+    lastShot=now;
+
+    if(
+        socket &&
+        socket.readyState===WebSocket.OPEN
+    ){
+
+        socket.send(
+            JSON.stringify({
+
+                type:"shoot",
+
+                x:me.x,
+                y:me.y,
+
+                angle:me.angle
+            })
+        );
     }
 
-    createMuzzleFlash();
+    muzzle=.08;
 }
 
 
-/* =========================================================
-   MUZZLE FLASH
-========================================================= */
-
-let muzzle = 0;
-
-function createMuzzleFlash(){
-
-    muzzle = .08;
-}
-
-
-/* =========================================================
+/* =====================================================
    RAYCAST
-========================================================= */
+===================================================== */
 
-const FOV = Math.PI / 3;
+const FOV =
+    Math.PI/3;
+
 
 function castRay(angle){
 
-    const sin = Math.sin(angle);
-    const cos = Math.cos(angle);
+    const sin =
+        Math.sin(angle);
 
-    let mapX = Math.floor(me.x);
-    let mapY = Math.floor(me.y);
+    const cos =
+        Math.cos(angle);
 
-    const deltaX = Math.abs(1 / cos);
-    const deltaY = Math.abs(1 / sin);
+    let mapX =
+        Math.floor(me.x);
+
+    let mapY =
+        Math.floor(me.y);
+
+    const deltaX =
+        Math.abs(1/cos);
+
+    const deltaY =
+        Math.abs(1/sin);
 
     let stepX;
     let stepY;
@@ -871,74 +1095,83 @@ function castRay(angle){
     let sideX;
     let sideY;
 
-    if(cos < 0){
+    if(cos<0){
 
-        stepX = -1;
+        stepX=-1;
+
         sideX =
-            (me.x - mapX) * deltaX;
+            (me.x-mapX)*deltaX;
 
     }else{
 
-        stepX = 1;
+        stepX=1;
+
         sideX =
-            (mapX + 1 - me.x) * deltaX;
+            (mapX+1-me.x)*deltaX;
     }
 
-    if(sin < 0){
+    if(sin<0){
 
-        stepY = -1;
+        stepY=-1;
+
         sideY =
-            (me.y - mapY) * deltaY;
+            (me.y-mapY)*deltaY;
 
     }else{
 
-        stepY = 1;
+        stepY=1;
+
         sideY =
-            (mapY + 1 - me.y) * deltaY;
+            (mapY+1-me.y)*deltaY;
     }
 
-    let side = 0;
+    let side=0;
 
-    for(let i=0;i<80;i++){
+    for(let i=0;i<100;i++){
 
-        if(sideX < sideY){
+        if(sideX<sideY){
 
-            sideX += deltaX;
-            mapX += stepX;
-            side = 0;
+            sideX+=deltaX;
+            mapX+=stepX;
+
+            side=0;
 
         }else{
 
-            sideY += deltaY;
-            mapY += stepY;
-            side = 1;
+            sideY+=deltaY;
+            mapY+=stepY;
+
+            side=1;
         }
 
         if(
-            mapX < 0 ||
-            mapX >= MAP_W ||
-            mapY < 0 ||
-            mapY >= MAP_H
-        ){
+            mapX<0 ||
+            mapY<0 ||
+            mapX>=MAP_W ||
+            mapY>=MAP_H
+        )
             break;
-        }
 
-        const c = MAP[mapY][mapX];
+        const c =
+            MAP[mapY][mapX];
 
         if(
-            c === "1" ||
-            c === "2" ||
-            c === "3" ||
-            c === "4"
+            c==="1" ||
+            c==="2" ||
+            c==="3" ||
+            c==="4"
         ){
 
             const dist =
-                side === 0
-                ? sideX - deltaX
-                : sideY - deltaY;
+                side===0
+                ? sideX-deltaX
+                : sideY-deltaY;
 
             return {
-                dist:Math.max(.01,dist),
+                dist:Math.max(
+                    .01,
+                    dist
+                ),
                 cell:c,
                 side
             };
@@ -953,23 +1186,36 @@ function castRay(angle){
 }
 
 
-/* =========================================================
-   DRAW SKY
-========================================================= */
+/* =====================================================
+   DRAW
+===================================================== */
 
 function drawSky(){
 
     const g =
         ctx.createLinearGradient(
-            0,0,
-            0,H/2
+            0,
+            0,
+            0,
+            H/2
         );
 
-    g.addColorStop(0,"#050912");
-    g.addColorStop(.55,"#121b2a");
-    g.addColorStop(1,"#27364a");
+    g.addColorStop(
+        0,
+        "#050912"
+    );
 
-    ctx.fillStyle = g;
+    g.addColorStop(
+        .55,
+        "#121d2c"
+    );
+
+    g.addColorStop(
+        1,
+        "#2b3b4d"
+    );
+
+    ctx.fillStyle=g;
 
     ctx.fillRect(
         0,
@@ -977,33 +1223,8 @@ function drawSky(){
         W,
         H/2
     );
-
-    /* clouds / distant shapes */
-
-    ctx.fillStyle = "rgba(255,255,255,.025)";
-
-    for(let i=0;i<8;i++){
-
-        const x =
-            ((i*310 - me.angle*90) % (W+500))
-            - 200;
-
-        const y =
-            70 + i%3*70;
-
-        ctx.fillRect(
-            x,
-            y,
-            180,
-            20
-        );
-    }
 }
 
-
-/* =========================================================
-   DRAW FLOOR
-========================================================= */
 
 function drawFloor(){
 
@@ -1015,11 +1236,22 @@ function drawFloor(){
             H
         );
 
-    g.addColorStop(0,"#1b222d");
-    g.addColorStop(.45,"#0e141d");
-    g.addColorStop(1,"#05070b");
+    g.addColorStop(
+        0,
+        "#202a35"
+    );
 
-    ctx.fillStyle = g;
+    g.addColorStop(
+        .45,
+        "#111820"
+    );
+
+    g.addColorStop(
+        1,
+        "#05070a"
+    );
+
+    ctx.fillStyle=g;
 
     ctx.fillRect(
         0,
@@ -1028,47 +1260,57 @@ function drawFloor(){
         H/2
     );
 
-    /* perspective floor lines */
-
     ctx.save();
 
-    ctx.globalAlpha = .18;
+    ctx.globalAlpha=.18;
 
-    ctx.strokeStyle = "#657180";
-    ctx.lineWidth = 1;
-
-    const horizon = H/2;
+    ctx.strokeStyle="#75818e";
 
     for(let i=1;i<28;i++){
 
         const p =
-            Math.pow(i/28,1.8);
+            Math.pow(
+                i/28,
+                1.8
+            );
 
         const y =
-            horizon +
-            p*(H-horizon);
+            H/2 +
+            p*(H-H/2);
 
         ctx.beginPath();
 
-        ctx.moveTo(0,y);
-        ctx.lineTo(W,y);
+        ctx.moveTo(
+            0,
+            y
+        );
+
+        ctx.lineTo(
+            W,
+            y
+        );
 
         ctx.stroke();
     }
 
-    const center = W/2;
+    const center =
+        W/2;
 
-    for(let i=-18;i<=18;i++){
+    for(
+        let i=-18;
+        i<=18;
+        i++
+    ){
 
         ctx.beginPath();
 
         ctx.moveTo(
             center,
-            horizon
+            H/2
         );
 
         ctx.lineTo(
-            center + i*100,
+            center+i*100,
             H
         );
 
@@ -1079,19 +1321,19 @@ function drawFloor(){
 }
 
 
-/* =========================================================
-   DRAW WALLS
-========================================================= */
-
 function drawWalls(){
 
-    const maxRays = Math.min(
-        1050,
-        Math.max(520,W)
-    );
+    const rays =
+        Math.min(
+            1050,
+            Math.max(
+                520,
+                W
+            )
+        );
 
     const step =
-        W / maxRays;
+        W/rays;
 
     for(
         let x=0;
@@ -1100,92 +1342,75 @@ function drawWalls(){
     ){
 
         const cameraX =
-            x/W - .5;
+            x/W-.5;
 
-        const rayAngle =
-            me.angle +
-            cameraX * FOV;
+        const angle =
+            me.angle+
+            cameraX*FOV;
 
         const ray =
-            castRay(rayAngle);
+            castRay(angle);
 
-        const corrected =
-            ray.dist *
+        const dist =
+            ray.dist*
             Math.cos(
-                rayAngle - me.angle
+                angle-me.angle
             );
 
-        const wallHeight =
-            H / Math.max(
+        const height =
+            H/
+            Math.max(
                 .05,
-                corrected
+                dist
             );
 
         let top =
-            H/2 -
-            wallHeight/2;
+            H/2-height/2;
 
         let bottom =
-            H/2 +
-            wallHeight/2;
+            H/2+height/2;
 
-        if(ray.cell === "2"){
-            top -= wallHeight*.15;
-        }
+        if(ray.cell==="2")
+            top-=height*.15;
 
-        if(ray.cell === "3"){
-            top -= wallHeight*.55;
-        }
-
-        if(ray.cell === "4"){
-            top -= wallHeight*.30;
-        }
+        if(ray.cell==="3")
+            top-=height*.5;
 
         const light =
             Math.max(
-                .2,
-                1 - corrected/15
+                .18,
+                1-dist/16
             );
 
-        let r,g,b;
+        let r=115;
+        let g=125;
+        let b=138;
 
-        if(ray.cell === "2"){
+        if(ray.cell==="2"){
 
-            r = 60;
-            g = 75;
-            b = 92;
+            r=65;
+            g=78;
+            b=94;
 
-        }else if(ray.cell === "3"){
+        }else if(ray.cell==="3"){
 
-            r = 95;
-            g = 75;
-            b = 45;
-
-        }else if(ray.cell === "4"){
-
-            r = 50;
-            g = 85;
-            b = 105;
-
-        }else{
-
-            r = 115;
-            g = 125;
-            b = 137;
+            r=105;
+            g=80;
+            b=45;
         }
 
         if(ray.side){
 
-            r*=.72;
-            g*=.72;
-            b*=.72;
+            r*=.7;
+            g*=.7;
+            b*=.7;
         }
 
         r*=light;
         g*=light;
         b*=light;
 
-        ctx.fillStyle =
+        ctx.fillStyle=
             `rgb(${r|0},${g|0},${b|0})`;
 
         ctx.fillRect(
@@ -1194,75 +1419,61 @@ function drawWalls(){
             step+1,
             bottom-top
         );
-
-        /* wall panel details */
-
-        if(
-            corrected < 8 &&
-            Math.floor(x/step)%7 === 0
-        ){
-
-            ctx.fillStyle =
-                `rgba(255,255,255,${.045*light})`;
-
-            ctx.fillRect(
-                x,
-                top,
-                1,
-                bottom-top
-            );
-        }
     }
 }
 
 
-/* =========================================================
-   WORLD OBJECTS
-========================================================= */
+/* =====================================================
+   PLAYERS
+===================================================== */
 
-function worldToScreen(wx,wy){
+function worldToScreen(x,y){
 
-    const dx = wx-me.x;
-    const dy = wy-me.y;
+    const dx=x-me.x;
+    const dy=y-me.y;
 
     const dist =
-        Math.hypot(dx,dy);
+        Math.hypot(
+            dx,
+            dy
+        );
 
     let angle =
-        Math.atan2(dy,dx)-me.angle;
+        Math.atan2(
+            dy,
+            dx
+        )-
+        me.angle;
 
-    while(angle > Math.PI)
-        angle -= Math.PI*2;
+    while(angle>Math.PI)
+        angle-=Math.PI*2;
 
-    while(angle < -Math.PI)
-        angle += Math.PI*2;
+    while(angle<-Math.PI)
+        angle+=Math.PI*2;
 
-    if(Math.abs(angle)>FOV*.65)
+    if(
+        Math.abs(angle)>FOV*.7
+    )
         return null;
 
     const corrected =
         dist*Math.cos(angle);
 
-    if(corrected <= .1)
+    if(corrected<=.1)
         return null;
 
     const sx =
-        W/2 +
-        Math.tan(angle) /
-        Math.tan(FOV/2) *
+        W/2+
+        Math.tan(angle)/
+        Math.tan(FOV/2)*
         W/2;
 
     return {
         x:sx,
-        dist:corrected,
-        rawDist:dist
+        dist:corrected
     };
 }
 
-
-/* =========================================================
-   ENEMIES
-========================================================= */
 
 function drawPlayers(){
 
@@ -1290,12 +1501,12 @@ function drawPlayers(){
 
     for(const p of list){
 
-        if(p.id === myId)
+        if(p.id===myId)
             continue;
 
         if(
-            p.hp !== undefined &&
-            p.hp <= 0
+            p.hp!==undefined &&
+            p.hp<=0
         )
             continue;
 
@@ -1308,34 +1519,31 @@ function drawPlayers(){
         if(!s)
             continue;
 
-        const height =
+        const h =
             Math.min(
                 500,
                 H/s.dist
             );
 
-        const width =
-            height*.34;
+        const w =
+            h*.34;
 
         const bottom =
-            H/2 +
-            H/(s.dist)*me.z;
+            H/2;
 
         const top =
-            bottom-height;
+            bottom-h;
 
-        /* shadow */
-
-        ctx.fillStyle =
-            "rgba(0,0,0,.35)";
+        ctx.fillStyle=
+            "rgba(0,0,0,.4)";
 
         ctx.beginPath();
 
         ctx.ellipse(
             s.x,
-            bottom+3,
-            width*.6,
-            width*.18,
+            bottom+4,
+            w*.55,
+            w*.15,
             0,
             0,
             Math.PI*2
@@ -1343,138 +1551,106 @@ function drawPlayers(){
 
         ctx.fill();
 
-        /* legs */
-
-        ctx.fillStyle="#171a20";
+        ctx.fillStyle="#181d24";
 
         ctx.fillRect(
-            s.x-width*.32,
-            top+height*.62,
-            width*.22,
-            height*.38
+            s.x-w*.3,
+            top+h*.62,
+            w*.2,
+            h*.38
         );
 
         ctx.fillRect(
-            s.x+width*.10,
-            top+height*.62,
-            width*.22,
-            height*.38
+            s.x+w*.1,
+            top+h*.62,
+            w*.2,
+            h*.38
         );
 
-        /* body */
-
-        const bodyGrad =
-            ctx.createLinearGradient(
-                s.x-width/2,
-                0,
-                s.x+width/2,
-                0
-            );
-
-        bodyGrad.addColorStop(
-            0,
-            "#202833"
-        );
-
-        bodyGrad.addColorStop(
-            .5,
-            "#4a5665"
-        );
-
-        bodyGrad.addColorStop(
-            1,
-            "#171c24"
-        );
-
-        ctx.fillStyle = bodyGrad;
+        ctx.fillStyle="#3c4856";
 
         ctx.fillRect(
-            s.x-width*.43,
-            top+height*.29,
-            width*.86,
-            height*.37
+            s.x-w*.42,
+            top+h*.29,
+            w*.84,
+            h*.38
         );
 
-        /* head */
-
-        ctx.fillStyle="#b9a28d";
+        ctx.fillStyle="#b99e89";
 
         ctx.beginPath();
 
         ctx.arc(
             s.x,
-            top+height*.18,
-            width*.28,
+            top+h*.18,
+            w*.28,
             0,
             Math.PI*2
         );
 
         ctx.fill();
 
-        /* helmet */
-
-        ctx.fillStyle="#252c36";
+        ctx.fillStyle="#242b34";
 
         ctx.beginPath();
 
         ctx.arc(
             s.x,
-            top+height*.13,
-            width*.29,
+            top+h*.13,
+            w*.29,
             Math.PI,
             Math.PI*2
         );
 
         ctx.fill();
 
-        /* gun */
+        ctx.strokeStyle="#10151b";
 
-        ctx.strokeStyle="#11151b";
-        ctx.lineWidth=Math.max(2,width*.1);
+        ctx.lineWidth=
+            Math.max(
+                2,
+                w*.08
+            );
 
         ctx.beginPath();
 
         ctx.moveTo(
-            s.x+width*.2,
-            top+height*.46
+            s.x+w*.15,
+            top+h*.46
         );
 
         ctx.lineTo(
-            s.x+width*.72,
-            top+height*.52
+            s.x+w*.7,
+            top+h*.5
         );
 
         ctx.stroke();
 
-        /* name */
-
-        if(s.dist < 12){
-
-            ctx.font =
-                "bold 12px Arial";
+        if(s.dist<12){
 
             ctx.textAlign="center";
+
+            ctx.font=
+                "bold 12px Arial";
 
             ctx.fillStyle="white";
 
             ctx.fillText(
-                p.name || "BOT",
+                p.name||"BOT",
                 s.x,
                 top-10
             );
-
-            /* hp */
 
             const hp =
                 Math.max(
                     0,
                     Math.min(
                         100,
-                        p.hp ?? 100
+                        p.hp??100
                     )
                 );
 
-            ctx.fillStyle="#14181f";
+            ctx.fillStyle="#171b21";
 
             ctx.fillRect(
                 s.x-25,
@@ -1483,12 +1659,12 @@ function drawPlayers(){
                 4
             );
 
-            ctx.fillStyle="#e83d50";
+            ctx.fillStyle="#ef4053";
 
             ctx.fillRect(
                 s.x-25,
                 top-6,
-                50*(hp/100),
+                50*hp/100,
                 4
             );
         }
@@ -1496,9 +1672,11 @@ function drawPlayers(){
 }
 
 
-/* =========================================================
+/* =====================================================
    WEAPON
-========================================================= */
+===================================================== */
+
+let muzzle=0;
 
 function drawWeapon(){
 
@@ -1510,40 +1688,37 @@ function drawWeapon(){
 
     const bob =
         moving
-        ? Math.sin(cameraBob)*5
-        : Math.sin(performance.now()/900)*1.5;
+        ? Math.sin(
+            performance.now()/80
+        )*5
+        : 0;
 
-    const gunW =
+    const gw =
         Math.min(
             430,
             W*.43
         );
 
-    const gunH =
-        gunW*.25;
+    const gh =
+        gw*.25;
 
     const x =
-        W/2 -
-        gunW*.15;
+        W/2-gw*.15;
 
     const y =
-        H -
-        gunH*.75 +
-        bob;
+        H-gh*.75+bob;
 
     ctx.save();
 
-    /* arm */
-
-    ctx.fillStyle="#a98770";
+    ctx.fillStyle="#a88974";
 
     ctx.beginPath();
 
     ctx.ellipse(
-        x+gunW*.05,
-        y+gunH*.45,
-        gunW*.13,
-        gunH*.25,
+        x+gw*.05,
+        y+gh*.45,
+        gw*.13,
+        gh*.25,
         -.2,
         0,
         Math.PI*2
@@ -1551,110 +1726,82 @@ function drawWeapon(){
 
     ctx.fill();
 
-    /* weapon body */
-
-    const gunGrad =
-        ctx.createLinearGradient(
-            x,
-            y,
-            x,
-            y+gunH
-        );
-
-    gunGrad.addColorStop(
-        0,
-        "#414b58"
-    );
-
-    gunGrad.addColorStop(
-        .4,
-        "#161b22"
-    );
-
-    gunGrad.addColorStop(
-        1,
-        "#07090d"
-    );
-
-    ctx.fillStyle=gunGrad;
+    ctx.fillStyle="#171c23";
 
     ctx.beginPath();
 
-    ctx.moveTo(x,y+gunH*.25);
-
-    ctx.lineTo(
-        x+gunW*.63,
-        y+gunH*.18
+    ctx.moveTo(
+        x,
+        y+gh*.25
     );
 
     ctx.lineTo(
-        x+gunW*.88,
-        y+gunH*.45
+        x+gw*.63,
+        y+gh*.18
     );
 
     ctx.lineTo(
-        x+gunW*.62,
-        y+gunH*.72
+        x+gw*.88,
+        y+gh*.45
     );
 
     ctx.lineTo(
-        x+gunW*.28,
-        y+gunH*.68
+        x+gw*.62,
+        y+gh*.72
+    );
+
+    ctx.lineTo(
+        x+gw*.28,
+        y+gh*.68
     );
 
     ctx.closePath();
 
     ctx.fill();
 
-    /* barrel */
-
-    ctx.fillStyle="#090b0f";
+    ctx.fillStyle="#080b0f";
 
     ctx.fillRect(
-        x+gunW*.58,
-        y+gunH*.34,
-        gunW*.4,
-        gunH*.14
+        x+gw*.58,
+        y+gh*.34,
+        gw*.4,
+        gh*.14
     );
 
-    /* magazine */
-
-    ctx.fillStyle="#10151b";
+    ctx.fillStyle="#0c1117";
 
     ctx.fillRect(
-        x+gunW*.31,
-        y+gunH*.6,
-        gunW*.16,
-        gunH*.35
+        x+gw*.31,
+        y+gh*.6,
+        gw*.16,
+        gh*.35
     );
-
-    /* muzzle flash */
 
     if(muzzle>0){
 
-        ctx.fillStyle =
-            `rgba(255,190,70,${Math.min(1,muzzle*12)})`;
+        ctx.fillStyle=
+            "rgba(255,190,60,.9)";
 
         ctx.beginPath();
 
         ctx.moveTo(
-            x+gunW*.97,
-            y+gunH*.41
+            x+gw*.98,
+            y+gh*.4
         );
 
         ctx.lineTo(
-            x+gunW*1.16,
-            y+gunH*.3
+            x+gw*1.15,
+            y+gh*.27
         );
 
         ctx.lineTo(
-            x+gunW*1.08,
-            y+gunH*.48
+            x+gw*1.08,
+            y+gh*.48
         );
 
         ctx.lineTo(
-            x+gunW*1.16,
-            y+gunH*.62
+            x+gw*1.15,
+            y+gh*.64
         );
 
         ctx.closePath();
@@ -1666,25 +1813,19 @@ function drawWeapon(){
 }
 
 
-/* =========================================================
-   HIT MARKER
-========================================================= */
+/* =====================================================
+   EFFECTS
+===================================================== */
 
 let hitTimer=0;
+let damageTimer=0;
 
 function showHit(){
 
-    hitTimer=.14;
+    hitTimer=.15;
 
     hitMarker.style.opacity="1";
 }
-
-
-/* =========================================================
-   DAMAGE
-========================================================= */
-
-let damageTimer=0;
 
 function showDamage(){
 
@@ -1693,27 +1834,27 @@ function showDamage(){
     damageFlash.style.opacity="1";
 }
 
-
-/* =========================================================
-   MESSAGES
-========================================================= */
-
-function showMessage(text,time=1){
+function showMessage(
+    text,
+    seconds=1
+){
 
     messageEl.textContent=text;
+
     messageEl.style.opacity="1";
 
-    setTimeout(()=>{
-
-        messageEl.style.opacity="0";
-
-    },time*1000);
+    setTimeout(
+        ()=>{
+            messageEl.style.opacity="0";
+        },
+        seconds*1000
+    );
 }
 
 
-/* =========================================================
+/* =====================================================
    HUD
-========================================================= */
+===================================================== */
 
 function updateHUD(){
 
@@ -1734,13 +1875,12 @@ function updateHUD(){
 
     scoreEl.textContent =
         scoreA+" : "+scoreB;
-
 }
 
 
-/* =========================================================
+/* =====================================================
    GAME LOOP
-========================================================= */
+===================================================== */
 
 let previous =
     performance.now();
@@ -1758,9 +1898,10 @@ function loop(now){
     if(gameRunning){
 
         updateMovement(dt);
+
         sendInput(dt);
 
-        muzzle -= dt;
+        muzzle-=dt;
 
         if(muzzle<0)
             muzzle=0;
@@ -1793,206 +1934,368 @@ function loop(now){
 requestAnimationFrame(loop);
 
 
-/* =========================================================
-   WEBSOCKET
-========================================================= */
+/* =====================================================
+   WEBSOCKET CONNECT
+===================================================== */
 
 function connect(){
 
+    if(
+        socket &&
+        (
+            socket.readyState===WebSocket.OPEN ||
+            socket.readyState===WebSocket.CONNECTING
+        )
+    ){
+        return;
+    }
+
     loading.style.display="block";
-    loading.textContent="Connecting...";
+    loading.textContent=
+        "სერვერთან დაკავშირება...";
+
+    statusEl.textContent=
+        "CONNECTING";
+
+    socketReady=false;
 
     try{
 
         socket =
-            new WebSocket(SERVER_URL);
+            new WebSocket(
+                SERVER_URL
+            );
 
-    }catch(err){
+    }catch(error){
 
-        loading.textContent =
-            "Connection failed";
+        loading.textContent=
+            "SERVER ERROR";
 
         return;
     }
 
-    socket.onopen = () => {
+    socket.onopen=()=>{
+
+        socketReady=true;
 
         loading.style.display="none";
 
-        statusEl.textContent =
+        statusEl.textContent=
             "CONNECTED";
+
+        /*
+         * თუ ღილაკზე დაჭერისას სერვერი ჯერ
+         * არ იყო მზად, აქ ავტომატურად
+         * გავუშვებთ მოთხოვნას.
+         */
+
+        if(pendingAction){
+
+            const action =
+                pendingAction;
+
+            pendingAction=null;
+
+            setTimeout(
+                ()=>{
+                    action();
+                },
+                100
+            );
+        }
     };
 
-    socket.onclose = () => {
 
-        loading.style.display="none";
+    socket.onclose=()=>{
 
-        if(gameRunning){
+        socketReady=false;
 
-            statusEl.textContent =
+        if(!gameRunning){
+
+            statusEl.textContent=
+                "OFFLINE";
+        }else{
+
+            statusEl.textContent=
                 "DISCONNECTED";
         }
+
+        /*
+         * ავტომატური reconnect
+         */
+
+        setTimeout(
+            ()=>{
+                if(!socketReady){
+                    connect();
+                }
+            },
+            2000
+        );
     };
 
-    socket.onerror = () => {
 
-        loading.textContent =
-            "Server connection error";
+    socket.onerror=()=>{
+
+        loading.textContent=
+            "სერვერთან დაკავშირება ვერ მოხერხდა";
     };
 
-    socket.onmessage = e => {
 
-        let data;
+    socket.onmessage=
+        event=>{
 
-        try{
-            data = JSON.parse(e.data);
-        }catch{
-            return;
-        }
+            let data;
 
-        handleServerMessage(data);
-    };
+            try{
+
+                data=
+                    JSON.parse(
+                        event.data
+                    );
+
+            }catch{
+
+                return;
+            }
+
+            handleServerMessage(data);
+        };
 }
 
 
-/* =========================================================
+/* =====================================================
+   SEND
+===================================================== */
+
+function send(data){
+
+    if(
+        !socket ||
+        socket.readyState !== WebSocket.OPEN
+    ){
+        return false;
+    }
+
+    try{
+
+        socket.send(
+            JSON.stringify(data)
+        );
+
+        return true;
+
+    }catch{
+
+        return false;
+    }
+}
+
+
+/* =====================================================
+   CREATE MATCH
+===================================================== */
+
+function createMatch(){
+
+    myName =
+        nameInput.value.trim() ||
+        "Player";
+
+    /*
+     * თუ WebSocket ჯერ არ არის გახსნილი,
+     * მოთხოვნას ვინახავთ.
+     */
+
+    if(
+        !socket ||
+        socket.readyState !== WebSocket.OPEN
+    ){
+
+        pendingAction=()=>{
+            createMatch();
+        };
+
+        connect();
+
+        loading.style.display="block";
+
+        loading.textContent=
+            "სერვერთან დაკავშირება...";
+
+        return;
+    }
+
+    loading.style.display="block";
+
+    loading.textContent=
+        "MATCH იქმნება...";
+
+    const ok =
+        send({
+
+            type:"create",
+
+            name:myName
+        });
+
+    if(!ok){
+
+        loading.textContent=
+            "Create failed";
+
+        return;
+    }
+}
+
+
+/* =====================================================
+   JOIN
+===================================================== */
+
+function joinMatch(){
+
+    myName =
+        nameInput.value.trim() ||
+        "Player";
+
+    const code =
+        prompt(
+            "შეიყვანე ROOM CODE:"
+        );
+
+    if(!code)
+        return;
+
+    roomCode =
+        code.trim();
+
+    function doJoin(){
+
+        if(
+            !socket ||
+            socket.readyState !== WebSocket.OPEN
+        ){
+
+            pendingAction=doJoin;
+
+            connect();
+
+            return;
+        }
+
+        loading.style.display="block";
+
+        loading.textContent=
+            "MATCH-ში შესვლა...";
+
+        send({
+
+            type:"join",
+
+            room:roomCode,
+
+            name:myName
+        });
+    }
+
+    doJoin();
+}
+
+
+/* =====================================================
+   BOT
+===================================================== */
+
+function addBot(){
+
+    if(
+        !socket ||
+        socket.readyState !== WebSocket.OPEN
+    ){
+
+        pendingAction=addBot;
+
+        connect();
+
+        return;
+    }
+
+    send({
+
+        type:"add_bot"
+    });
+}
+
+
+/* =====================================================
    SERVER MESSAGES
-========================================================= */
+===================================================== */
 
 function handleServerMessage(data){
+
+    console.log(
+        "SERVER:",
+        data
+    );
 
     switch(data.type){
 
         case "created":
 
-            roomCode =
-                data.room ||
-                data.roomCode ||
-                "";
-
-            roomText.textContent =
-                "ROOM: "+roomCode;
-
-            menu.classList.add("hidden");
-            lobby.classList.remove("hidden");
-
-            break;
-
-
         case "room_created":
 
+        case "create_success":
+
             roomCode =
                 data.room ||
                 data.roomCode ||
+                data.code ||
                 "";
 
-            roomText.textContent =
-                "ROOM: "+roomCode;
-
-            menu.classList.add("hidden");
-            lobby.classList.remove("hidden");
+            openLobby();
 
             break;
 
 
         case "joined":
 
+        case "join_success":
+
             roomCode =
                 data.room ||
                 data.roomCode ||
+                data.code ||
                 roomCode;
 
-            menu.classList.add("hidden");
-            lobby.classList.remove("hidden");
-
-            roomText.textContent =
-                "ROOM: "+roomCode;
+            openLobby();
 
             break;
 
 
         case "player_id":
 
+        case "id":
+
             myId =
-                data.id;
+                data.id ||
+                data.playerId;
 
             break;
 
 
         case "state":
 
-            if(data.players){
-
-                players = {};
-
-                for(const p of data.players){
-
-                    players[p.id] = p;
-
-                    if(
-                        p.id === myId
-                    ){
-
-                        /*
-                         * Keep local movement responsive.
-                         * Server values are used as correction
-                         * when available.
-                         */
-
-                        if(
-                            Number.isFinite(p.hp)
-                        ){
-                            me.hp=p.hp;
-                        }
-
-                        if(
-                            Number.isFinite(p.x) &&
-                            Number.isFinite(p.y)
-                        ){
-
-                            const dx =
-                                p.x-me.x;
-
-                            const dy =
-                                p.y-me.y;
-
-                            if(
-                                Math.hypot(dx,dy) > 1.5
-                            ){
-
-                                me.x=p.x;
-                                me.y=p.y;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if(
-                Number.isFinite(data.scoreA)
-            ){
-                scoreA=data.scoreA;
-            }
-
-            if(
-                Number.isFinite(data.scoreB)
-            ){
-                scoreB=data.scoreB;
-            }
-
-            updateHUD();
+            updateState(data);
 
             break;
 
 
         case "started":
 
-            startGame();
-
-            break;
-
-
         case "game_start":
+
+        case "match_started":
 
             startGame();
 
@@ -2001,50 +2304,33 @@ function handleServerMessage(data){
 
         case "bot_joined":
 
+            startGame();
+
             showMessage(
                 "BOT JOINED",
                 1
             );
-
-            startGame();
 
             break;
 
 
         case "hit":
 
-            if(
-                data.targetId &&
-                data.targetId !== myId
-            ){
-
-                showHit();
-            }
-
-            if(
-                data.attackerId === myId
-            ){
-
-                showHit();
-            }
+            showHit();
 
             break;
 
 
         case "damaged":
 
-            if(
-                data.targetId === myId ||
-                data.playerId === myId
-            ){
-
-                showDamage();
-            }
+            showDamage();
 
             break;
 
 
         case "game_over":
+
+        case "match_over":
 
             endGame(
                 data.winner ||
@@ -2059,7 +2345,7 @@ function handleServerMessage(data){
 
             showMessage(
                 data.message ||
-                "ROUND",
+                "ROUND END",
                 1.5
             );
 
@@ -2077,28 +2363,141 @@ function handleServerMessage(data){
             }
 
             break;
+
+
+        case "error":
+
+            loading.style.display="none";
+
+            alert(
+                data.message ||
+                data.error ||
+                "Server error"
+            );
+
+            break;
     }
 }
 
 
-/* =========================================================
+/* =====================================================
+   OPEN LOBBY
+===================================================== */
+
+function openLobby(){
+
+    loading.style.display="none";
+
+    menu.classList.add("hidden");
+
+    gameOver.classList.add("hidden");
+
+    lobby.classList.remove("hidden");
+
+    roomText.textContent =
+        roomCode
+        ? "ROOM: "+roomCode
+        : "ROOM CREATED";
+
+    statusEl.textContent=
+        "LOBBY";
+}
+
+
+/* =====================================================
+   UPDATE STATE
+===================================================== */
+
+function updateState(data){
+
+    const list =
+        data.players ||
+        [];
+
+    players={};
+
+    for(
+        const p of list
+    ){
+
+        players[p.id]=p;
+
+        if(
+            p.id===myId
+        ){
+
+            if(
+                Number.isFinite(p.hp)
+            ){
+                me.hp=p.hp;
+            }
+
+            if(
+                Number.isFinite(p.x) &&
+                Number.isFinite(p.y)
+            ){
+
+                const dx=
+                    p.x-me.x;
+
+                const dy=
+                    p.y-me.y;
+
+                /*
+                 * მხოლოდ დიდი განსხვავებისას
+                 * ვასწორებთ ლოკალურ პოზიციას,
+                 * რომ მოძრაობა smooth დარჩეს.
+                 */
+
+                if(
+                    Math.hypot(
+                        dx,
+                        dy
+                    )>1.5
+                ){
+
+                    me.x=p.x;
+                    me.y=p.y;
+                }
+            }
+        }
+    }
+
+    if(
+        Number.isFinite(data.scoreA)
+    ){
+        scoreA=
+            data.scoreA;
+    }
+
+    if(
+        Number.isFinite(data.scoreB)
+    ){
+        scoreB=
+            data.scoreB;
+    }
+}
+
+
+/* =====================================================
    START GAME
-========================================================= */
+===================================================== */
 
 function startGame(){
 
-    gameStarted=true;
     gameRunning=true;
 
     menu.classList.add("hidden");
+
     lobby.classList.add("hidden");
+
     gameOver.classList.add("hidden");
 
     hud.classList.remove("hidden");
 
     me.hp=100;
 
-    statusEl.textContent =
+    statusEl.textContent=
         "FIGHT";
 
     showMessage(
@@ -2106,305 +2505,250 @@ function startGame(){
         1
     );
 
-    setTimeout(()=>{
+    setTimeout(
+        ()=>{
+            if(gameRunning){
 
-        if(gameRunning){
-
-            canvas.requestPointerLock()
-                .catch(()=>{});
-
-        }
-
-    },300);
+                canvas
+                    .requestPointerLock()
+                    .catch(
+                        ()=>{}
+                    );
+            }
+        },
+        300
+    );
 }
 
 
-/* =========================================================
-   END GAME
-========================================================= */
+/* =====================================================
+   GAME OVER
+===================================================== */
 
 function endGame(result){
 
     gameRunning=false;
 
-    document.exitPointerLock?.();
-
-    gameOver.classList.remove("hidden");
-
-    document.getElementById(
-        "gameOverText"
-    ).textContent =
-        typeof result === "string"
-        ? result
-        : "MATCH FINISHED";
-
-}
-
-
-/* =========================================================
-   BUTTONS
-========================================================= */
-
-function ensureSocket(){
+    mouseDown=false;
 
     if(
-        !socket ||
-        socket.readyState !== WebSocket.OPEN
+        document.pointerLockElement
     ){
-        connect();
-        return false;
+
+        document.exitPointerLock();
     }
 
-    return true;
+    document
+        .getElementById(
+            "gameOverText"
+        )
+        .textContent=
+            String(result);
+
+    gameOver.classList.remove(
+        "hidden"
+    );
 }
 
 
-document.getElementById("createBtn")
-.addEventListener("click",()=>{
+/* =====================================================
+   BUTTONS
+===================================================== */
 
-    myName =
-        nameInput.value.trim() ||
-        "Player";
+document
+.getElementById("createBtn")
+.addEventListener(
+    "click",
+    createMatch
+);
 
-    if(!ensureSocket()){
 
-        setTimeout(()=>{
+document
+.getElementById("joinBtn")
+.addEventListener(
+    "click",
+    joinMatch
+);
 
-            if(socket &&
-               socket.readyState === WebSocket.OPEN){
 
-                socket.send(JSON.stringify({
+document
+.getElementById("botBtn")
+.addEventListener(
+    "click",
+    addBot
+);
 
-                    type:"create",
-                    name:myName
-                }));
-            }
 
-        },500);
+document
+.getElementById("copyBtn")
+.addEventListener(
+    "click",
+    async()=>{
 
-        return;
+        if(!roomCode)
+            return;
+
+        try{
+
+            await navigator
+                .clipboard
+                .writeText(
+                    roomCode
+                );
+
+            roomText.textContent=
+                "COPIED: "+roomCode;
+
+            setTimeout(
+                ()=>{
+                    roomText.textContent=
+                        "ROOM: "+roomCode;
+                },
+                1200
+            );
+
+        }catch{
+
+            prompt(
+                "Copy room code:",
+                roomCode
+            );
+        }
     }
-
-    socket.send(JSON.stringify({
-
-        type:"create",
-        name:myName
-    }));
-
-});
+);
 
 
-document.getElementById("joinBtn")
-.addEventListener("click",()=>{
+document
+.getElementById("backBtn")
+.addEventListener(
+    "click",
+    ()=>{
 
-    myName =
-        nameInput.value.trim() ||
-        "Player";
-
-    const code =
-        prompt(
-            "შეიყვანე ROOM CODE:"
+        lobby.classList.add(
+            "hidden"
         );
 
-    if(!code) return;
-
-    roomCode =
-        code.trim();
-
-    if(!ensureSocket()){
-
-        setTimeout(()=>{
-
-            if(socket &&
-               socket.readyState === WebSocket.OPEN){
-
-                socket.send(JSON.stringify({
-
-                    type:"join",
-                    room:roomCode,
-                    name:myName
-                }));
-            }
-
-        },500);
-
-        return;
-    }
-
-    socket.send(JSON.stringify({
-
-        type:"join",
-        room:roomCode,
-        name:myName
-    }));
-
-});
-
-
-document.getElementById("botBtn")
-.addEventListener("click",()=>{
-
-    if(!socket ||
-       socket.readyState !== WebSocket.OPEN){
-
-        connect();
-
-        setTimeout(()=>{
-
-            if(socket &&
-               socket.readyState === WebSocket.OPEN){
-
-                socket.send(JSON.stringify({
-                    type:"add_bot"
-                }));
-            }
-
-        },500);
-
-        return;
-    }
-
-    socket.send(JSON.stringify({
-        type:"add_bot"
-    }));
-
-});
-
-
-document.getElementById("copyBtn")
-.addEventListener("click",async()=>{
-
-    if(!roomCode) return;
-
-    try{
-
-        await navigator.clipboard.writeText(
-            roomCode
-        );
-
-        roomText.textContent =
-            "COPIED: "+roomCode;
-
-        setTimeout(()=>{
-
-            roomText.textContent =
-                "ROOM: "+roomCode;
-
-        },1200);
-
-    }catch{
-
-        prompt(
-            "Copy room code:",
-            roomCode
+        menu.classList.remove(
+            "hidden"
         );
     }
-});
+);
 
 
-document.getElementById("backBtn")
-.addEventListener("click",()=>{
+document
+.getElementById("againBtn")
+.addEventListener(
+    "click",
+    ()=>{
 
-    lobby.classList.add("hidden");
-    menu.classList.remove("hidden");
+        gameOver.classList.add(
+            "hidden"
+        );
 
-});
-
-
-document.getElementById("againBtn")
-.addEventListener("click",()=>{
-
-    gameOver.classList.add("hidden");
-    lobby.classList.remove("hidden");
-
-});
-
-
-document.getElementById("menuBtn")
-.addEventListener("click",()=>{
-
-    gameOver.classList.add("hidden");
-    hud.classList.add("hidden");
-    menu.classList.remove("hidden");
-
-    gameRunning=false;
-
-});
+        lobby.classList.remove(
+            "hidden"
+        );
+    }
+);
 
 
-/* =========================================================
-   INITIAL CONNECTION
-========================================================= */
+document
+.getElementById("menuBtn")
+.addEventListener(
+    "click",
+    ()=>{
 
-connect();
+        gameRunning=false;
+
+        gameOver.classList.add(
+            "hidden"
+        );
+
+        hud.classList.add(
+            "hidden"
+        );
+
+        menu.classList.remove(
+            "hidden"
+        );
+    }
+);
 
 
-/* =========================================================
-   PREVENT TAB SCROLL
-========================================================= */
-
-addEventListener("wheel",e=>{
-
-    if(gameRunning)
-        e.preventDefault();
-
-},{passive:false});
-
-
-/* =========================================================
+/* =====================================================
    POINTER LOCK
-========================================================= */
+===================================================== */
 
 document.addEventListener(
     "pointerlockchange",
     ()=>{
 
+        if(!gameRunning)
+            return;
+
         if(
-            gameRunning &&
-            document.pointerLockElement === canvas
+            document.pointerLockElement===
+            canvas
         ){
 
-            statusEl.textContent =
+            statusEl.textContent=
                 "FIGHT";
 
-        }else if(gameRunning){
+        }else{
 
-            statusEl.textContent =
+            statusEl.textContent=
                 "CLICK TO PLAY";
         }
     }
 );
 
 
-/* =========================================================
-   MOBILE / FOCUS SAFETY
-========================================================= */
+/* =====================================================
+   FOCUS
+===================================================== */
 
-addEventListener("blur",()=>{
+addEventListener(
+    "blur",
+    ()=>{
 
-    for(const k in keys)
-        keys[k]=false;
+        for(
+            const key in keys
+        ){
+            keys[key]=false;
+        }
 
-    mouseDown=false;
-});
-
-
-/* =========================================================
-   AUTO FIRE SUPPORT
-========================================================= */
-
-setInterval(()=>{
-
-    if(
-        gameRunning &&
-        mouseDown
-    ){
-
-        shoot();
+        mouseDown=false;
     }
+);
 
-},30);
+
+/* =====================================================
+   AUTO CONNECT
+===================================================== */
+
+connect();
+
+
+/* =====================================================
+   AUTO SHOOT
+===================================================== */
+
+setInterval(
+    ()=>{
+
+        if(
+            gameRunning &&
+            mouseDown
+        ){
+
+            shoot();
+        }
+
+    },
+    30
+);
 
 </script>
+
 </body>
 </html>
