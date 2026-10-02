@@ -4,47 +4,45 @@ const path = require("path");
 const WebSocket = require("ws");
 
 const PORT = process.env.PORT || 3000;
-
-const rooms = new Map();
-
-const TICK_RATE = 30;
-const WORLD_W = 1600;
-const WORLD_H = 900;
-
-const PLAYER_RADIUS = 24;
-const BULLET_SPEED = 950;
-const BULLET_DAMAGE = 25;
-
 const MAX_SCORE = 10;
 
 const server = http.createServer((req, res) => {
-    let file = req.url === "/" ? "/GAME3.html" : req.url;
+    // მთავარი გვერდი უნდა იყოს index.html
+    let file = req.url === "/" ? "/index.html" : req.url;
 
-    if (file.includes("?")) {
-        file = file.split("?")[0];
-    }
+    file = decodeURIComponent(file);
 
     const filePath = path.join(__dirname, file);
 
     fs.readFile(filePath, (err, data) => {
         if (err) {
-            res.writeHead(404);
-            res.end("Not Found");
+            res.writeHead(404, {
+                "Content-Type": "text/plain; charset=utf-8"
+            });
+            res.end("404 - File not found");
             return;
         }
 
-        let type = "text/html";
+        let contentType = "text/plain";
 
-        if (filePath.endsWith(".js")) {
-            type = "application/javascript";
-        }
-
-        if (filePath.endsWith(".css")) {
-            type = "text/css";
+        if (file.endsWith(".html")) {
+            contentType = "text/html; charset=utf-8";
+        } else if (file.endsWith(".js")) {
+            contentType = "application/javascript; charset=utf-8";
+        } else if (file.endsWith(".css")) {
+            contentType = "text/css; charset=utf-8";
+        } else if (file.endsWith(".json")) {
+            contentType = "application/json; charset=utf-8";
+        } else if (file.endsWith(".png")) {
+            contentType = "image/png";
+        } else if (file.endsWith(".jpg") || file.endsWith(".jpeg")) {
+            contentType = "image/jpeg";
+        } else if (file.endsWith(".svg")) {
+            contentType = "image/svg+xml";
         }
 
         res.writeHead(200, {
-            "Content-Type": type
+            "Content-Type": contentType
         });
 
         res.end(data);
@@ -55,9 +53,10 @@ const wss = new WebSocket.Server({
     server
 });
 
+const rooms = new Map();
+
 function randomCode() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
     let code = "";
 
     for (let i = 0; i < 5; i++) {
@@ -77,16 +76,11 @@ function createRoom() {
     const room = {
         code,
         players: new Map(),
-        bot: null,
-
         bullets: [],
-
-        score: {
-            p1: 0,
-            p2: 0
-        },
-
-        started: false
+        bot: null,
+        started: false,
+        scores: {},
+        lastUpdate: Date.now()
     };
 
     rooms.set(code, room);
@@ -94,607 +88,137 @@ function createRoom() {
     return room;
 }
 
-function send(ws, data) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(data));
+function broadcast(room, message) {
+    const text = JSON.stringify(message);
+
+    room.players.forEach(player => {
+        if (player.ws.readyState === WebSocket.OPEN) {
+            player.ws.send(text);
+        }
+    });
+
+    if (room.bot && room.bot.ws && room.bot.ws.readyState === WebSocket.OPEN) {
+        room.bot.ws.send(text);
     }
 }
 
-function broadcast(room, data) {
-    for (const player of room.players.values()) {
-        send(player.ws, data);
-    }
-}
-
-function spawnPosition(id) {
-    if (id === "p1") {
-        return {
-            x: 260,
-            y: WORLD_H / 2
-        };
-    }
-
-    return {
-        x: WORLD_W - 260,
-        y: WORLD_H / 2
-    };
-}
-
-function createPlayer(id, ws, name) {
-    const spawn = spawnPosition(id);
-
-    return {
-        id,
-        ws,
-
-        name: name || id.toUpperCase(),
-
-        x: spawn.x,
-        y: spawn.y,
-
-        angle: id === "p1" ? 0 : Math.PI,
-
-        hp: 100,
-
-        kills: 0,
-        deaths: 0,
-
-        keys: {
-            w: false,
-            a: false,
-            s: false,
-            d: false
-        },
-
-        shooting: false,
-        lastShot: 0,
-
-        speed: 320,
-
-        alive: true,
-
-        respawnAt: 0
-    };
-}
-
-function createBot() {
-    const spawn = spawnPosition("p2");
-
-    return {
-        id: "bot",
-
-        name: "BOT",
-
-        x: spawn.x,
-        y: spawn.y,
-
-        angle: Math.PI,
-
-        hp: 100,
-
-        kills: 0,
-        deaths: 0,
-
-        alive: true,
-
-        lastShot: 0,
-
-        targetX: spawn.x,
-        targetY: spawn.y,
-
-        respawnAt: 0
-    };
-}
-
-function resetPlayer(player) {
-    const spawn = spawnPosition(player.id);
-
-    player.x = spawn.x;
-    player.y = spawn.y;
-
-    player.hp = 100;
-
-    player.alive = true;
-
-    player.respawnAt = 0;
-
-    player.shooting = false;
-}
-
-function resetBot(bot) {
-    bot.x = WORLD_W - 260;
-    bot.y = WORLD_H / 2;
-
-    bot.hp = 100;
-
-    bot.alive = true;
-
-    bot.lastShot = 0;
-
-    bot.respawnAt = 0;
-}
-
-function roomState(room) {
+function getRoomState(room) {
     const players = [];
 
-    for (const p of room.players.values()) {
+    room.players.forEach(player => {
         players.push({
-            id: p.id,
-            name: p.name,
-
-            x: p.x,
-            y: p.y,
-
-            angle: p.angle,
-
-            hp: p.hp,
-
-            kills: p.kills,
-            deaths: p.deaths,
-
-            alive: p.alive
+            id: player.id,
+            name: player.name,
+            x: player.x,
+            y: player.y,
+            angle: player.angle,
+            hp: player.hp
         });
-    }
+    });
 
     if (room.bot) {
         players.push({
-            id: "bot",
-            name: "BOT",
-
+            id: room.bot.id,
+            name: room.bot.name,
             x: room.bot.x,
             y: room.bot.y,
-
             angle: room.bot.angle,
-
-            hp: room.bot.hp,
-
-            kills: room.bot.kills,
-            deaths: room.bot.deaths,
-
-            alive: room.bot.alive
+            hp: room.bot.hp
         });
     }
 
     return {
         type: "state",
-
+        room: room.code,
+        started: room.started,
+        lobby: room.players.size < 2 && !room.bot,
         players,
-
-        bullets: room.bullets.map(b => ({
-            id: b.id,
-            x: b.x,
-            y: b.y
-        })),
-
-        score: room.score,
-
-        lobby: room.players.size < 2 && !room.bot
+        bullets: room.bullets,
+        scores: room.scores
     };
 }
 
-function announce(room, message) {
-    broadcast(room, {
-        type: "message",
-        message
-    });
+function sendState(room) {
+    broadcast(room, getRoomState(room));
 }
 
 function addBot(room) {
-    if (room.bot) {
-        return false;
-    }
+    if (room.bot) return;
+    if (room.players.size >= 2) return;
 
-    if (room.players.size >= 2) {
-        return false;
-    }
-
-    room.bot = createBot();
+    room.bot = {
+        id: "BOT",
+        name: "BOT",
+        x: 760,
+        y: 400,
+        angle: 0,
+        hp: 100,
+        ws: null
+    };
 
     room.started = true;
 
-    announce(
-        room,
-        "🤖 BOT შემოვიდა! თამაში იწყება!"
-    );
-
     broadcast(room, {
-        type: "bot_joined"
+        type: "bot_joined",
+        name: "BOT"
     });
 
-    return true;
+    sendState(room);
 }
 
 function removeBot(room) {
-    if (!room.bot) {
-        return;
-    }
+    if (!room.bot) return;
 
     room.bot = null;
-
     room.started = false;
 
-    broadcast(room, {
-        type: "bot_left"
-    });
+    sendState(room);
 }
 
-function killPlayer(room, victim, attackerId) {
-    victim.alive = false;
+function resetRound(room) {
+    room.bullets = [];
 
-    victim.deaths++;
+    room.players.forEach((player, index) => {
+        player.hp = 100;
 
-    victim.hp = 0;
-
-    if (attackerId === "p1") {
-        room.score.p1++;
-    }
-
-    if (
-        attackerId === "p2" ||
-        attackerId === "bot"
-    ) {
-        room.score.p2++;
-    }
-
-    let attackerName = attackerId.toUpperCase();
-
-    if (attackerId === "bot") {
-        attackerName = "BOT";
-    }
-
-    announce(
-        room,
-        "💀 " +
-        victim.name +
-        " მოკლა " +
-        attackerName
-    );
-
-    if (
-        room.score.p1 >= MAX_SCORE ||
-        room.score.p2 >= MAX_SCORE
-    ) {
-        const winner =
-            room.score.p1 >= MAX_SCORE
-                ? "p1"
-                : "p2";
-
-        broadcast(room, {
-            type: "game_over",
-            winner
-        });
-
-        setTimeout(() => {
-            if (!rooms.has(room.code)) {
-                return;
-            }
-
-            room.score.p1 = 0;
-            room.score.p2 = 0;
-
-            room.bullets = [];
-
-            for (const p of room.players.values()) {
-                resetPlayer(p);
-
-                p.kills = 0;
-                p.deaths = 0;
-            }
-
-            if (room.bot) {
-                resetBot(room.bot);
-
-                room.bot.kills = 0;
-                room.bot.deaths = 0;
-            }
-
-            announce(
-                room,
-                "🔄 ახალი რაუნდი დაიწყო!"
-            );
-        }, 3500);
-
-        return;
-    }
-
-    victim.respawnAt = Date.now() + 1500;
-
-    if (attackerId === "p1") {
-        const attacker = room.players.get("p1");
-
-        if (attacker) {
-            attacker.kills++;
-        }
-    }
-
-    if (
-        attackerId === "p2" ||
-        attackerId === "bot"
-    ) {
-        if (attackerId === "bot") {
-            if (room.bot) {
-                room.bot.kills++;
-            }
+        if (index === 0) {
+            player.x = 350;
+            player.y = 400;
         } else {
-            const attacker = room.players.get("p2");
-
-            if (attacker) {
-                attacker.kills++;
-            }
+            player.x = 850;
+            player.y = 400;
         }
+    });
+
+    if (room.bot) {
+        room.bot.hp = 100;
+        room.bot.x = 850;
+        room.bot.y = 400;
     }
+
+    sendState(room);
 }
 
-function distance(a, b) {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
+function startRoom(room) {
+    if (room.started) return;
 
-    return Math.sqrt(dx * dx + dy * dy);
+    const participantCount =
+        room.players.size + (room.bot ? 1 : 0);
+
+    if (participantCount < 2) return;
+
+    room.started = true;
+
+    broadcast(room, {
+        type: "game_started"
+    });
+
+    resetRound(room);
 }
 
-function shoot(room, shooter) {
-    if (!shooter.alive) {
-        return;
-    }
-
-    const now = Date.now();
-
-    if (now - shooter.lastShot < 180) {
-        return;
-    }
-
-    shooter.lastShot = now;
-
-    const bullet = {
-        id: Math.random()
-            .toString(36)
-            .slice(2),
-
-        owner: shooter.id,
-
-        x:
-            shooter.x +
-            Math.cos(shooter.angle) *
-            (PLAYER_RADIUS + 12),
-
-        y:
-            shooter.y +
-            Math.sin(shooter.angle) *
-            (PLAYER_RADIUS + 12),
-
-        vx:
-            Math.cos(shooter.angle) *
-            BULLET_SPEED,
-
-        vy:
-            Math.sin(shooter.angle) *
-            BULLET_SPEED
-    };
-
-    room.bullets.push(bullet);
-}
-
-function updateBot(room) {
-    const bot = room.bot;
-
-    if (!bot) {
-        return;
-    }
-
-    if (!bot.alive) {
-        if (
-            bot.respawnAt &&
-            Date.now() >= bot.respawnAt
-        ) {
-            resetBot(bot);
-        }
-
-        return;
-    }
-
-    const target =
-        room.players.values().next().value;
-
-    if (!target || !target.alive) {
-        return;
-    }
-
-    const dx = target.x - bot.x;
-    const dy = target.y - bot.y;
-
-    const dist = Math.sqrt(
-        dx * dx +
-        dy * dy
-    );
-
-    if (dist <= 0) {
-        return;
-    }
-
-    bot.angle = Math.atan2(
-        dy,
-        dx
-    );
-
-    if (dist > 330) {
-        bot.x +=
-            (dx / dist) *
-            150 /
-            TICK_RATE;
-
-        bot.y +=
-            (dy / dist) *
-            150 /
-            TICK_RATE;
-    }
-
-    if (dist < 850) {
-        shoot(room, bot);
-    }
-
-    bot.x = Math.max(
-        PLAYER_RADIUS,
-        Math.min(
-            WORLD_W - PLAYER_RADIUS,
-            bot.x
-        )
-    );
-
-    bot.y = Math.max(
-        PLAYER_RADIUS,
-        Math.min(
-            WORLD_H - PLAYER_RADIUS,
-            bot.y
-        )
-    );
-}
-
-function updateRoom(room) {
-    for (const player of room.players.values()) {
-        if (!player.alive) {
-            if (
-                player.respawnAt &&
-                Date.now() >= player.respawnAt
-            ) {
-                resetPlayer(player);
-            }
-
-            continue;
-        }
-
-        let dx = 0;
-        let dy = 0;
-
-        if (player.keys.w) dy--;
-        if (player.keys.s) dy++;
-
-        if (player.keys.a) dx--;
-        if (player.keys.d) dx++;
-
-        if (dx !== 0 || dy !== 0) {
-            const len = Math.sqrt(
-                dx * dx +
-                dy * dy
-            );
-
-            dx /= len;
-            dy /= len;
-
-            player.x +=
-                dx *
-                player.speed /
-                TICK_RATE;
-
-            player.y +=
-                dy *
-                player.speed /
-                TICK_RATE;
-        }
-
-        player.x = Math.max(
-            PLAYER_RADIUS,
-            Math.min(
-                WORLD_W - PLAYER_RADIUS,
-                player.x
-            )
-        );
-
-        player.y = Math.max(
-            PLAYER_RADIUS,
-            Math.min(
-                WORLD_H - PLAYER_RADIUS,
-                player.y
-            )
-        );
-
-        if (player.shooting) {
-            shoot(room, player);
-        }
-    }
-
-    updateBot(room);
-
-    for (
-        let i = room.bullets.length - 1;
-        i >= 0;
-        i--
-    ) {
-        const bullet = room.bullets[i];
-
-        bullet.x +=
-            bullet.vx /
-            TICK_RATE;
-
-        bullet.y +=
-            bullet.vy /
-            TICK_RATE;
-
-        if (
-            bullet.x < 0 ||
-            bullet.x > WORLD_W ||
-            bullet.y < 0 ||
-            bullet.y > WORLD_H
-        ) {
-            room.bullets.splice(i, 1);
-            continue;
-        }
-
-        const targets = [];
-
-        for (const p of room.players.values()) {
-            targets.push(p);
-        }
-
-        if (room.bot) {
-            targets.push(room.bot);
-        }
-
-        let hit = false;
-
-        for (const target of targets) {
-            if (!target.alive) {
-                continue;
-            }
-
-            if (target.id === bullet.owner) {
-                continue;
-            }
-
-            const dx =
-                bullet.x -
-                target.x;
-
-            const dy =
-                bullet.y -
-                target.y;
-
-            const d = Math.sqrt(
-                dx * dx +
-                dy * dy
-            );
-
-            if (d < PLAYER_RADIUS) {
-                target.hp -= BULLET_DAMAGE;
-
-                if (target.hp <= 0) {
-                    killPlayer(
-                        room,
-                        target,
-                        bullet.owner
-                    );
-                }
-
-                room.bullets.splice(i, 1);
-
-                hit = true;
-
-                break;
-            }
-        }
-
-        if (hit) {
-            continue;
-        }
+function removeRoomIfEmpty(room) {
+    if (room.players.size === 0 && !room.bot) {
+        rooms.delete(room.code);
     }
 }
 
@@ -702,163 +226,127 @@ wss.on("connection", ws => {
     let currentRoom = null;
     let currentPlayer = null;
 
-    send(ws, {
-        type: "connected"
-    });
+    ws.send(
+        JSON.stringify({
+            type: "connected"
+        })
+    );
 
     ws.on("message", raw => {
         let data;
 
         try {
-            data = JSON.parse(
-                raw.toString()
-            );
+            data = JSON.parse(raw.toString());
         } catch {
             return;
         }
 
-        /*
-        ==========================
-        CREATE ROOM
-        ==========================
-        */
-
         if (data.type === "create_room") {
-            if (currentRoom) {
-                return;
-            }
+            if (currentRoom) return;
 
             const room = createRoom();
 
+            const player = {
+                id: "p_" + Math.random().toString(36).slice(2),
+                name:
+                    String(data.name || "Player")
+                        .slice(0, 16),
+                x: 350,
+                y: 400,
+                angle: 0,
+                hp: 100,
+                ws
+            };
+
+            room.players.set(player.id, player);
+            room.scores[player.id] = 0;
+
             currentRoom = room;
+            currentPlayer = player;
 
-            currentPlayer = createPlayer(
-                "p1",
-                ws,
-                String(
-                    data.name ||
-                    "PLAYER 1"
-                ).slice(0, 16)
+            ws.send(
+                JSON.stringify({
+                    type: "room_created",
+                    room: room.code,
+                    playerId: player.id
+                })
             );
 
-            room.players.set(
-                "p1",
-                currentPlayer
-            );
-
-            send(ws, {
-                type: "room_created",
-
-                room: room.code,
-
-                playerId: "p1"
-            });
-
-            /*
-            IMPORTANT:
-            აქ BOT აღარ შემოდის ავტომატურად.
-            მოთამაშე რჩება LOBBY-ში.
-            */
+            sendState(room);
 
             return;
         }
 
-        /*
-        ==========================
-        JOIN ROOM
-        ==========================
-        */
-
         if (data.type === "join_room") {
-            if (currentRoom) {
-                return;
-            }
+            if (currentRoom) return;
 
-            const code = String(
-                data.room || ""
-            )
+            const code = String(data.room || "")
                 .trim()
                 .toUpperCase();
 
             const room = rooms.get(code);
 
             if (!room) {
-                send(ws, {
-                    type: "error",
-                    message:
-                        "ოთახი ვერ მოიძებნა."
-                });
-
+                ws.send(
+                    JSON.stringify({
+                        type: "error",
+                        message: "ოთახი ვერ მოიძებნა"
+                    })
+                );
                 return;
             }
 
             if (room.players.size >= 2) {
-                send(ws, {
-                    type: "error",
-                    message:
-                        "ოთახი უკვე სავსეა."
-                });
-
+                ws.send(
+                    JSON.stringify({
+                        type: "error",
+                        message: "ოთახი უკვე სავსეა"
+                    })
+                );
                 return;
             }
 
-            /*
-            თუ BOT უკვე არის,
-            რეალური მოთამაშე მას ანაცვლებს.
-            */
-
             if (room.bot) {
-                removeBot(room);
+                room.bot = null;
             }
 
+            const player = {
+                id: "p_" + Math.random().toString(36).slice(2),
+                name:
+                    String(data.name || "Player")
+                        .slice(0, 16),
+                x: 850,
+                y: 400,
+                angle: Math.PI,
+                hp: 100,
+                ws
+            };
+
+            room.players.set(player.id, player);
+            room.scores[player.id] = 0;
+
             currentRoom = room;
+            currentPlayer = player;
 
-            currentPlayer = createPlayer(
-                "p2",
-                ws,
-                String(
-                    data.name ||
-                    "PLAYER 2"
-                ).slice(0, 16)
+            ws.send(
+                JSON.stringify({
+                    type: "room_joined",
+                    room: room.code,
+                    playerId: player.id
+                })
             );
 
-            room.players.set(
-                "p2",
-                currentPlayer
-            );
-
-            room.started = true;
-
-            send(ws, {
-                type: "room_joined",
-
-                room: room.code,
-
-                playerId: "p2"
-            });
-
-            announce(
-                room,
-                "⚔️ მეორე მოთამაშე შემოვიდა! თამაში იწყება!"
-            );
-
-            broadcast(room, {
-                type: "game_started"
-            });
+            if (room.players.size >= 2) {
+                startRoom(room);
+            } else {
+                sendState(room);
+            }
 
             return;
         }
 
-        /*
-        ==========================
-        CALL BOT
-        ==========================
-        */
-
         if (data.type === "add_bot") {
-            if (!currentRoom || !currentPlayer) {
-                return;
-            }
+            if (!currentRoom || !currentPlayer) return;
 
             if (currentRoom.players.size >= 2) {
                 return;
@@ -873,146 +361,263 @@ wss.on("connection", ws => {
             return;
         }
 
-        /*
-        ==========================
-        INPUT
-        ==========================
-        */
-
         if (data.type === "input") {
-            if (!currentRoom || !currentPlayer) {
-                return;
+            if (!currentRoom || !currentPlayer) return;
+
+            if (!currentRoom.started) return;
+
+            const dx = Number(data.dx) || 0;
+            const dy = Number(data.dy) || 0;
+
+            const speed = 6;
+
+            currentPlayer.x += dx * speed;
+            currentPlayer.y += dy * speed;
+
+            currentPlayer.x = Math.max(
+                40,
+                Math.min(1160, currentPlayer.x)
+            );
+
+            currentPlayer.y = Math.max(
+                40,
+                Math.min(760, currentPlayer.y)
+            );
+
+            if (typeof data.angle === "number") {
+                currentPlayer.angle = data.angle;
             }
 
-            const k = data.keys || {};
-
-            currentPlayer.keys.w =
-                !!k.w;
-
-            currentPlayer.keys.a =
-                !!k.a;
-
-            currentPlayer.keys.s =
-                !!k.s;
-
-            currentPlayer.keys.d =
-                !!k.d;
-
-            if (
-                typeof data.angle ===
-                "number"
-            ) {
-                currentPlayer.angle =
-                    data.angle;
-            }
-
-            currentPlayer.shooting =
-                !!data.shooting;
+            sendState(currentRoom);
 
             return;
         }
 
-        /*
-        ==========================
-        SHOOT
-        ==========================
-        */
-
         if (data.type === "shoot") {
-            if (!currentRoom || !currentPlayer) {
-                return;
+            if (!currentRoom || !currentPlayer) return;
+            if (!currentRoom.started) return;
+
+            const bullet = {
+                id: "b_" + Math.random().toString(36).slice(2),
+                owner: currentPlayer.id,
+                x: currentPlayer.x,
+                y: currentPlayer.y,
+                angle:
+                    typeof data.angle === "number"
+                        ? data.angle
+                        : currentPlayer.angle,
+                speed: 14,
+                life: 100
+            };
+
+            currentRoom.bullets.push(bullet);
+
+            return;
+        }
+
+        if (data.type === "leave_room") {
+            if (!currentRoom || !currentPlayer) return;
+
+            const room = currentRoom;
+
+            room.players.delete(currentPlayer.id);
+            delete room.scores[currentPlayer.id];
+
+            currentRoom = null;
+            currentPlayer = null;
+
+            if (room.bot) {
+                removeBot(room);
             }
 
-            shoot(
-                currentRoom,
-                currentPlayer
-            );
+            sendState(room);
+            removeRoomIfEmpty(room);
 
             return;
         }
     });
 
-    /*
-    ==========================
-    PLAYER DISCONNECT
-    ==========================
-    */
-
     ws.on("close", () => {
-        if (
-            !currentRoom ||
-            !currentPlayer
-        ) {
+        if (!currentRoom || !currentPlayer) {
             return;
         }
 
-        currentRoom.players.delete(
-            currentPlayer.id
-        );
+        const room = currentRoom;
 
-        currentRoom.bullets = [];
+        room.players.delete(currentPlayer.id);
+        delete room.scores[currentPlayer.id];
 
-        /*
-        თუ ოთახში აღარავინ დარჩა,
-        ოთახიც წაიშლება.
-        */
-
-        if (
-            currentRoom.players.size === 0
-        ) {
-            rooms.delete(
-                currentRoom.code
-            );
-
-            return;
+        if (room.bot) {
+            room.bot = null;
         }
 
-        /*
-        დარჩა ერთი მოთამაშე.
-        BOT ავტომატურად აღარ შემოვა.
-        */
+        room.started = false;
+        room.bullets = [];
 
-        if (currentRoom.bot) {
-            removeBot(currentRoom);
-        }
+        sendState(room);
 
-        currentRoom.started = false;
-
-        announce(
-            currentRoom,
-            "👋 მოთამაშე გავიდა. ლობიში დაბრუნდი."
-        );
+        removeRoomIfEmpty(room);
     });
 });
 
-/*
-==========================
-GAME LOOP
-==========================
-*/
-
 setInterval(() => {
-    for (const room of rooms.values()) {
-        updateRoom(room);
+    rooms.forEach(room => {
+        if (!room.started) return;
 
-        broadcast(
-            room,
-            roomState(room)
+        const now = Date.now();
+        const delta = Math.min(
+            0.05,
+            (now - room.lastUpdate) / 1000
         );
-    }
-}, 1000 / TICK_RATE);
 
-/*
-==========================
-SERVER START
-==========================
-*/
+        room.lastUpdate = now;
 
-server.listen(
-    PORT,
-    () => {
-        console.log(
-            `RIVALS server running on port ${PORT}`
-        );
-    }
-);
+        room.bullets.forEach(bullet => {
+            bullet.x += Math.cos(bullet.angle) * bullet.speed;
+            bullet.y += Math.sin(bullet.angle) * bullet.speed;
+            bullet.life -= delta * 60;
+        });
+
+        room.bullets = room.bullets.filter(bullet => {
+            if (bullet.life <= 0) return false;
+
+            if (
+                bullet.x < 0 ||
+                bullet.x > 1200 ||
+                bullet.y < 0 ||
+                bullet.y > 800
+            ) {
+                return false;
+            }
+
+            let hit = false;
+
+            room.players.forEach(player => {
+                if (player.id === bullet.owner) return;
+                if (player.hp <= 0) return;
+
+                const dx = player.x - bullet.x;
+                const dy = player.y - bullet.y;
+                const distance = Math.sqrt(
+                    dx * dx + dy * dy
+                );
+
+                if (distance < 24) {
+                    player.hp -= 25;
+                    hit = true;
+
+                    if (player.hp <= 0) {
+                        room.scores[bullet.owner] =
+                            (room.scores[bullet.owner] || 0) + 1;
+
+                        player.hp = 100;
+
+                        if (
+                            room.scores[bullet.owner] >=
+                            MAX_SCORE
+                        ) {
+                            room.started = false;
+
+                            broadcast(room, {
+                                type: "game_over",
+                                winner: bullet.owner,
+                                scores: room.scores
+                            });
+
+                            setTimeout(() => {
+                                if (
+                                    rooms.has(room.code)
+                                ) {
+                                    resetRound(room);
+                                }
+                            }, 3000);
+                        } else {
+                            player.x =
+                                player.x < 600
+                                    ? 850
+                                    : 350;
+                            player.y = 400;
+                        }
+                    }
+                }
+            });
+
+            if (room.bot && room.bot.hp > 0) {
+                const dx = room.bot.x - bullet.x;
+                const dy = room.bot.y - bullet.y;
+                const distance = Math.sqrt(
+                    dx * dx + dy * dy
+                );
+
+                if (distance < 24) {
+                    room.bot.hp -= 25;
+                    hit = true;
+
+                    if (room.bot.hp <= 0) {
+                        room.scores[bullet.owner] =
+                            (room.scores[bullet.owner] || 0) + 1;
+
+                        room.bot.hp = 100;
+                        room.bot.x = 850;
+                        room.bot.y = 400;
+
+                        if (
+                            room.scores[bullet.owner] >=
+                            MAX_SCORE
+                        ) {
+                            room.started = false;
+
+                            broadcast(room, {
+                                type: "game_over",
+                                winner: bullet.owner,
+                                scores: room.scores
+                            });
+
+                            setTimeout(() => {
+                                if (
+                                    rooms.has(room.code)
+                                ) {
+                                    resetRound(room);
+                                }
+                            }, 3000);
+                        }
+                    }
+                }
+            }
+
+            return !hit;
+        });
+
+        // მარტივი BOT AI
+        if (room.bot && room.started) {
+            const human = Array.from(
+                room.players.values()
+            )[0];
+
+            if (human) {
+                const dx = human.x - room.bot.x;
+                const dy = human.y - room.bot.y;
+
+                const distance = Math.sqrt(
+                    dx * dx + dy * dy
+                );
+
+                if (distance > 120) {
+                    room.bot.x +=
+                        (dx / Math.max(distance, 1)) * 2.2;
+
+                    room.bot.y +=
+                        (dy / Math.max(distance, 1)) * 2.2;
+                }
+
+                room.bot.angle = Math.atan2(dy, dx);
+            }
+        }
+
+        sendState(room);
+    });
+}, 50);
+
+server.listen(PORT, () => {
+    console.log(`SchoolGame server running on port ${PORT}`);
+});
