@@ -76,6 +76,7 @@ function addBot(r){
   const bot={id:"bot",name:"BOT",ws:null,x:13.5,y:11.5,angle:Math.PI,hp:100,kills:0,alive:true,cool:0,bot:true};
   r.bot=bot;r.players.set("bot",bot);r.started=true;
   broadcast(r,{type:"bot_joined"});
+  broadcast(r,roomState(r));
 }
 function removePlayer(ws){
   const c=clients.get(ws);if(!c)return;

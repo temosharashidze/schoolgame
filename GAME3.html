@@ -171,7 +171,7 @@ function handle(d){
     return;
   }
   if(d.type==="error"){statusEl.textContent=d.message;return}
-  if(d.type==="bot_joined"){showToast("🤖 BOT შემოვიდა");return}
+  if(d.type==="bot_joined"){showToast("🤖 BOT შემოვიდა");if(!running)startGame();return}
   if(d.type==="state"){
     state=d;
     if(!running && d.players.length>=2)startGame();
@@ -309,7 +309,7 @@ function drawScene(){
   }
 
   drawWeapon(w,h);
-  requestAnimationFrame(drawScene);
+  
 }
 
 function drawWeapon(w,h){
@@ -326,9 +326,9 @@ function drawWeapon(w,h){
 }
 
 function loop(t){
-  if(!lastFrame)lastFrame=t;
   lastFrame=t;
-  if(running)drawScene();
+  if(running) drawScene();
+  requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 </script>
