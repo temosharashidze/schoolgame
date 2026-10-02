@@ -2,3026 +2,335 @@
 <html lang="ka">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>schoolgame | RIVALS</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>schoolgame | RIVALS FPS</title>
 <style>
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #020307;
-    color: white;
-    font-family: Arial, Helvetica, sans-serif;
-    user-select: none;
-}
-
-canvas {
-    display: block;
-}
-
-#menu {
-    position: fixed;
-    inset: 0;
-    z-index: 1000;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background:
-        radial-gradient(
-            circle at center,
-            #15122d 0%,
-            #070911 45%,
-            #020307 100%
-        );
-}
-
-.menuBox {
-    width: min(500px, 92vw);
-    padding: 34px;
-
-    border: 1px solid #302c4d;
-    border-radius: 20px;
-
-    background: rgba(7, 9, 17, .96);
-
-    box-shadow:
-        0 30px 100px rgba(0,0,0,.75);
-}
-
-.logo {
-    text-align: center;
-    font-size: 56px;
-    font-weight: 900;
-    letter-spacing: 5px;
-}
-
-.logo span {
-    color: #8f5cff;
-}
-
-.subtitle {
-    text-align: center;
-    color: #8d91aa;
-    margin: 5px 0 28px;
-}
-
-input {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 12px;
-
-    border-radius: 10px;
-    border: 1px solid #2d3045;
-    outline: none;
-
-    background: #090c15;
-    color: white;
-
-    font-size: 16px;
-}
-
-input:focus {
-    border-color: #8f5cff;
-}
-
-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 10px;
-
-    border: 0;
-    border-radius: 10px;
-
-    color: white;
-    background: #7951ff;
-
-    font-size: 16px;
-    font-weight: 900;
-
-    cursor: pointer;
-}
-
-button:hover {
-    filter: brightness(1.12);
-}
-
-button.secondary {
-    background: #171a29;
-}
-
-button.botButton {
-    background: linear-gradient(
-        135deg,
-        #8f5cff,
-        #4d1685
-    );
-}
-
-button.backButton {
-    background: #111521;
-    border: 1px solid #2b3043;
-}
-
-#status {
-    min-height: 22px;
-    margin-top: 14px;
-    text-align: center;
-    color: #ff7184;
-}
-
-.small {
-    margin-top: 20px;
-    text-align: center;
-    color: #72778d;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-#lobby {
-    display: none;
-    text-align: center;
-}
-
-.lobbyTitle {
-    font-size: 30px;
-    font-weight: 900;
-    margin-top: 10px;
-}
-
-.lobbySubtitle {
-    color: #858ba0;
-    margin: 8px 0 25px;
-}
-
-.roomCodeBox {
-    padding: 20px;
-    border-radius: 14px;
-    border: 1px solid #343650;
-    background: #0c0f1a;
-}
-
-.roomLabel {
-    color: #747a91;
-    font-size: 12px;
-}
-
-.roomCode {
-    margin-top: 8px;
-    font-size: 42px;
-    font-weight: 900;
-    letter-spacing: 8px;
-    color: #a681ff;
-}
-
-.playersStatus {
-    margin-top: 18px;
-    padding: 14px;
-    border-radius: 12px;
-    background: #080b13;
-    border: 1px solid #292e42;
-    font-weight: 900;
-}
-
-.playersStatus.waiting {
-    color: #ffca58;
-}
-
-.playersStatus.ready {
-    color: #4cff9b;
-}
-
-.lobbyHint {
-    margin-top: 18px;
-    color: #6d7388;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-/* GAME */
-
-#game {
-    position: fixed;
-    inset: 0;
-    display: none;
-    background: #020307;
-}
-
-#crosshair {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-
-    width: 22px;
-    height: 22px;
-
-    transform: translate(-50%, -50%);
-
-    z-index: 50;
-    pointer-events: none;
-}
-
-.crossLine {
-    position: absolute;
-    background: rgba(255,255,255,.92);
-    box-shadow: 0 0 5px black;
-}
-
-.crossLine.v {
-    width: 2px;
-    height: 22px;
-    left: 10px;
-    top: 0;
-}
-
-.crossLine.h {
-    width: 22px;
-    height: 2px;
-    left: 0;
-    top: 10px;
-}
-
-#hud {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    pointer-events: none;
-}
-
-#topHud {
-    position: absolute;
-    left: 22px;
-    right: 22px;
-    top: 18px;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.hudBox {
-    min-width: 145px;
-    padding: 10px 15px;
-
-    background: rgba(3,5,10,.72);
-
-    border: 1px solid #2d3245;
-    border-radius: 10px;
-
-    backdrop-filter: blur(8px);
-}
-
-.hudTitle {
-    color: #888ea4;
-    font-size: 11px;
-}
-
-.hudValue {
-    margin-top: 4px;
-    font-size: 23px;
-    font-weight: 900;
-}
-
-#centerScore {
-    position: absolute;
-    left: 50%;
-    top: 18px;
-
-    transform: translateX(-50%);
-
-    padding: 9px 20px;
-
-    border-radius: 10px;
-    background: rgba(3,5,10,.75);
-    border: 1px solid #303549;
-
-    font-size: 24px;
-    font-weight: 900;
-}
-
-#bottomHud {
-    position: absolute;
-    left: 25px;
-    right: 25px;
-    bottom: 20px;
-
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-}
-
-#healthBox {
-    width: 230px;
-}
-
-#healthNumber {
-    font-size: 32px;
-    font-weight: 900;
-}
-
-#healthBar {
-    margin-top: 7px;
-    height: 8px;
-
-    background: #171b26;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-#healthFill {
-    width: 100%;
-    height: 100%;
-    background: #42ee88;
-    transition: width .15s;
-}
-
-#ammo {
-    text-align: right;
-    font-size: 42px;
-    font-weight: 900;
-
-    text-shadow:
-        0 3px 15px black;
-}
-
-#ammo small {
-    display: block;
-    font-size: 12px;
-    color: #8a8fa4;
-    letter-spacing: 2px;
-}
-
-#weaponName {
-    position: absolute;
-    right: 25px;
-    bottom: 86px;
-
-    font-size: 13px;
-    font-weight: 900;
-    color: #aaaec0;
-}
-
-#hitMarker {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-
-    width: 34px;
-    height: 34px;
-
-    transform: translate(-50%, -50%);
-
-    z-index: 55;
-    pointer-events: none;
-
-    opacity: 0;
-}
-
-#hitMarker::before,
-#hitMarker::after {
-    content: "";
-    position: absolute;
-    left: 15px;
-    top: 3px;
-
-    width: 3px;
-    height: 28px;
-
-    background: white;
-}
-
-#hitMarker::before {
-    transform: rotate(45deg);
-}
-
-#hitMarker::after {
-    transform: rotate(-45deg);
-}
-
-#hitMarker.show {
-    animation: hit .18s ease-out;
-}
-
-@keyframes hit {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(.7);
-    }
-}
-
-#damageFlash {
-    position: fixed;
-    inset: 0;
-
-    z-index: 35;
-    pointer-events: none;
-
-    background:
-        radial-gradient(
-            circle,
-            transparent 35%,
-            rgba(255,0,40,.3)
-        );
-
-    opacity: 0;
-}
-
-#damageFlash.show {
-    animation: damage .25s ease-out;
-}
-
-@keyframes damage {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-#message {
-    position: fixed;
-    left: 50%;
-    top: 72%;
-
-    transform: translate(-50%, -50%);
-
-    z-index: 70;
-
-    padding: 12px 20px;
-
-    background: rgba(3,5,10,.85);
-
-    border: 1px solid #363c51;
-    border-radius: 10px;
-
-    font-weight: 900;
-
-    opacity: 0;
-    pointer-events: none;
-
-    transition: .2s;
-}
-
-#message.show {
-    opacity: 1;
-}
-
-#gameOver {
-    position: fixed;
-    inset: 0;
-
-    z-index: 200;
-
-    display: none;
-    align-items: center;
-    justify-content: center;
-
-    background: rgba(0,0,0,.72);
-
-    backdrop-filter: blur(10px);
-}
-
-.gameOverBox {
-    width: min(440px, 90vw);
-
-    padding: 40px;
-
-    text-align: center;
-
-    border-radius: 20px;
-
-    background: #090c15;
-
-    border: 1px solid #30364c;
-
-    box-shadow:
-        0 30px 100px rgba(0,0,0,.8);
-}
-
-.gameOverBox h1 {
-    margin: 0 0 10px;
-    font-size: 48px;
-}
-
-#lockHint {
-    position: fixed;
-    left: 50%;
-    bottom: 35px;
-
-    transform: translateX(-50%);
-
-    z-index: 80;
-
-    padding: 10px 16px;
-
-    border-radius: 9px;
-
-    background: rgba(3,5,10,.72);
-
-    border: 1px solid #303549;
-
-    color: #9a9fb2;
-
-    font-size: 12px;
-
-    pointer-events: none;
-
-    transition: opacity .3s;
-}
-
-.hidden {
-    opacity: 0 !important;
-}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070b;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{user-select:none}
+button,input{font:inherit}
+#menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#182133,#080b12 48%,#020307);z-index:50}
+.box{width:min(520px,92vw);padding:32px;border:1px solid #29344a;border-radius:20px;background:rgba(9,13,22,.96);box-shadow:0 30px 100px #000b}
+.logo{text-align:center;font-size:52px;font-weight:900;letter-spacing:5px}.logo b{color:#ff334d}
+.sub{text-align:center;color:#8996ac;margin:6px 0 26px}
+input{width:100%;padding:14px 15px;margin:6px 0;border:1px solid #2d384d;border-radius:10px;outline:0;background:#080c14;color:#fff}
+input:focus{border-color:#ff334d}
+button{width:100%;padding:14px;margin-top:9px;border:0;border-radius:10px;background:#ff334d;color:#fff;font-weight:900;cursor:pointer}
+button.secondary{background:#151d2c}button.bot{background:#6732d9}button.back{background:#111722;border:1px solid #2b374c}
+#status{text-align:center;min-height:22px;margin-top:12px;color:#ff6b7d}
+.help{text-align:center;color:#6f7c92;font-size:13px;line-height:1.7;margin-top:18px}
+#lobby{display:none;text-align:center}.room{padding:18px;margin:15px 0;border:1px solid #39465e;border-radius:14px;background:#0d1420}
+.room small{display:block;color:#8190a7}.code{font-size:40px;font-weight:900;letter-spacing:8px;color:#ff334d;margin-top:5px}
+#lobbyState{padding:12px;border-radius:10px;background:#080c14;border:1px solid #263249;color:#ffca58;font-weight:800}
+#game{display:none;position:fixed;inset:0;background:#05080d}
+canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;left:18px;right:18px;top:15px;display:flex;justify-content:space-between;pointer-events:none;z-index:5}
+.card{padding:9px 14px;border-radius:10px;background:#070a10cc;border:1px solid #29354b;min-width:150px;text-align:center;font-weight:900}
+.red{border-color:#7e2635}.blue{border-color:#245083}
+#cross{position:fixed;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);z-index:6;pointer-events:none}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;box-shadow:0 0 5px #000}
+#cross:before{width:2px;height:22px;left:10px;top:0}#cross:after{height:2px;width:22px;left:0;top:10px}
+#hit{position:fixed;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%) rotate(45deg);opacity:0;z-index:7;pointer-events:none}
+#hit:before,#hit:after{content:"";position:absolute;background:#ff334d}.hitshow{opacity:1!important}
+#hit:before{width:3px;height:32px;left:14px}.hit:after{height:3px;width:32px;top:14px}
+#hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:7px 12px;border-radius:8px;background:#05080dbb;color:#9aa7bb;font-size:12px;z-index:5}
+#toast{position:fixed;left:50%;top:72%;transform:translate(-50%,-50%);padding:12px 20px;border-radius:10px;background:#080c14ee;border:1px solid #344157;font-weight:900;opacity:0;transition:.2s;z-index:10}
+#toast.show{opacity:1}
+#over{display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:#000b;backdrop-filter:blur(6px);z-index:20}
+.overbox{width:min(430px,90vw);padding:35px;border-radius:18px;text-align:center;background:#0b1019;border:1px solid #2b3850}
+.overbox h1{font-size:44px;margin:0 0 10px}
 </style>
 </head>
-
 <body>
 
-<!-- MENU -->
-
 <div id="menu">
-
-    <div class="menuBox">
-
-        <div id="mainMenu">
-
-            <div class="logo">
-                RI<span>V</span>ALS
-            </div>
-
-            <div class="subtitle">
-                schoolgame multiplayer FPS
-            </div>
-
-            <input
-                id="name"
-                maxlength="16"
-                placeholder="შენი სახელი"
-            >
-
-            <button id="create">
-                CREATE ROOM
-            </button>
-
-            <input
-                id="room"
-                maxlength="5"
-                placeholder="ROOM CODE"
-            >
-
-            <button
-                id="join"
-                class="secondary"
-            >
-                JOIN ROOM
-            </button>
-
-            <div id="status"></div>
-
-            <div class="small">
-                WASD — მოძრაობა<br>
-                SHIFT — სირბილი<br>
-                SPACE — ხტომა<br>
-                Mouse — დამიზნება<br>
-                Left Click — სროლა<br>
-                R — გადატენვა
-            </div>
-
-        </div>
-
-
-        <div id="lobby">
-
-            <div class="logo">
-                RI<span>V</span>ALS
-            </div>
-
-            <div class="lobbyTitle">
-                🎮 LOBBY
-            </div>
-
-            <div class="lobbySubtitle">
-                დაელოდე მეგობარს ან გამოიძახე BOT
-            </div>
-
-            <div class="roomCodeBox">
-
-                <div class="roomLabel">
-                    ROOM CODE
-                </div>
-
-                <div
-                    class="roomCode"
-                    id="lobbyRoomCode"
-                >
-                    -----
-                </div>
-
-            </div>
-
-            <button
-                id="copyRoom"
-                class="secondary"
-            >
-                📋 კოდის კოპირება
-            </button>
-
-            <div
-                id="playersStatus"
-                class="playersStatus waiting"
-            >
-                👤 1 / 2 მოთამაშე
-            </div>
-
-            <button
-                id="botButton"
-                class="botButton"
-            >
-                🤖 BOT-ის გამოძახება
-            </button>
-
-            <button
-                id="backButton"
-                class="backButton"
-            >
-                ← უკან
-            </button>
-
-            <div
-                id="lobbyHint"
-                class="lobbyHint"
-            >
-                გაუგზავნე Room Code მეგობარს<br>
-                ან გამოიძახე BOT.
-            </div>
-
-        </div>
-
+  <div class="box">
+    <div id="main">
+      <div class="logo">RI<b>V</b>ALS</div>
+      <div class="sub">schoolgame first-person arena</div>
+      <input id="name" maxlength="16" placeholder="შენი სახელი">
+      <button id="create">CREATE ROOM</button>
+      <input id="room" maxlength="5" placeholder="ROOM CODE" style="text-transform:uppercase">
+      <button id="join" class="secondary">JOIN ROOM</button>
+      <div id="status"></div>
+      <div class="help">WASD — მოძრაობა · Mouse — კამერა · Left Click — სროლა<br>პირველი 10 kill იგებს</div>
     </div>
 
+    <div id="lobby">
+      <div class="logo">RI<b>V</b>ALS</div>
+      <h2>🎮 LOBBY</h2>
+      <div class="room"><small>ROOM CODE</small><div class="code" id="roomCode">-----</div></div>
+      <button id="copy" class="secondary">📋 კოდის კოპირება</button>
+      <div id="lobbyState">👤 1 / 2 მოთამაშე</div>
+      <button id="bot" class="bot">🤖 BOT-ის გამოძახება</button>
+      <button id="back" class="back">← უკან</button>
+      <div class="help">გაუგზავნე კოდი მეგობარს ან დააჭირე BOT-ს.</div>
+    </div>
+  </div>
 </div>
-
-
-<!-- GAME -->
 
 <div id="game">
-
-    <div id="hud">
-
-        <div id="topHud">
-
-            <div class="hudBox">
-                <div class="hudTitle">
-                    YOU
-                </div>
-
-                <div
-                    class="hudValue"
-                    id="p1Kills"
-                >
-                    0
-                </div>
-            </div>
-
-            <div id="centerScore">
-                0 : 0
-            </div>
-
-            <div class="hudBox">
-                <div class="hudTitle">
-                    ENEMY
-                </div>
-
-                <div
-                    class="hudValue"
-                    id="p2Kills"
-                >
-                    0
-                </div>
-            </div>
-
-        </div>
-
-
-        <div id="bottomHud">
-
-            <div id="healthBox">
-
-                <div id="healthNumber">
-                    100
-                </div>
-
-                <div id="healthBar">
-                    <div id="healthFill"></div>
-                </div>
-
-            </div>
-
-
-            <div id="ammo">
-                30 / ∞
-
-                <small>
-                    AMMO
-                </small>
-            </div>
-
-        </div>
-
-
-        <div id="weaponName">
-            RIFLE
-        </div>
-
-    </div>
-
-
-    <div id="crosshair">
-        <div class="crossLine v"></div>
-        <div class="crossLine h"></div>
-    </div>
-
-
-    <div id="hitMarker"></div>
-
-    <div id="damageFlash"></div>
-
-    <div id="message"></div>
-
-    <div id="lockHint">
-        CLICK TO LOCK MOUSE
-    </div>
-
+  <canvas id="view"></canvas>
+  <div id="hud">
+    <div class="card red">YOU<br><span id="myScore">0</span></div>
+    <div class="card blue">RIVAL<br><span id="enemyScore">0</span></div>
+  </div>
+  <div id="cross"></div>
+  <div id="hit"></div>
+  <div id="hint">WASD · MOUSE · CLICK</div>
+  <div id="toast"></div>
 </div>
 
-
-<!-- GAME OVER -->
-
-<div id="gameOver">
-
-    <div class="gameOverBox">
-
-        <h1 id="winner">
-            YOU WIN
-        </h1>
-
-        <div id="winnerText">
-            Match finished
-        </div>
-
-        <button id="again">
-            PLAY AGAIN
-        </button>
-
-        <button
-            id="exitGame"
-            class="secondary"
-        >
-            EXIT
-        </button>
-
-    </div>
-
+<div id="over">
+  <div class="overbox">
+    <h1 id="overTitle">YOU WIN</h1>
+    <div id="overText">Match finished</div>
+    <button id="again">PLAY AGAIN</button>
+  </div>
 </div>
 
+<script>
+const SERVER_URL="wss://schoolgame-rivals.onrender.com";
 
-<script type="module">
+const canvas=document.getElementById("view");
+const ctx=canvas.getContext("2d");
+const menu=document.getElementById("menu");
+const main=document.getElementById("main");
+const lobby=document.getElementById("lobby");
+const game=document.getElementById("game");
+const statusEl=document.getElementById("status");
+const lobbyState=document.getElementById("lobbyState");
+const roomCodeEl=document.getElementById("roomCode");
+const botBtn=document.getElementById("bot");
+const toast=document.getElementById("toast");
+const over=document.getElementById("over");
 
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+let socket=null, myId=null, roomCode="", running=false, pointerLocked=false;
+let state={players:[],bullets:[],score:{p1:0,p2:0}};
+let keys={w:false,a:false,s:false,d:false};
+let mouseDX=0, shooting=false, lastFrame=0, toastTimer=0;
 
+const FOV=Math.PI/3;
+const MAP=[
+"1111111111111111",
+"1000000000000001",
+"1000110001100001",
+"1000000000000001",
+"1011001110011001",
+"1000000000000001",
+"1000010000100001",
+"1000010000100001",
+"1000000000000001",
+"1011001110011001",
+"1000000000000001",
+"1000110001100001",
+"1000000000000001",
+"1111111111111111"
+];
+const MW=MAP[0].length,MH=MAP.length;
 
-/* =========================================
-   SERVER
-========================================= */
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+addEventListener("resize",resize);resize();
 
-const SERVER_URL =
-    "wss://schoolgame-rivals.onrender.com";
+function connect(){
+  if(socket && socket.readyState===WebSocket.OPEN)return Promise.resolve();
+  statusEl.textContent="სერვერთან დაკავშირება...";
+  return new Promise((resolve,reject)=>{
+    socket=new WebSocket(SERVER_URL);
+    socket.onopen=()=>{statusEl.textContent="";resolve()};
+    socket.onerror=()=>{statusEl.textContent="სერვერთან დაკავშირება ვერ მოხერხდა.";reject()};
+    socket.onclose=()=>{if(running) showToast("❌ სერვერთან კავშირი გაწყდა")};
+    socket.onmessage=e=>{try{handle(JSON.parse(e.data))}catch{}};
+  });
+}
 
-
-/* =========================================
-   VARIABLES
-========================================= */
-
-let socket = null;
-
-let playerId = null;
-
-let roomCode = null;
-
-let gameStarted = false;
-
-let inLobby = false;
-
-let localState = null;
-
-let shooting = false;
-
-let ammo = 30;
-
-let reloading = false;
-
-let lastLocalShot = 0;
-
-let yaw = 0;
-
-let pitch = 0;
-
-let jumpOffset = 0;
-
-let jumpVelocity = 0;
-
-let lastFrame = performance.now();
-
-let messageTimer = null;
-
-const keys = {
-    w: false,
-    a: false,
-    s: false,
-    d: false,
-    shift: false
+document.getElementById("create").onclick=async()=>{
+  try{await connect();socket.send(JSON.stringify({type:"create_room",name:getName()}))}catch{}
 };
-
-
-/* =========================================
-   HTML
-========================================= */
-
-const menu =
-    document.getElementById("menu");
-
-const mainMenu =
-    document.getElementById("mainMenu");
-
-const lobby =
-    document.getElementById("lobby");
-
-const game =
-    document.getElementById("game");
-
-const status =
-    document.getElementById("status");
-
-const lobbyRoomCode =
-    document.getElementById("lobbyRoomCode");
-
-const playersStatus =
-    document.getElementById("playersStatus");
-
-const botButton =
-    document.getElementById("botButton");
-
-const lobbyHint =
-    document.getElementById("lobbyHint");
-
-const gameOver =
-    document.getElementById("gameOver");
-
-const winner =
-    document.getElementById("winner");
-
-const winnerText =
-    document.getElementById("winnerText");
-
-const centerScore =
-    document.getElementById("centerScore");
-
-const p1Kills =
-    document.getElementById("p1Kills");
-
-const p2Kills =
-    document.getElementById("p2Kills");
-
-const healthNumber =
-    document.getElementById("healthNumber");
-
-const healthFill =
-    document.getElementById("healthFill");
-
-const ammoElement =
-    document.getElementById("ammo");
-
-const hitMarker =
-    document.getElementById("hitMarker");
-
-const damageFlash =
-    document.getElementById("damageFlash");
-
-const message =
-    document.getElementById("message");
-
-const lockHint =
-    document.getElementById("lockHint");
-
-
-/* =========================================
-   THREE.JS
-========================================= */
-
-const scene =
-    new THREE.Scene();
-
-scene.background =
-    new THREE.Color(0x020307);
-
-scene.fog =
-    new THREE.Fog(
-        0x020307,
-        15,
-        65
-    );
-
-
-const camera =
-    new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth /
-        window.innerHeight,
-        0.05,
-        100
-    );
-
-camera.rotation.order =
-    "YXZ";
-
-
-const renderer =
-    new THREE.WebGLRenderer({
-        antialias: true
-    });
-
-renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        2
-    )
-);
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-renderer.shadowMap.enabled = true;
-
-game.appendChild(
-    renderer.domElement
-);
-
-
-/* =========================================
-   LIGHT
-========================================= */
-
-const ambient =
-    new THREE.HemisphereLight(
-        0x9ba4ff,
-        0x080a0f,
-        1.6
-    );
-
-scene.add(ambient);
-
-
-const light =
-    new THREE.DirectionalLight(
-        0xffffff,
-        1.4
-    );
-
-light.position.set(
-    5,
-    12,
-    5
-);
-
-light.castShadow = true;
-
-scene.add(light);
-
-
-/* =========================================
-   FLOOR
-========================================= */
-
-const floorMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x0b0e15,
-        roughness: .92,
-        metalness: .05
-    });
-
-
-const floor =
-    new THREE.Mesh(
-        new THREE.PlaneGeometry(
-            64,
-            36
-        ),
-        floorMaterial
-    );
-
-floor.rotation.x =
-    -Math.PI / 2;
-
-floor.receiveShadow = true;
-
-scene.add(floor);
-
-
-/* =========================================
-   GRID
-========================================= */
-
-const grid =
-    new THREE.GridHelper(
-        64,
-        32,
-        0x273044,
-        0x111722
-    );
-
-grid.position.y =
-    0.01;
-
-scene.add(grid);
-
-
-/* =========================================
-   WALLS
-========================================= */
-
-function createWall(
-    x,
-    y,
-    z,
-    width,
-    height,
-    depth
-) {
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color: 0x111722,
-            roughness: .8,
-            metalness: .1
-        });
-
-    const wall =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                width,
-                height,
-                depth
-            ),
-            material
-        );
-
-    wall.position.set(
-        x,
-        y,
-        z
-    );
-
-    wall.castShadow = true;
-    wall.receiveShadow = true;
-
-    scene.add(wall);
-
-    return wall;
+document.getElementById("join").onclick=async()=>{
+  const r=document.getElementById("room").value.trim().toUpperCase();
+  if(!r){statusEl.textContent="შეიყვანე Room Code.";return}
+  try{await connect();socket.send(JSON.stringify({type:"join_room",room:r,name:getName()}))}catch{}
+};
+function getName(){return document.getElementById("name").value.trim()||"PLAYER"}
+document.getElementById("copy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(roomCode);showToast("📋 კოდი დაკოპირდა")}catch{showToast(roomCode)}
+};
+document.getElementById("bot").onclick=()=>{
+  if(socket?.readyState===WebSocket.OPEN){
+    botBtn.disabled=true;botBtn.textContent="🤖 BOT შემოდის...";
+    socket.send(JSON.stringify({type:"add_bot"}));
+  }
+};
+document.getElementById("back").onclick=()=>location.reload();
+
+function handle(d){
+  if(d.type==="room_created"||d.type==="room_joined"){
+    myId=d.playerId;roomCode=d.room;roomCodeEl.textContent=roomCode;
+    main.style.display="none";lobby.style.display="block";menu.style.display="flex";
+    return;
+  }
+  if(d.type==="error"){statusEl.textContent=d.message;return}
+  if(d.type==="bot_joined"){showToast("🤖 BOT შემოვიდა");return}
+  if(d.type==="state"){
+    state=d;
+    if(!running && d.players.length>=2)startGame();
+    if(!running){lobbyState.textContent="👤 "+d.players.length+" / 2 მოთამაშე";return}
+    updateHud();return;
+  }
+  if(d.type==="hit_confirm"){flashHit();return}
+  if(d.type==="game_over"){endGame(d.winner);return}
+  if(d.type==="message"){showToast(d.message)}
 }
 
+function startGame(){
+  running=true;menu.style.display="none";game.style.display="block";over.style.display="none";
+  document.body.requestPointerLock?.();
+}
+function endGame(winnerId){
+  running=false;document.exitPointerLock?.();over.style.display="flex";
+  document.getElementById("overTitle").textContent=winnerId===myId?"🏆 YOU WIN":"💀 YOU LOST";
+  document.getElementById("overText").textContent=winnerId===myId?"შენ მოიგე მატჩი!":"მატჩი დასრულდა.";
+}
+document.getElementById("again").onclick=()=>{over.style.display="none";showToast("ახალი მატჩისთვის ახალი ROOM შექმენი")};
 
-/* back wall */
+document.addEventListener("pointerlockchange",()=>{pointerLocked=document.pointerLockElement===canvas});
+canvas.addEventListener("click",()=>{
+  if(running&&!pointerLocked)canvas.requestPointerLock?.();
+  if(running){shooting=true;sendInput()}
+});
+addEventListener("mousedown",e=>{if(e.button===0&&running){shooting=true;sendInput()}});
+addEventListener("mouseup",e=>{if(e.button===0){shooting=false;sendInput()}});
+addEventListener("mousemove",e=>{if(running&&pointerLocked)mouseDX+=e.movementX});
+addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();
+  if(k in keys){keys[k]=true;sendInput();e.preventDefault()}
+});
+addEventListener("keyup",e=>{
+  const k=e.key.toLowerCase();
+  if(k in keys){keys[k]=false;sendInput();e.preventDefault()}
+});
+addEventListener("contextmenu",e=>e.preventDefault());
 
-createWall(
-    0,
-    2,
-    -17.5,
-    64,
-    4,
-    1
-);
-
-
-/* front wall */
-
-createWall(
-    0,
-    2,
-    17.5,
-    64,
-    4,
-    1
-);
-
-
-/* left wall */
-
-createWall(
-    -31.5,
-    2,
-    0,
-    1,
-    4,
-    36
-);
-
-
-/* right wall */
-
-createWall(
-    31.5,
-    2,
-    0,
-    1,
-    4,
-    36
-);
-
-
-/* center walls */
-
-createWall(
-    0,
-    1.6,
-    -6,
-    12,
-    3.2,
-    .8
-);
-
-createWall(
-    0,
-    1.6,
-    6,
-    12,
-    3.2,
-    .8
-);
-
-createWall(
-    0,
-    1.6,
-    0,
-    .8,
-    3.2,
-    12
-);
-
-
-/* =========================================
-   PLAYER MODELS
-========================================= */
-
-const remotePlayers =
-    new Map();
-
-
-function createEnemy(
-    player
-) {
-
-    const group =
-        new THREE.Group();
-
-
-    let color =
-        0x4f86ff;
-
-
-    if (
-        player.id === "bot"
-    ) {
-
-        color =
-            0x6b35c9;
-
-    }
-
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color: color,
-            roughness: .7
-        });
-
-
-    const body =
-        new THREE.Mesh(
-            new THREE.CapsuleGeometry(
-                .38,
-                .95,
-                6,
-                12
-            ),
-            material
-        );
-
-
-    body.position.y =
-        .9;
-
-    body.castShadow = true;
-
-    group.add(body);
-
-
-    const head =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                .32,
-                16,
-                12
-            ),
-            material
-        );
-
-
-    head.position.y =
-        1.75;
-
-    head.castShadow = true;
-
-    group.add(head);
-
-
-    const visor =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                .42,
-                .12,
-                .08
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x050509,
-                emissive: color,
-                emissiveIntensity: .4
-            })
-        );
-
-
-    visor.position.set(
-        0,
-        1.77,
-        -.28
-    );
-
-    group.add(visor);
-
-
-    return group;
-
+function sendInput(){
+  if(socket?.readyState!==WebSocket.OPEN||!running)return;
+  const dx=mouseDX;mouseDX=0;
+  socket.send(JSON.stringify({type:"input",keys,mouseDX:dx,shooting}));
 }
 
+setInterval(sendInput,50);
 
-/* =========================================
-   WEAPON
-========================================= */
+function me(){return state.players.find(p=>p.id===myId)}
+function enemy(){return state.players.find(p=>p.id!==myId)}
 
-const weapon =
-    new THREE.Group();
-
-const weaponBody =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            .28,
-            .22,
-            .9
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x151922,
-            metalness: .65,
-            roughness: .3
-        })
-    );
-
-weaponBody.position.set(
-    .28,
-    -.22,
-    -.85
-);
-
-weapon.add(
-    weaponBody
-);
-
-
-const barrel =
-    new THREE.Mesh(
-        new THREE.CylinderGeometry(
-            .055,
-            .07,
-            .72,
-            12
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x080a0e,
-            metalness: .8,
-            roughness: .2
-        })
-    );
-
-barrel.rotation.x =
-    Math.PI / 2;
-
-barrel.position.set(
-    .28,
-    -.18,
-    -1.62
-);
-
-weapon.add(
-    barrel
-);
-
-
-const grip =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            .16,
-            .4,
-            .22
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x080a0f
-        })
-    );
-
-grip.rotation.x =
-    -.22;
-
-grip.position.set(
-    .28,
-    -.48,
-    -.67
-);
-
-weapon.add(
-    grip
-);
-
-
-const magazine =
-    new THREE.Mesh(
-        new THREE.BoxGeometry(
-            .14,
-            .34,
-            .2
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x11141b
-        })
-    );
-
-magazine.rotation.x =
-    -.15;
-
-magazine.position.set(
-    .28,
-    -.43,
-    -.93
-);
-
-weapon.add(
-    magazine
-);
-
-
-const muzzle =
-    new THREE.Mesh(
-        new THREE.SphereGeometry(
-            .11,
-            8,
-            8
-        ),
-        new THREE.MeshBasicMaterial({
-            color: 0xffd34f
-        })
-    );
-
-muzzle.position.set(
-    .28,
-    -.18,
-    -1.99
-);
-
-muzzle.visible = false;
-
-weapon.add(muzzle);
-
-camera.add(weapon);
-
-scene.add(camera);
-
-
-/* =========================================
-   BULLETS
-========================================= */
-
-const bulletMeshes =
-    new Map();
-
-
-function createBulletMesh() {
-
-    const mesh =
-        new THREE.Mesh(
-            new THREE.SphereGeometry(
-                .055,
-                8,
-                8
-            ),
-            new THREE.MeshBasicMaterial({
-                color: 0xffc94d
-            })
-        );
-
-    scene.add(mesh);
-
-    return mesh;
-
+function updateHud(){
+  const a=me(),b=enemy();
+  document.getElementById("myScore").textContent=a?.kills??0;
+  document.getElementById("enemyScore").textContent=b?.kills??0;
 }
 
-
-/* =========================================
-   CONNECT
-========================================= */
-
-function connect() {
-
-    status.textContent =
-        "სერვერთან დაკავშირება...";
-
-    socket =
-        new WebSocket(
-            SERVER_URL
-        );
-
-
-    socket.onopen = () => {
-
-        status.textContent =
-            "სერვერთან დაკავშირებულია.";
-
-    };
-
-
-    socket.onerror = () => {
-
-        status.textContent =
-            "სერვერთან დაკავშირება ვერ მოხერხდა.";
-
-    };
-
-
-    socket.onclose = () => {
-
-        if (gameStarted) {
-
-            showMessage(
-                "❌ სერვერთან კავშირი გაწყდა."
-            );
-
-        } else {
-
-            status.textContent =
-                "სერვერი მიუწვდომელია.";
-
-        }
-
-    };
-
-
-    socket.onmessage = event => {
-
-        let data;
-
-        try {
-
-            data =
-                JSON.parse(
-                    event.data
-                );
-
-        } catch {
-
-            return;
-
-        }
-
-        handleMessage(data);
-
-    };
-
+function showToast(t){
+  toast.textContent=t;toast.classList.add("show");clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove("show"),1800);
+}
+function flashHit(){
+  const h=document.getElementById("hit");h.classList.add("hitshow");
+  setTimeout(()=>h.classList.remove("hitshow"),90);
 }
 
+function wall(x,y){
+  const mx=Math.floor(x),my=Math.floor(y);
+  return mx<0||my<0||mx>=MW||my>=MH||MAP[my][mx]==="1";
+}
+function drawScene(){
+  const w=canvas.width,h=canvas.height;
+  ctx.fillStyle="#0b1220";ctx.fillRect(0,0,w,h);
+  ctx.fillStyle="#111a28";ctx.fillRect(0,h/2,w,h/2);
 
-/* =========================================
-   MESSAGES
-========================================= */
+  const meP=me();
+  if(!meP){requestAnimationFrame(drawScene);return}
 
-function handleMessage(data) {
+  const depth=new Float32Array(w);
+  const horizon=h/2;
 
-    if (
-        data.type ===
-        "room_created"
-    ) {
-
-        roomCode =
-            data.room;
-
-        playerId =
-            data.playerId;
-
-        openLobby();
-
-        return;
-
+  for(let x=0;x<w;x++){
+    const cam=2*x/w-1;
+    const rayA=meP.angle+cam*(FOV/2);
+    const dx=Math.cos(rayA),dy=Math.sin(rayA);
+    let d=0,hit=false,side=0;
+    while(d<22&&!hit){
+      d+=0.035;
+      const rx=meP.x+dx*d,ry=meP.y+dy*d;
+      if(wall(rx,ry)){hit=true;side=(Math.floor(rx)!==Math.floor(rx-dx*.04))?0:1}
     }
+    const corr=Math.max(.01,d*Math.cos(rayA-meP.angle));
+    depth[x]=corr;
+    const line=Math.min(h*1.8,h/(corr));
+    const top=horizon-line/2;
+    const shade=Math.max(20,110-corr*5-(side?10:0));
+    ctx.fillStyle=`rgb(${Math.floor(shade*.55)},${Math.floor(shade*.65)},${Math.floor(shade*.82)})`;
+    ctx.fillRect(x,top,1,line);
+  }
 
+  const visible=state.players.filter(p=>p.id!==myId&&p.alive).map(p=>{
+    const dx=p.x-meP.x,dy=p.y-meP.y;
+    const dist=Math.hypot(dx,dy);
+    let rel=Math.atan2(dy,dx)-meP.angle;
+    while(rel>Math.PI)rel-=Math.PI*2;while(rel<-Math.PI)rel+=Math.PI*2;
+    return {...p,dist,rel};
+  }).filter(p=>Math.abs(p.rel)<FOV*.72).sort((a,b)=>b.dist-a.dist);
 
-    if (
-        data.type ===
-        "room_joined"
-    ) {
+  for(const p of visible){
+    const sx=w/2+(p.rel/FOV)*w;
+    const size=Math.min(h*1.05,h/(p.dist*.78));
+    const col=Math.max(0,Math.min(w-1,Math.floor(sx)));
+    if(depth[col]<p.dist-.1)continue;
+    const y=horizon-size*.5;
+    ctx.fillStyle="#080b12";
+    ctx.fillRect(sx-size*.18,y-size*.04,size*.36,size*.08);
+    ctx.fillStyle=p.id==="bot"?"#8b4dff":"#ff4059";
+    ctx.beginPath();ctx.ellipse(sx,y+size*.15,size*.18,size*.27,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(sx,y-size*.04,size*.16,0,Math.PI*2);ctx.fillStyle=p.id==="bot"?"#b986ff":"#ff7888";ctx.fill();
+    ctx.fillStyle="#151b25";ctx.fillRect(sx-size*.24,y+size*.42,size*.48,size*.08);
+    ctx.fillStyle="#32e875";ctx.fillRect(sx-size*.23,y+size*.43,size*.46*(p.hp/100),size*.035);
+    ctx.fillStyle="#fff";ctx.font="bold 13px Arial";ctx.textAlign="center";ctx.fillText(p.name,sx,y-size*.28);
+  }
 
-        roomCode =
-            data.room;
+  for(const b of state.bullets||[]){
+    const dx=b.x-meP.x,dy=b.y-meP.y,dist=Math.hypot(dx,dy);
+    let rel=Math.atan2(dy,dx)-meP.angle;
+    while(rel>Math.PI)rel-=Math.PI*2;while(rel<-Math.PI)rel+=Math.PI*2;
+    if(Math.abs(rel)>FOV/2)continue;
+    const sx=w/2+(rel/FOV)*w;
+    const size=Math.max(2,Math.min(24,h/(dist*3)));
+    const col=Math.max(0,Math.min(w-1,Math.floor(sx)));
+    if(depth[col]<dist-.1)continue;
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(sx,horizon,size,0,Math.PI*2);ctx.fill();
+  }
 
-        playerId =
-            data.playerId;
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "error"
-    ) {
-
-        status.textContent =
-            data.message;
-
-        showMessage(
-            data.message
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "state"
-    ) {
-
-        updateState(data);
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "bot_joined"
-    ) {
-
-        showMessage(
-            "🤖 BOT შემოვიდა!"
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "bot_left"
-    ) {
-
-        showMessage(
-            "👤 რეალური მოთამაშე შემოვიდა!"
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "hit"
-    ) {
-
-        hitMarker.classList.remove(
-            "show"
-        );
-
-        void hitMarker.offsetWidth;
-
-        hitMarker.classList.add(
-            "show"
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "damaged"
-    ) {
-
-        damageFlash.classList.remove(
-            "show"
-        );
-
-        void damageFlash.offsetWidth;
-
-        damageFlash.classList.add(
-            "show"
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "game_over"
-    ) {
-
-        showGameOver(
-            data.winner
-        );
-
-        return;
-
-    }
-
-
-    if (
-        data.type ===
-        "message"
-    ) {
-
-        showMessage(
-            data.message
-        );
-
-    }
-
+  drawWeapon(w,h);
+  requestAnimationFrame(drawScene);
 }
 
-
-/* =========================================
-   LOBBY
-========================================= */
-
-function openLobby() {
-
-    mainMenu.style.display =
-        "none";
-
-    lobby.style.display =
-        "block";
-
-    inLobby = true;
-
-    gameStarted = false;
-
-    lobbyRoomCode.textContent =
-        roomCode;
-
-    botButton.disabled =
-        false;
-
-    botButton.textContent =
-        "🤖 BOT-ის გამოძახება";
-
+function drawWeapon(w,h){
+  const sway=Math.sin(performance.now()/180)*2;
+  const x=w*.5+55,y=h-100+sway;
+  ctx.save();ctx.translate(x,y);ctx.rotate(-.03);
+  ctx.fillStyle="#090b10";ctx.fillRect(-70,5,145,55);
+  ctx.fillStyle="#252c38";ctx.fillRect(-55,-15,95,30);
+  ctx.fillStyle="#11151d";ctx.fillRect(-5,-42,30,30);
+  ctx.fillStyle="#303947";ctx.fillRect(-70,20,28,12);
+  ctx.fillStyle="#171c25";ctx.fillRect(35,0,80,13);
+  ctx.fillStyle="#0a0d12";ctx.fillRect(60,-5,55,8);
+  ctx.restore();
 }
 
-
-function updateLobby(
-    playerList
-) {
-
-    if (!inLobby) {
-        return;
-    }
-
-    const count =
-        playerList.length;
-
-    const hasBot =
-        playerList.some(
-            p => p.id === "bot"
-        );
-
-
-    if (count >= 2) {
-
-        playersStatus.className =
-            "playersStatus ready";
-
-        playersStatus.textContent =
-            hasBot
-                ? "🤖 1 მოთამაშე + BOT"
-                : "👥 2 / 2 მოთამაშე";
-
-        botButton.style.display =
-            "none";
-
-        lobbyHint.textContent =
-            "მატჩი იწყება...";
-
-    } else {
-
-        playersStatus.className =
-            "playersStatus waiting";
-
-        playersStatus.textContent =
-            "👤 1 / 2 მოთამაშე";
-
-        botButton.style.display =
-            "block";
-
-    }
-
+function loop(t){
+  if(!lastFrame)lastFrame=t;
+  lastFrame=t;
+  if(running)drawScene();
 }
-
-
-/* =========================================
-   GAME START
-========================================= */
-
-function startGame() {
-
-    if (gameStarted) {
-        return;
-    }
-
-    gameStarted = true;
-    inLobby = false;
-
-    menu.style.display =
-        "none";
-
-    game.style.display =
-        "block";
-
-    gameOver.style.display =
-        "none";
-
-    lockHint.classList.remove(
-        "hidden"
-    );
-
-    resetAmmo();
-
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
-
-}
-
-
-/* =========================================
-   STATE
-========================================= */
-
-function updateState(data) {
-
-    localState =
-        data;
-
-
-    if (
-        !gameStarted
-    ) {
-
-        updateLobby(
-            data.players
-        );
-
-
-        if (
-            data.players.length >= 2
-        ) {
-
-            startGame();
-
-        }
-
-    }
-
-
-    if (
-        data.score
-    ) {
-
-        p1Kills.textContent =
-            data.score.p1;
-
-        p2Kills.textContent =
-            data.score.p2;
-
-        centerScore.textContent =
-            data.score.p1 +
-            " : " +
-            data.score.p2;
-
-    }
-
-
-    const ids =
-        new Set();
-
-
-    for (
-        const p of data.players
-    ) {
-
-        ids.add(
-            p.id
-        );
-
-
-        if (
-            p.id === playerId
-        ) {
-
-            healthNumber.textContent =
-                Math.max(
-                    0,
-                    Math.round(
-                        p.hp
-                    )
-                );
-
-            healthFill.style.width =
-                Math.max(
-                    0,
-                    p.hp
-                ) + "%";
-
-            continue;
-
-        }
-
-
-        let obj =
-            remotePlayers.get(
-                p.id
-            );
-
-
-        if (!obj) {
-
-            obj =
-                createEnemy(
-                    p
-                );
-
-            remotePlayers.set(
-                p.id,
-                obj
-            );
-
-            scene.add(
-                obj
-            );
-
-        }
-
-
-        const wx =
-            (p.x - 800) *
-            .04;
-
-        const wz =
-            (p.y - 450) *
-            .04;
-
-
-        obj.position.set(
-            wx,
-            0,
-            wz
-        );
-
-
-        obj.rotation.y =
-            -p.angle +
-            Math.PI / 2;
-
-
-        obj.visible =
-            p.alive;
-
-    }
-
-
-    for (
-        const [id, obj]
-        of remotePlayers
-    ) {
-
-        if (
-            !ids.has(id)
-        ) {
-
-            scene.remove(
-                obj
-            );
-
-            remotePlayers.delete(
-                id
-            );
-
-        }
-
-    }
-
-
-    updateBullets(
-        data.bullets
-    );
-
-}
-
-
-/* =========================================
-   BULLETS
-========================================= */
-
-function updateBullets(
-    bullets
-) {
-
-    const ids =
-        new Set();
-
-
-    for (
-        const b of bullets
-    ) {
-
-        ids.add(
-            b.id
-        );
-
-
-        let mesh =
-            bulletMeshes.get(
-                b.id
-            );
-
-
-        if (!mesh) {
-
-            mesh =
-                createBulletMesh();
-
-            bulletMeshes.set(
-                b.id,
-                mesh
-            );
-
-        }
-
-
-        mesh.position.set(
-            (b.x - 800) * .04,
-            .85,
-            (b.y - 450) * .04
-        );
-
-    }
-
-
-    for (
-        const [id, mesh]
-        of bulletMeshes
-    ) {
-
-        if (
-            !ids.has(id)
-        ) {
-
-            scene.remove(
-                mesh
-            );
-
-            bulletMeshes.delete(
-                id
-            );
-
-        }
-
-    }
-
-}
-
-
-/* =========================================
-   FPS CAMERA
-========================================= */
-
-function updateCamera() {
-
-    if (
-        !localState ||
-        !gameStarted
-    ) {
-
-        return;
-
-    }
-
-
-    const me =
-        localState.players.find(
-            p => p.id === playerId
-        );
-
-
-    if (!me) {
-        return;
-    }
-
-
-    const targetX =
-        (me.x - 800) *
-        .04;
-
-
-    const targetZ =
-        (me.y - 450) *
-        .04;
-
-
-    if (
-        Math.abs(
-            jumpOffset
-        ) > .001
-    ) {
-
-        camera.position.y =
-            1.65 +
-            jumpOffset;
-
-    } else {
-
-        camera.position.y =
-            1.65;
-
-    }
-
-
-    camera.position.x =
-        targetX;
-
-    camera.position.z =
-        targetZ;
-
-
-    camera.rotation.y =
-        yaw;
-
-    camera.rotation.x =
-        pitch;
-
-}
-
-
-/* =========================================
-   MOVEMENT
-========================================= */
-
-window.addEventListener(
-    "keydown",
-    e => {
-
-        const k =
-            e.key.toLowerCase();
-
-
-        if (
-            k === "w" ||
-            k === "a" ||
-            k === "s" ||
-            k === "d"
-        ) {
-
-            keys[k] = true;
-
-        }
-
-
-        if (
-            e.key === "Shift"
-        ) {
-
-            keys.shift = true;
-
-        }
-
-
-        if (
-            e.code === "Space"
-        ) {
-
-            if (
-                Math.abs(
-                    jumpOffset
-                ) < .02
-            ) {
-
-                jumpVelocity =
-                    5.8;
-
-            }
-
-            e.preventDefault();
-
-        }
-
-
-        if (
-            k === "r"
-        ) {
-
-            reload();
-
-        }
-
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    e => {
-
-        const k =
-            e.key.toLowerCase();
-
-
-        if (
-            k === "w" ||
-            k === "a" ||
-            k === "s" ||
-            k === "d"
-        ) {
-
-            keys[k] = false;
-
-        }
-
-
-        if (
-            e.key === "Shift"
-        ) {
-
-            keys.shift = false;
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   MOUSE
-========================================= */
-
-document.addEventListener(
-    "mousemove",
-    e => {
-
-        if (
-            document.pointerLockElement !==
-            renderer.domElement
-        ) {
-
-            return;
-
-        }
-
-
-        yaw -=
-            e.movementX *
-            .0025;
-
-
-        pitch -=
-            e.movementY *
-            .0025;
-
-
-        pitch =
-            Math.max(
-                -.9,
-                Math.min(
-                    .9,
-                    pitch
-                )
-            );
-
-    }
-);
-
-
-/* =========================================
-   CLICK / POINTER LOCK
-========================================= */
-
-renderer.domElement.addEventListener(
-    "mousedown",
-    e => {
-
-        if (
-            e.button !== 0
-        ) {
-            return;
-        }
-
-
-        if (
-            document.pointerLockElement !==
-            renderer.domElement
-        ) {
-
-            renderer.domElement.requestPointerLock();
-
-            return;
-
-        }
-
-
-        shooting = true;
-
-    }
-);
-
-
-window.addEventListener(
-    "mouseup",
-    e => {
-
-        if (
-            e.button === 0
-        ) {
-
-            shooting = false;
-
-        }
-
-    }
-);
-
-
-document.addEventListener(
-    "pointerlockchange",
-    () => {
-
-        const locked =
-            document.pointerLockElement ===
-            renderer.domElement;
-
-
-        if (locked) {
-
-            lockHint.classList.add(
-                "hidden"
-            );
-
-        } else if (gameStarted) {
-
-            lockHint.classList.remove(
-                "hidden"
-            );
-
-            shooting = false;
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   INPUT
-========================================= */
-
-function sendInput() {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN ||
-        !gameStarted
-    ) {
-
-        return;
-
-    }
-
-
-    const angle =
-        yaw +
-        Math.PI / 2;
-
-
-    socket.send(
-        JSON.stringify({
-
-            type:
-                "input",
-
-            keys: {
-                w: keys.w,
-                a: keys.a,
-                s: keys.s,
-                d: keys.d,
-                shift: keys.shift
-            },
-
-            angle:
-                angle,
-
-            shooting:
-                shooting &&
-                !reloading
-
-        })
-    );
-
-}
-
-
-setInterval(
-    sendInput,
-    50
-);
-
-
-/* =========================================
-   SHOOT EFFECT
-========================================= */
-
-function localShootEffect() {
-
-    muzzle.visible =
-        true;
-
-
-    setTimeout(
-        () => {
-            muzzle.visible =
-                false;
-        },
-        45
-    );
-
-
-    weapon.position.z =
-        -.08;
-
-
-    setTimeout(
-        () => {
-            weapon.position.z =
-                0;
-        },
-        55
-    );
-
-}
-
-
-/* =========================================
-   AMMO
-========================================= */
-
-function resetAmmo() {
-
-    ammo = 30;
-
-    reloading = false;
-
-    updateAmmo();
-
-}
-
-
-function updateAmmo() {
-
-    ammoElement.innerHTML =
-        ammo +
-        " / ∞" +
-        "<small>AMMO</small>";
-
-}
-
-
-function reload() {
-
-    if (
-        reloading ||
-        ammo === 30 ||
-        !gameStarted
-    ) {
-
-        return;
-
-    }
-
-
-    reloading = true;
-
-    shooting = false;
-
-    showMessage(
-        "🔄 გადატენვა..."
-    );
-
-
-    setTimeout(
-        () => {
-
-            ammo = 30;
-
-            reloading = false;
-
-            updateAmmo();
-
-        },
-        1100
-    );
-
-}
-
-
-/* =========================================
-   LOCAL FIRE LOOP
-========================================= */
-
-setInterval(
-    () => {
-
-        if (
-            !gameStarted ||
-            !shooting ||
-            reloading
-        ) {
-
-            return;
-
-        }
-
-
-        if (
-            ammo <= 0
-        ) {
-
-            reload();
-
-            return;
-
-        }
-
-
-        const now =
-            performance.now();
-
-
-        if (
-            now -
-            lastLocalShot <
-            150
-        ) {
-
-            return;
-
-        }
-
-
-        lastLocalShot =
-            now;
-
-        ammo--;
-
-        updateAmmo();
-
-        localShootEffect();
-
-    },
-    20
-);
-
-
-/* =========================================
-   JUMP
-========================================= */
-
-function updateJump(
-    dt
-) {
-
-    jumpVelocity -=
-        14 *
-        dt;
-
-    jumpOffset +=
-        jumpVelocity *
-        dt;
-
-
-    if (
-        jumpOffset <= 0
-    ) {
-
-        jumpOffset = 0;
-
-        jumpVelocity = 0;
-
-    }
-
-}
-
-
-/* =========================================
-   MESSAGE
-========================================= */
-
-function showMessage(
-    text
-) {
-
-    message.textContent =
-        text;
-
-    message.classList.add(
-        "show"
-    );
-
-    clearTimeout(
-        messageTimer
-    );
-
-    messageTimer =
-        setTimeout(
-            () => {
-
-                message.classList.remove(
-                    "show"
-                );
-
-            },
-            1800
-        );
-
-}
-
-
-/* =========================================
-   GAME OVER
-========================================= */
-
-function showGameOver(
-    id
-) {
-
-    shooting = false;
-
-    document.exitPointerLock?.();
-
-    gameOver.style.display =
-        "flex";
-
-
-    if (
-        id === playerId
-    ) {
-
-        winner.textContent =
-            "🏆 YOU WIN";
-
-        winnerText.textContent =
-            "შენ მოიგე მატჩი!";
-
-    } else {
-
-        winner.textContent =
-            "💀 YOU LOST";
-
-        winnerText.textContent =
-            "ბოტმა/მოთამაშემ მოგიგო.";
-
-    }
-
-}
-
-
-/* =========================================
-   CREATE ROOM
-========================================= */
-
-document.getElementById(
-    "create"
-).addEventListener(
-    "click",
-    () => {
-
-        if (
-            !socket ||
-            socket.readyState !==
-            WebSocket.OPEN
-        ) {
-
-            connect();
-
-            setTimeout(
-                createRoom,
-                800
-            );
-
-            return;
-
-        }
-
-        createRoom();
-
-    }
-);
-
-
-function createRoom() {
-
-    if (
-        !socket ||
-        socket.readyState !==
-        WebSocket.OPEN
-    ) {
-
-        return;
-
-    }
-
-
-    const name =
-        document.getElementById(
-            "name"
-        ).value.trim() ||
-        "PLAYER 1";
-
-
-    socket.send(
-        JSON.stringify({
-
-            type:
-                "create_room",
-
-            name:
-                name
-
-        })
-    );
-
-}
-
-
-/* =========================================
-   JOIN
-========================================= */
-
-document.getElementById(
-    "join"
-).addEventListener(
-    "click",
-    () => {
-
-        if (
-            !socket ||
-            socket.readyState !==
-            WebSocket.OPEN
-        ) {
-
-            connect();
-
-            setTimeout(
-                joinRoom,
-                800
-            );
-
-            return;
-
-        }
-
-        joinRoom();
-
-    }
-);
-
-
-function joinRoom() {
-
-    const name =
-        document.getElementById(
-            "name"
-        ).value.trim() ||
-        "PLAYER 2";
-
-
-    const room =
-        document.getElementById(
-            "room"
-        ).value.trim().toUpperCase();
-
-
-    if (!room) {
-
-        status.textContent =
-            "შეიყვანე Room Code.";
-
-        return;
-
-    }
-
-
-    socket.send(
-        JSON.stringify({
-
-            type:
-                "join_room",
-
-            room:
-                room,
-
-            name:
-                name
-
-        })
-    );
-
-}
-
-
-/* =========================================
-   BOT
-========================================= */
-
-botButton.addEventListener(
-    "click",
-    () => {
-
-        if (
-            !socket ||
-            socket.readyState !==
-            WebSocket.OPEN
-        ) {
-
-            showMessage(
-                "სერვერთან კავშირი არ არის."
-            );
-
-            return;
-
-        }
-
-
-        botButton.disabled =
-            true;
-
-        botButton.textContent =
-            "🤖 BOT შემოდის...";
-
-
-        socket.send(
-            JSON.stringify({
-
-                type:
-                    "add_bot"
-
-            })
-        );
-
-    }
-);
-
-
-/* =========================================
-   COPY
-========================================= */
-
-document.getElementById(
-    "copyRoom"
-).addEventListener(
-    "click",
-    async () => {
-
-        try {
-
-            await navigator.clipboard.writeText(
-                roomCode
-            );
-
-            showMessage(
-                "📋 Room Code დაკოპირდა!"
-            );
-
-        } catch {
-
-            showMessage(
-                roomCode
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   BACK
-========================================= */
-
-document.getElementById(
-    "backButton"
-).addEventListener(
-    "click",
-    () => {
-
-        location.reload();
-
-    }
-);
-
-
-/* =========================================
-   PLAY AGAIN
-========================================= */
-
-document.getElementById(
-    "again"
-).addEventListener(
-    "click",
-    () => {
-
-        if (
-            socket &&
-            socket.readyState ===
-            WebSocket.OPEN
-        ) {
-
-            socket.send(
-                JSON.stringify({
-                    type:
-                        "restart_match"
-                })
-            );
-
-        }
-
-        gameOver.style.display =
-            "none";
-
-        resetAmmo();
-
-        showMessage(
-            "ახალი რაუნდი იწყება..."
-        );
-
-    }
-);
-
-
-/* =========================================
-   EXIT
-========================================= */
-
-document.getElementById(
-    "exitGame"
-).addEventListener(
-    "click",
-    () => {
-
-        location.reload();
-
-    }
-);
-
-
-/* =========================================
-   RESIZE
-========================================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
-    }
-);
-
-
-/* =========================================
-   ANIMATION
-========================================= */
-
-function animate(
-    now
-) {
-
-    requestAnimationFrame(
-        animate
-    );
-
-
-    const dt =
-        Math.min(
-            .05,
-            (now -
-            lastFrame) /
-            1000
-        );
-
-
-    lastFrame =
-        now;
-
-
-    updateJump(
-        dt
-    );
-
-    updateCamera();
-
-
-    if (
-        shooting &&
-        gameStarted
-    ) {
-
-        weapon.rotation.x =
-            Math.sin(
-                now *
-                .035
-            ) *
-            .006;
-
-    } else {
-
-        weapon.rotation.x = 0;
-
-    }
-
-
-    renderer.render(
-        scene,
-        camera
-    );
-
-}
-
-
-animate(
-    performance.now()
-);
-
+requestAnimationFrame(loop);
 </script>
-
 </body>
 </html>
