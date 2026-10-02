@@ -4,41 +4,108 @@ const path = require("path");
 const WebSocket = require("ws");
 
 const PORT = process.env.PORT || 3000;
+
 const MAX_SCORE = 10;
 
+const WORLD = {
+    width: 1600,
+    height: 900
+};
+
+/* =========================================================
+   MAP
+========================================================= */
+
+const WALLS = [
+    // Outer walls
+    { x: 0, y: 0, w: 1600, h: 30 },
+    { x: 0, y: 870, w: 1600, h: 30 },
+    { x: 0, y: 0, w: 30, h: 900 },
+    { x: 1570, y: 0, w: 30, h: 900 },
+
+    // Inner walls
+    { x: 650, y: 100, w: 300, h: 35 },
+    { x: 650, y: 765, w: 300, h: 35 },
+    { x: 770, y: 300, w: 60, h: 300 }
+];
+
+const SPAWNS = {
+    p1: {
+        x: 220,
+        y: 450
+    },
+
+    p2: {
+        x: 1380,
+        y: 450
+    },
+
+    bot: {
+        x: 1380,
+        y: 450
+    }
+};
+
+/* =========================================================
+   SERVER
+========================================================= */
+
 const server = http.createServer((req, res) => {
-    // მთავარი გვერდი უნდა იყოს index.html
-    let file = req.url === "/" ? "/index.html" : req.url;
 
-    file = decodeURIComponent(file);
+    let file =
+        req.url === "/"
+            ? "/index.html"
+            : req.url.split("?")[0];
 
-    const filePath = path.join(__dirname, file);
+    try {
+        file = decodeURIComponent(file);
+    } catch {
+        res.writeHead(400);
+        res.end("Bad request");
+        return;
+    }
+
+    const filePath =
+        path.join(__dirname, file);
+
+    if (
+        !filePath.startsWith(__dirname)
+    ) {
+        res.writeHead(403);
+        res.end("Forbidden");
+        return;
+    }
 
     fs.readFile(filePath, (err, data) => {
+
         if (err) {
+
             res.writeHead(404, {
-                "Content-Type": "text/plain; charset=utf-8"
+                "Content-Type":
+                    "text/plain; charset=utf-8"
             });
-            res.end("404 - File not found");
+
+            res.end("Not found");
+
             return;
         }
 
-        let contentType = "text/plain";
+        let contentType =
+            "text/plain; charset=utf-8";
 
         if (file.endsWith(".html")) {
-            contentType = "text/html; charset=utf-8";
-        } else if (file.endsWith(".js")) {
-            contentType = "application/javascript; charset=utf-8";
-        } else if (file.endsWith(".css")) {
-            contentType = "text/css; charset=utf-8";
-        } else if (file.endsWith(".json")) {
-            contentType = "application/json; charset=utf-8";
-        } else if (file.endsWith(".png")) {
-            contentType = "image/png";
-        } else if (file.endsWith(".jpg") || file.endsWith(".jpeg")) {
-            contentType = "image/jpeg";
-        } else if (file.endsWith(".svg")) {
-            contentType = "image/svg+xml";
+            contentType =
+                "text/html; charset=utf-8";
+        }
+
+        if (file.endsWith(".js")) {
+            contentType =
+                "application/javascript";
+        }
+
+        if (file.endsWith(".css")) {
+            contentType =
+                "text/css";
         }
 
         res.writeHead(200, {
@@ -46,578 +113,1536 @@ const server = http.createServer((req, res) => {
         });
 
         res.end(data);
+
     });
+
 });
 
-const wss = new WebSocket.Server({
-    server
-});
+const wss =
+    new WebSocket.Server({
+        server
+    });
+
+/* =========================================================
+   ROOMS
+========================================================= */
 
 const rooms = new Map();
 
-function randomCode() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function randomRoomCode() {
+
+    const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     let code = "";
 
-    for (let i = 0; i < 5; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
-    }
+    do {
+
+        code = "";
+
+        for (let i = 0; i < 5; i++) {
+
+            code +=
+                chars[
+                    Math.floor(
+                        Math.random() *
+                        chars.length
+                    )
+                ];
+
+        }
+
+    } while (rooms.has(code));
 
     return code;
 }
 
-function createRoom() {
-    let code;
+/* =========================================================
+   PLAYER
+========================================================= */
 
-    do {
-        code = randomCode();
-    } while (rooms.has(code));
+function createPlayer(
+    id,
+    name,
+    isBot = false
+) {
 
-    const room = {
-        code,
-        players: new Map(),
-        bullets: [],
-        bot: null,
-        started: false,
-        scores: {},
-        lastUpdate: Date.now()
-    };
-
-    rooms.set(code, room);
-
-    return room;
-}
-
-function broadcast(room, message) {
-    const text = JSON.stringify(message);
-
-    room.players.forEach(player => {
-        if (player.ws.readyState === WebSocket.OPEN) {
-            player.ws.send(text);
-        }
-    });
-
-    if (room.bot && room.bot.ws && room.bot.ws.readyState === WebSocket.OPEN) {
-        room.bot.ws.send(text);
-    }
-}
-
-function getRoomState(room) {
-    const players = [];
-
-    room.players.forEach(player => {
-        players.push({
-            id: player.id,
-            name: player.name,
-            x: player.x,
-            y: player.y,
-            angle: player.angle,
-            hp: player.hp
-        });
-    });
-
-    if (room.bot) {
-        players.push({
-            id: room.bot.id,
-            name: room.bot.name,
-            x: room.bot.x,
-            y: room.bot.y,
-            angle: room.bot.angle,
-            hp: room.bot.hp
-        });
-    }
+    const spawn =
+        SPAWNS[id] ||
+        SPAWNS.bot;
 
     return {
-        type: "state",
-        room: room.code,
-        started: room.started,
-        lobby: room.players.size < 2 && !room.bot,
-        players,
-        bullets: room.bullets,
-        scores: room.scores
-    };
-}
 
-function sendState(room) {
-    broadcast(room, getRoomState(room));
-}
+        id,
 
-function addBot(room) {
-    if (room.bot) return;
-    if (room.players.size >= 2) return;
+        name:
+            name ||
+            (isBot
+                ? "BOT"
+                : "PLAYER"),
 
-    room.bot = {
-        id: "BOT",
-        name: "BOT",
-        x: 760,
-        y: 400,
-        angle: 0,
+        x: spawn.x,
+
+        y: spawn.y,
+
+        angle:
+            id === "p1"
+                ? 0
+                : Math.PI,
+
         hp: 100,
-        ws: null
+
+        alive: true,
+
+        shooting: false,
+
+        isBot,
+
+        keys: {
+            w: false,
+            a: false,
+            s: false,
+            d: false
+        },
+
+        shootCooldown: 0,
+
+        respawnTimer: 0,
+
+        botThink: 0,
+
+        botDirection: 1
+
     };
 
-    room.started = true;
-
-    broadcast(room, {
-        type: "bot_joined",
-        name: "BOT"
-    });
-
-    sendState(room);
 }
 
-function removeBot(room) {
-    if (!room.bot) return;
+/* =========================================================
+   ROOM
+========================================================= */
 
-    room.bot = null;
-    room.started = false;
+function createRoom() {
 
-    sendState(room);
-}
+    const code =
+        randomRoomCode();
 
-function resetRound(room) {
-    room.bullets = [];
+    const room = {
 
-    room.players.forEach((player, index) => {
-        player.hp = 100;
+        code,
 
-        if (index === 0) {
-            player.x = 350;
-            player.y = 400;
-        } else {
-            player.x = 850;
-            player.y = 400;
-        }
-    });
+        players: new Map(),
 
-    if (room.bot) {
-        room.bot.hp = 100;
-        room.bot.x = 850;
-        room.bot.y = 400;
-    }
+        bot: null,
 
-    sendState(room);
-}
+        bullets: [],
 
-function startRoom(room) {
-    if (room.started) return;
+        score: {
+            p1: 0,
+            p2: 0
+        },
 
-    const participantCount =
-        room.players.size + (room.bot ? 1 : 0);
+        started: false,
 
-    if (participantCount < 2) return;
+        gameOver: false
 
-    room.started = true;
+    };
 
-    broadcast(room, {
-        type: "game_started"
-    });
-
-    resetRound(room);
-}
-
-function removeRoomIfEmpty(room) {
-    if (room.players.size === 0 && !room.bot) {
-        rooms.delete(room.code);
-    }
-}
-
-wss.on("connection", ws => {
-    let currentRoom = null;
-    let currentPlayer = null;
-
-    ws.send(
-        JSON.stringify({
-            type: "connected"
-        })
+    rooms.set(
+        code,
+        room
     );
 
-    ws.on("message", raw => {
-        let data;
+    return room;
 
-        try {
-            data = JSON.parse(raw.toString());
-        } catch {
-            return;
-        }
+}
 
-        if (data.type === "create_room") {
-            if (currentRoom) return;
+/* =========================================================
+   SOCKET HELPERS
+========================================================= */
 
-            const room = createRoom();
+function send(ws, data) {
 
-            const player = {
-                id: "p_" + Math.random().toString(36).slice(2),
-                name:
-                    String(data.name || "Player")
-                        .slice(0, 16),
-                x: 350,
-                y: 400,
-                angle: 0,
-                hp: 100,
-                ws
-            };
+    if (
+        ws &&
+        ws.readyState ===
+        WebSocket.OPEN
+    ) {
 
-            room.players.set(player.id, player);
-            room.scores[player.id] = 0;
-
-            currentRoom = room;
-            currentPlayer = player;
-
-            ws.send(
-                JSON.stringify({
-                    type: "room_created",
-                    room: room.code,
-                    playerId: player.id
-                })
-            );
-
-            sendState(room);
-
-            return;
-        }
-
-        if (data.type === "join_room") {
-            if (currentRoom) return;
-
-            const code = String(data.room || "")
-                .trim()
-                .toUpperCase();
-
-            const room = rooms.get(code);
-
-            if (!room) {
-                ws.send(
-                    JSON.stringify({
-                        type: "error",
-                        message: "ოთახი ვერ მოიძებნა"
-                    })
-                );
-                return;
-            }
-
-            if (room.players.size >= 2) {
-                ws.send(
-                    JSON.stringify({
-                        type: "error",
-                        message: "ოთახი უკვე სავსეა"
-                    })
-                );
-                return;
-            }
-
-            if (room.bot) {
-                room.bot = null;
-            }
-
-            const player = {
-                id: "p_" + Math.random().toString(36).slice(2),
-                name:
-                    String(data.name || "Player")
-                        .slice(0, 16),
-                x: 850,
-                y: 400,
-                angle: Math.PI,
-                hp: 100,
-                ws
-            };
-
-            room.players.set(player.id, player);
-            room.scores[player.id] = 0;
-
-            currentRoom = room;
-            currentPlayer = player;
-
-            ws.send(
-                JSON.stringify({
-                    type: "room_joined",
-                    room: room.code,
-                    playerId: player.id
-                })
-            );
-
-            if (room.players.size >= 2) {
-                startRoom(room);
-            } else {
-                sendState(room);
-            }
-
-            return;
-        }
-
-        if (data.type === "add_bot") {
-            if (!currentRoom || !currentPlayer) return;
-
-            if (currentRoom.players.size >= 2) {
-                return;
-            }
-
-            if (currentRoom.bot) {
-                return;
-            }
-
-            addBot(currentRoom);
-
-            return;
-        }
-
-        if (data.type === "input") {
-            if (!currentRoom || !currentPlayer) return;
-
-            if (!currentRoom.started) return;
-
-            const dx = Number(data.dx) || 0;
-            const dy = Number(data.dy) || 0;
-
-            const speed = 6;
-
-            currentPlayer.x += dx * speed;
-            currentPlayer.y += dy * speed;
-
-            currentPlayer.x = Math.max(
-                40,
-                Math.min(1160, currentPlayer.x)
-            );
-
-            currentPlayer.y = Math.max(
-                40,
-                Math.min(760, currentPlayer.y)
-            );
-
-            if (typeof data.angle === "number") {
-                currentPlayer.angle = data.angle;
-            }
-
-            sendState(currentRoom);
-
-            return;
-        }
-
-        if (data.type === "shoot") {
-            if (!currentRoom || !currentPlayer) return;
-            if (!currentRoom.started) return;
-
-            const bullet = {
-                id: "b_" + Math.random().toString(36).slice(2),
-                owner: currentPlayer.id,
-                x: currentPlayer.x,
-                y: currentPlayer.y,
-                angle:
-                    typeof data.angle === "number"
-                        ? data.angle
-                        : currentPlayer.angle,
-                speed: 14,
-                life: 100
-            };
-
-            currentRoom.bullets.push(bullet);
-
-            return;
-        }
-
-        if (data.type === "leave_room") {
-            if (!currentRoom || !currentPlayer) return;
-
-            const room = currentRoom;
-
-            room.players.delete(currentPlayer.id);
-            delete room.scores[currentPlayer.id];
-
-            currentRoom = null;
-            currentPlayer = null;
-
-            if (room.bot) {
-                removeBot(room);
-            }
-
-            sendState(room);
-            removeRoomIfEmpty(room);
-
-            return;
-        }
-    });
-
-    ws.on("close", () => {
-        if (!currentRoom || !currentPlayer) {
-            return;
-        }
-
-        const room = currentRoom;
-
-        room.players.delete(currentPlayer.id);
-        delete room.scores[currentPlayer.id];
-
-        if (room.bot) {
-            room.bot = null;
-        }
-
-        room.started = false;
-        room.bullets = [];
-
-        sendState(room);
-
-        removeRoomIfEmpty(room);
-    });
-});
-
-setInterval(() => {
-    rooms.forEach(room => {
-        if (!room.started) return;
-
-        const now = Date.now();
-        const delta = Math.min(
-            0.05,
-            (now - room.lastUpdate) / 1000
+        ws.send(
+            JSON.stringify(data)
         );
 
-        room.lastUpdate = now;
+    }
 
-        room.bullets.forEach(bullet => {
-            bullet.x += Math.cos(bullet.angle) * bullet.speed;
-            bullet.y += Math.sin(bullet.angle) * bullet.speed;
-            bullet.life -= delta * 60;
-        });
+}
 
-        room.bullets = room.bullets.filter(bullet => {
-            if (bullet.life <= 0) return false;
+function broadcast(
+    room,
+    data
+) {
 
-            if (
-                bullet.x < 0 ||
-                bullet.x > 1200 ||
-                bullet.y < 0 ||
-                bullet.y > 800
-            ) {
-                return false;
-            }
+    for (
+        const player
+        of room.players.values()
+    ) {
 
-            let hit = false;
+        send(
+            player.ws,
+            data
+        );
 
-            room.players.forEach(player => {
-                if (player.id === bullet.owner) return;
-                if (player.hp <= 0) return;
+    }
 
-                const dx = player.x - bullet.x;
-                const dy = player.y - bullet.y;
-                const distance = Math.sqrt(
-                    dx * dx + dy * dy
-                );
+}
 
-                if (distance < 24) {
-                    player.hp -= 25;
-                    hit = true;
+/* =========================================================
+   ALL PLAYERS
+========================================================= */
 
-                    if (player.hp <= 0) {
-                        room.scores[bullet.owner] =
-                            (room.scores[bullet.owner] || 0) + 1;
+function allPlayers(room) {
 
-                        player.hp = 100;
+    const list =
+        Array.from(
+            room.players.values()
+        );
 
-                        if (
-                            room.scores[bullet.owner] >=
-                            MAX_SCORE
-                        ) {
-                            room.started = false;
+    if (room.bot) {
+        list.push(room.bot);
+    }
 
-                            broadcast(room, {
-                                type: "game_over",
-                                winner: bullet.owner,
-                                scores: room.scores
-                            });
+    return list;
 
-                            setTimeout(() => {
-                                if (
-                                    rooms.has(room.code)
-                                ) {
-                                    resetRound(room);
-                                }
-                            }, 3000);
-                        } else {
-                            player.x =
-                                player.x < 600
-                                    ? 850
-                                    : 350;
-                            player.y = 400;
-                        }
-                    }
-                }
-            });
+}
 
-            if (room.bot && room.bot.hp > 0) {
-                const dx = room.bot.x - bullet.x;
-                const dy = room.bot.y - bullet.y;
-                const distance = Math.sqrt(
-                    dx * dx + dy * dy
-                );
+/* =========================================================
+   START GAME
+========================================================= */
 
-                if (distance < 24) {
-                    room.bot.hp -= 25;
-                    hit = true;
+function startGame(room) {
 
-                    if (room.bot.hp <= 0) {
-                        room.scores[bullet.owner] =
-                            (room.scores[bullet.owner] || 0) + 1;
+    if (
+        room.players.size +
+        (room.bot ? 1 : 0) <
+        2
+    ) {
+        return;
+    }
 
-                        room.bot.hp = 100;
-                        room.bot.x = 850;
-                        room.bot.y = 400;
+    room.started = true;
 
-                        if (
-                            room.scores[bullet.owner] >=
-                            MAX_SCORE
-                        ) {
-                            room.started = false;
+    room.gameOver = false;
 
-                            broadcast(room, {
-                                type: "game_over",
-                                winner: bullet.owner,
-                                scores: room.scores
-                            });
+    room.bullets = [];
 
-                            setTimeout(() => {
-                                if (
-                                    rooms.has(room.code)
-                                ) {
-                                    resetRound(room);
-                                }
-                            }, 3000);
-                        }
-                    }
-                }
-            }
+    room.score.p1 = 0;
+    room.score.p2 = 0;
 
-            return !hit;
-        });
+    const players =
+        allPlayers(room);
 
-        // მარტივი BOT AI
-        if (room.bot && room.started) {
-            const human = Array.from(
-                room.players.values()
-            )[0];
+    for (const p of players) {
 
-            if (human) {
-                const dx = human.x - room.bot.x;
-                const dy = human.y - room.bot.y;
+        respawnPlayer(
+            p
+        );
 
-                const distance = Math.sqrt(
-                    dx * dx + dy * dy
-                );
+    }
 
-                if (distance > 120) {
-                    room.bot.x +=
-                        (dx / Math.max(distance, 1)) * 2.2;
+    broadcast(
+        room,
+        {
+            type: "message",
+            message:
+                "🔥 მატჩი დაიწყო!"
+        }
+    );
 
-                    room.bot.y +=
-                        (dy / Math.max(distance, 1)) * 2.2;
-                }
+}
 
-                room.bot.angle = Math.atan2(dy, dx);
-            }
+/* =========================================================
+   RESPAWN
+========================================================= */
+
+function respawnPlayer(p) {
+
+    const spawn =
+        SPAWNS[p.id] ||
+        SPAWNS.bot;
+
+    p.x = spawn.x;
+    p.y = spawn.y;
+
+    p.angle =
+        p.id === "p1"
+            ? 0
+            : Math.PI;
+
+    p.hp = 100;
+
+    p.alive = true;
+
+    p.shooting = false;
+
+    p.respawnTimer = 0;
+
+}
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function circleRectCollision(
+    x,
+    y,
+    radius,
+    rect
+) {
+
+    const closestX =
+        Math.max(
+            rect.x,
+            Math.min(
+                x,
+                rect.x + rect.w
+            )
+        );
+
+    const closestY =
+        Math.max(
+            rect.y,
+            Math.min(
+                y,
+                rect.y + rect.h
+            )
+        );
+
+    const dx =
+        x - closestX;
+
+    const dy =
+        y - closestY;
+
+    return (
+        dx * dx +
+        dy * dy
+    ) <
+    radius * radius;
+
+}
+
+function canMove(
+    x,
+    y,
+    radius
+) {
+
+    if (
+        x - radius < 35 ||
+        x + radius > 1565 ||
+        y - radius < 35 ||
+        y + radius > 865
+    ) {
+        return false;
+    }
+
+    for (
+        const wall
+        of WALLS
+    ) {
+
+        if (
+            circleRectCollision(
+                x,
+                y,
+                radius,
+                wall
+            )
+        ) {
+
+            return false;
+
         }
 
-        sendState(room);
-    });
-}, 50);
+    }
 
-server.listen(PORT, () => {
-    console.log(`SchoolGame server running on port ${PORT}`);
-});
+    return true;
+
+}
+
+function movePlayer(
+    p,
+    dx,
+    dy
+) {
+
+    const radius = 22;
+
+    const newX =
+        p.x + dx;
+
+    if (
+        canMove(
+            newX,
+            p.y,
+            radius
+        )
+    ) {
+
+        p.x = newX;
+
+    }
+
+    const newY =
+        p.y + dy;
+
+    if (
+        canMove(
+            p.x,
+            newY,
+            radius
+        )
+    ) {
+
+        p.y = newY;
+
+    }
+
+}
+
+/* =========================================================
+   BULLET / WALL
+========================================================= */
+
+function pointInsideWall(
+    x,
+    y
+) {
+
+    for (
+        const wall
+        of WALLS
+    ) {
+
+        if (
+            x >= wall.x &&
+            x <= wall.x + wall.w &&
+            y >= wall.y &&
+            y <= wall.y + wall.h
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+/* =========================================================
+   SHOOT
+========================================================= */
+
+function shoot(
+    room,
+    shooter
+) {
+
+    if (
+        !shooter.alive
+    ) {
+        return;
+    }
+
+    if (
+        shooter.shootCooldown > 0
+    ) {
+        return;
+    }
+
+    shooter.shootCooldown =
+        shooter.isBot
+            ? 0.45
+            : 0.20;
+
+    const speed =
+        shooter.isBot
+            ? 760
+            : 900;
+
+    const offset = 30;
+
+    room.bullets.push({
+
+        id:
+            Math.random()
+                .toString(36)
+                .slice(2),
+
+        owner:
+            shooter.id,
+
+        x:
+            shooter.x +
+            Math.cos(
+                shooter.angle
+            ) *
+            offset,
+
+        y:
+            shooter.y +
+            Math.sin(
+                shooter.angle
+            ) *
+            offset,
+
+        vx:
+            Math.cos(
+                shooter.angle
+            ) *
+            speed,
+
+        vy:
+            Math.sin(
+                shooter.angle
+            ) *
+            speed,
+
+        life: 1.2
+
+    });
+
+}
+
+/* =========================================================
+   BOT
+========================================================= */
+
+function updateBot(
+    room,
+    dt
+) {
+
+    if (
+        !room.bot ||
+        !room.bot.alive ||
+        !room.started
+    ) {
+        return;
+    }
+
+    const targets =
+        Array.from(
+            room.players.values()
+        )
+        .filter(
+            p => p.alive
+        );
+
+    if (
+        targets.length === 0
+    ) {
+        return;
+    }
+
+    let target =
+        targets[0];
+
+    let bestDistance =
+        Infinity;
+
+    for (
+        const p
+        of targets
+    ) {
+
+        const dx =
+            p.x -
+            room.bot.x;
+
+        const dy =
+            p.y -
+            room.bot.y;
+
+        const distance =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+        if (
+            distance <
+            bestDistance
+        ) {
+
+            bestDistance =
+                distance;
+
+            target =
+                p;
+
+        }
+
+    }
+
+    const dx =
+        target.x -
+        room.bot.x;
+
+    const dy =
+        target.y -
+        room.bot.y;
+
+    const distance =
+        Math.hypot(
+            dx,
+            dy
+        );
+
+    const targetAngle =
+        Math.atan2(
+            dy,
+            dx
+        );
+
+    room.bot.angle =
+        targetAngle;
+
+    let moveX = 0;
+    let moveY = 0;
+
+    if (distance > 300) {
+
+        moveX =
+            Math.cos(
+                targetAngle
+            );
+
+        moveY =
+            Math.sin(
+                targetAngle
+            );
+
+    } else if (
+        distance < 170
+    ) {
+
+        moveX =
+            -Math.cos(
+                targetAngle
+            );
+
+        moveY =
+            -Math.sin(
+                targetAngle
+            );
+
+    } else {
+
+        moveX =
+            Math.cos(
+                targetAngle +
+                Math.PI / 2
+            ) *
+            0.45;
+
+        moveY =
+            Math.sin(
+                targetAngle +
+                Math.PI / 2
+            ) *
+            0.45;
+
+    }
+
+    const speed = 145;
+
+    movePlayer(
+        room.bot,
+        moveX *
+            speed *
+            dt,
+
+        moveY *
+            speed *
+            dt
+    );
+
+    room.bot.shooting =
+        distance < 900;
+
+    if (
+        room.bot.shooting
+    ) {
+
+        shoot(
+            room,
+            room.bot
+        );
+
+    }
+
+}
+
+/* =========================================================
+   UPDATE PLAYERS
+========================================================= */
+
+function updatePlayer(
+    room,
+    p,
+    dt
+) {
+
+    if (
+        !p.alive
+    ) {
+
+        if (
+            p.respawnTimer > 0
+        ) {
+
+            p.respawnTimer -= dt;
+
+        }
+
+        if (
+            p.respawnTimer <= 0
+        ) {
+
+            respawnPlayer(
+                p
+            );
+
+        }
+
+        return;
+
+    }
+
+    let dx = 0;
+    let dy = 0;
+
+    if (p.keys.w) {
+        dy -= 1;
+    }
+
+    if (p.keys.s) {
+        dy += 1;
+    }
+
+    if (p.keys.a) {
+        dx -= 1;
+    }
+
+    if (p.keys.d) {
+        dx += 1;
+    }
+
+    if (
+        dx !== 0 ||
+        dy !== 0
+    ) {
+
+        const length =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+        dx /= length;
+        dy /= length;
+
+        const speed = 260;
+
+        movePlayer(
+            p,
+            dx *
+                speed *
+                dt,
+
+            dy *
+                speed *
+                dt
+        );
+
+    }
+
+    if (
+        p.shootCooldown > 0
+    ) {
+
+        p.shootCooldown -= dt;
+
+    }
+
+    if (
+        p.shooting
+    ) {
+
+        shoot(
+            room,
+            p
+        );
+
+    }
+
+}
+
+/* =========================================================
+   BULLETS
+========================================================= */
+
+function updateBullets(
+    room,
+    dt
+) {
+
+    for (
+        let i =
+            room.bullets.length - 1;
+        i >= 0;
+        i--
+    ) {
+
+        const bullet =
+            room.bullets[i];
+
+        bullet.x +=
+            bullet.vx *
+            dt;
+
+        bullet.y +=
+            bullet.vy *
+            dt;
+
+        bullet.life -= dt;
+
+        if (
+            bullet.life <= 0 ||
+            pointInsideWall(
+                bullet.x,
+                bullet.y
+            ) ||
+            bullet.x < 0 ||
+            bullet.x > WORLD.width ||
+            bullet.y < 0 ||
+            bullet.y > WORLD.height
+        ) {
+
+            room.bullets.splice(
+                i,
+                1
+            );
+
+            continue;
+
+        }
+
+        const targets =
+            allPlayers(room);
+
+        let hit = false;
+
+        for (
+            const target
+            of targets
+        ) {
+
+            if (
+                target.id ===
+                bullet.owner
+            ) {
+                continue;
+            }
+
+            if (
+                !target.alive
+            ) {
+                continue;
+            }
+
+            const dx =
+                target.x -
+                bullet.x;
+
+            const dy =
+                target.y -
+                bullet.y;
+
+            const distance =
+                Math.hypot(
+                    dx,
+                    dy
+                );
+
+            if (
+                distance <= 24
+            ) {
+
+                target.hp -= 25;
+
+                if (
+                    target.hp <= 0
+                ) {
+
+                    target.hp = 0;
+
+                    target.alive =
+                        false;
+
+                    target.respawnTimer =
+                        1.2;
+
+                    const killer =
+                        targets.find(
+                            p =>
+                                p.id ===
+                                bullet.owner
+                        );
+
+                    if (killer) {
+
+                        if (
+                            killer.id ===
+                            "p1"
+                        ) {
+
+                            room.score.p1++;
+
+                        } else {
+
+                            room.score.p2++;
+
+                        }
+
+                    }
+
+                    const winner =
+                        room.score.p1 >=
+                            MAX_SCORE
+                            ? "p1"
+                            : room.score.p2 >=
+                              MAX_SCORE
+                            ? "p2"
+                            : null;
+
+                    if (winner) {
+
+                        room.started =
+                            false;
+
+                        room.gameOver =
+                            true;
+
+                        broadcast(
+                            room,
+                            {
+                                type:
+                                    "game_over",
+
+                                winner:
+                                    winner
+                            }
+                        );
+
+                    }
+
+                }
+
+                hit = true;
+
+                break;
+
+            }
+
+        }
+
+        if (hit) {
+
+            room.bullets.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
+/* =========================================================
+   STATE
+========================================================= */
+
+function getState(
+    room
+) {
+
+    return {
+
+        type:
+            "state",
+
+        players:
+            allPlayers(room)
+            .map(
+                p => ({
+                    id:
+                        p.id,
+
+                    name:
+                        p.name,
+
+                    x:
+                        p.x,
+
+                    y:
+                        p.y,
+
+                    angle:
+                        p.angle,
+
+                    hp:
+                        p.hp,
+
+                    alive:
+                        p.alive
+                })
+            ),
+
+        bullets:
+            room.bullets
+            .map(
+                b => ({
+                    x:
+                        b.x,
+
+                    y:
+                        b.y
+                })
+            ),
+
+        score: {
+            p1:
+                room.score.p1,
+
+            p2:
+                room.score.p2
+        },
+
+        started:
+            room.started,
+
+        lobby:
+            room.players.size +
+                (room.bot ? 1 : 0) <
+            2
+
+    };
+
+}
+
+/* =========================================================
+   WEBSOCKET
+========================================================= */
+
+wss.on(
+    "connection",
+    ws => {
+
+        let currentRoom = null;
+        let currentPlayer = null;
+
+        send(
+            ws,
+            {
+                type:
+                    "connected"
+            }
+        );
+
+        ws.on(
+            "message",
+            raw => {
+
+                let data;
+
+                try {
+
+                    data =
+                        JSON.parse(
+                            raw.toString()
+                        );
+
+                } catch {
+
+                    return;
+
+                }
+
+                /* =========================================
+                   CREATE ROOM
+                ========================================= */
+
+                if (
+                    data.type ===
+                    "create_room"
+                ) {
+
+                    if (
+                        currentRoom
+                    ) {
+                        return;
+                    }
+
+                    const room =
+                        createRoom();
+
+                    const player =
+                        createPlayer(
+                            "p1",
+                            data.name ||
+                                "PLAYER 1"
+                        );
+
+                    player.ws =
+                        ws;
+
+                    room.players.set(
+                        player.id,
+                        player
+                    );
+
+                    currentRoom =
+                        room;
+
+                    currentPlayer =
+                        player;
+
+                    send(
+                        ws,
+                        {
+                            type:
+                                "room_created",
+
+                            room:
+                                room.code,
+
+                            playerId:
+                                player.id
+                        }
+                    );
+
+                    return;
+
+                }
+
+                /* =========================================
+                   JOIN ROOM
+                ========================================= */
+
+                if (
+                    data.type ===
+                    "join_room"
+                ) {
+
+                    const code =
+                        String(
+                            data.room ||
+                            ""
+                        )
+                        .trim()
+                        .toUpperCase();
+
+                    const room =
+                        rooms.get(code);
+
+                    if (!room) {
+
+                        send(
+                            ws,
+                            {
+                                type:
+                                    "error",
+
+                                message:
+                                    "Room ვერ მოიძებნა."
+                            }
+                        );
+
+                        return;
+
+                    }
+
+                    if (
+                        room.players.size >=
+                        2
+                    ) {
+
+                        send(
+                            ws,
+                            {
+                                type:
+                                    "error",
+
+                                message:
+                                    "Room უკვე სავსეა."
+                            }
+                        );
+
+                        return;
+
+                    }
+
+                    if (
+                        room.gameOver
+                    ) {
+
+                        room.gameOver =
+                            false;
+
+                    }
+
+                    if (room.bot) {
+
+                        room.bot = null;
+
+                        broadcast(
+                            room,
+                            {
+                                type:
+                                    "bot_left"
+                            }
+                        );
+
+                    }
+
+                    const player =
+                        createPlayer(
+                            "p2",
+                            data.name ||
+                                "PLAYER 2"
+                        );
+
+                    player.ws =
+                        ws;
+
+                    room.players.set(
+                        player.id,
+                        player
+                    );
+
+                    currentRoom =
+                        room;
+
+                    currentPlayer =
+                        player;
+
+                    send(
+                        ws,
+                        {
+                            type:
+                                "room_joined",
+
+                            room:
+                                room.code,
+
+                            playerId:
+                                player.id
+                        }
+                    );
+
+                    if (
+                        room.players.size >=
+                        2
+                    ) {
+
+                        startGame(
+                            room
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+                /* =========================================
+                   ADD BOT
+                ========================================= */
+
+                if (
+                    data.type ===
+                    "add_bot"
+                ) {
+
+                    if (
+                        !currentRoom ||
+                        !currentPlayer
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        currentRoom.players.size >=
+                        2
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        currentRoom.bot
+                    ) {
+                        return;
+                    }
+
+                    currentRoom.bot =
+                        createPlayer(
+                            "bot",
+                            "BOT",
+                            true
+                        );
+
+                    broadcast(
+                        currentRoom,
+                        {
+                            type:
+                                "bot_joined"
+                        }
+                    );
+
+                    startGame(
+                        currentRoom
+                    );
+
+                    return;
+
+                }
+
+                /* =========================================
+                   INPUT
+                ========================================= */
+
+                if (
+                    data.type ===
+                    "input"
+                ) {
+
+                    if (
+                        !currentPlayer
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        !currentRoom
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        typeof data.angle ===
+                        "number"
+                    ) {
+
+                        currentPlayer.angle =
+                            data.angle;
+
+                    }
+
+                    if (
+                        data.keys
+                    ) {
+
+                        currentPlayer.keys = {
+
+                            w:
+                                !!data.keys.w,
+
+                            a:
+                                !!data.keys.a,
+
+                            s:
+                                !!data.keys.s,
+
+                            d:
+                                !!data.keys.d
+
+                        };
+
+                    }
+
+                    currentPlayer.shooting =
+                        !!data.shooting;
+
+                    return;
+
+                }
+
+                /* =========================================
+                   RESTART
+                ========================================= */
+
+                if (
+                    data.type ===
+                    "restart"
+                ) {
+
+                    if (
+                        !currentRoom
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        currentRoom.players.size +
+                        (currentRoom.bot
+                            ? 1
+                            : 0) >=
+                        2
+                    ) {
+
+                        startGame(
+                            currentRoom
+                        );
+
+                    }
+
+                    return;
+
+                }
+
+            }
+        );
+
+        ws.on(
+            "close",
+            () => {
+
+                if (
+                    !currentRoom ||
+                    !currentPlayer
+                ) {
+                    return;
+                }
+
+                const room =
+                    currentRoom;
+
+                room.players.delete(
+                    currentPlayer.id
+                );
+
+                if (
+                    room.bot
+                ) {
+
+                    room.bot = null;
+
+                }
+
+                room.started =
+                    false;
+
+                room.bullets = [];
+
+                if (
+                    room.players.size ===
+                    0
+                ) {
+
+                    rooms.delete(
+                        room.code
+                    );
+
+                } else {
+
+                    broadcast(
+                        room,
+                        {
+                            type:
+                                "message",
+
+                            message:
+                                "მოთამაშე გავიდა."
+                        }
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+setInterval(
+    () => {
+
+        const dt = 0.05;
+
+        for (
+            const room
+            of rooms.values()
+        ) {
+
+            if (
+                !room.started
+            ) {
+                continue;
+            }
+
+            for (
+                const player
+                of room.players.values()
+            ) {
+
+                updatePlayer(
+                    room,
+                    player,
+                    dt
+                );
+
+            }
+
+            updateBot(
+                room,
+                dt
+            );
+
+            updateBullets(
+                room,
+                dt
+            );
+
+            broadcast(
+                room,
+                getState(room)
+            );
+
+        }
+
+    },
+    50
+);
+
+/* =========================================================
+   START
+========================================================= */
+
+server.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `RIVALS server running on port ${PORT}`
+        );
+
+    }
+);
