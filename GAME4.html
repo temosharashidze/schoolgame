@@ -241,189 +241,6 @@ canvas{
     padding-left:58px;
 }
 
-
-#lockerPanel{
-    position:absolute;
-    z-index:45;
-    top:110px;
-    left:50%;
-    transform:translateX(-50%);
-    width:min(760px,92vw);
-    max-height:78vh;
-    overflow:auto;
-    background:linear-gradient(180deg,#101d38f5,#091225f5);
-    border:1px solid #ffffff22;
-    border-radius:18px;
-    box-shadow:0 24px 90px #000b;
-    padding:24px;
-    display:none;
-    pointer-events:auto;
-}
-#lockerPanel.show{display:block}
-
-/* LOCKER MODE: hide the normal menu and show a left category list */
-#mainMenu.locker-open .menuBtn:not(#menuClose){display:none !important}
-#mainMenu.locker-open #lockerPanel{
-    top:0;
-    left:0;
-    transform:none;
-    width:100%;
-    height:100%;
-    max-height:none;
-    box-sizing:border-box;
-    border:0;
-    border-radius:0;
-    padding:0;
-    overflow:hidden;
-    /* Keep the 3D character visible behind the locker UI. */
-    background:linear-gradient(90deg,rgba(8,18,36,.98) 0%,rgba(11,23,48,.82) 30%,rgba(11,23,48,.28) 68%,rgba(11,23,48,.08) 100%);
-    display:block;
-}
-.lockerLayout{
-    display:flex;
-    width:100%;
-    height:100%;
-}
-.lockerSidebar{
-    width:280px;
-    flex:0 0 280px;
-    box-sizing:border-box;
-    padding:34px 20px;
-    background:#07101fe8;
-    border-right:1px solid #ffffff18;
-    box-shadow:12px 0 40px #0005;
-}
-.lockerSidebarTitle{
-    color:#fff;
-    font-size:28px;
-    font-weight:1000;
-    margin:0 0 8px;
-}
-.lockerSidebarSub{
-    color:#8e9bb4;
-    font-size:13px;
-    margin-bottom:26px;
-}
-.lockerCategory{
-    width:100%;
-    height:58px;
-    margin-bottom:10px;
-    border:1px solid #ffffff15;
-    border-radius:12px;
-    background:#13223e;
-    color:#dbe6fa;
-    font-size:17px;
-    font-weight:900;
-    text-align:left;
-    padding:0 18px;
-    cursor:pointer;
-    transition:.15s;
-}
-.lockerCategory:hover{background:#1d3359;transform:translateX(2px)}
-.lockerCategory.active{
-    background:#1a3960;
-    border-color:#55ff9a66;
-    box-shadow:inset 4px 0 0 #55ff9a,0 0 18px #0004;
-    color:#fff;
-}
-.lockerContent{
-    flex:1;
-    min-width:0;
-    overflow:auto;
-    box-sizing:border-box;
-    padding:44px 5vw 50px;
-    background:transparent;
-}
-/* The real 3D player remains centered on the right side of the locker. */
-#mainMenu.locker-open + #canvas{
-    position:relative;
-    z-index:1;
-}
-.lockerContent .lockerTitle{text-align:left;font-size:38px}
-.lockerContent .lockerSub{text-align:left;margin-bottom:28px}
-.lockerSection{display:none}
-.lockerSection.active{display:block}
-@media(max-width:700px){
-    .lockerSidebar{width:190px;flex-basis:190px;padding:24px 12px}
-    .lockerSidebarTitle{font-size:22px}
-    .lockerCategory{font-size:14px;padding:0 12px}
-    .lockerContent{padding:28px 18px}
-}
-.lockerTitle{
-    text-align:center;
-    font-size:32px;
-    font-weight:1000;
-    color:#fff;
-    margin-bottom:4px;
-}
-.lockerSub{
-    text-align:center;
-    color:#aebbd2;
-    margin-bottom:18px;
-}
-.lockerSection{
-    background:#0005;
-    border:1px solid #ffffff14;
-    border-radius:14px;
-    padding:14px;
-    margin-top:12px;
-}
-.lockerSectionTitle{
-    color:#fff;
-    font-weight:900;
-    font-size:18px;
-    margin-bottom:10px;
-}
-.lockerOptions{
-    display:grid;
-    grid-template-columns:repeat(5,minmax(0,1fr));
-    gap:9px;
-}
-.lockerItem{
-    min-height:64px;
-    border:1px solid #ffffff20;
-    border-radius:10px;
-    background:#162442;
-    color:#fff;
-    cursor:pointer;
-    font-weight:900;
-    padding:8px 5px;
-    transition:.15s;
-}
-.lockerItem:hover{transform:translateY(-2px);background:#22365f}
-.lockerItem.active{
-    border:2px solid #55ff9a;
-    box-shadow:0 0 0 2px #55ff9a33;
-    background:#173f32;
-}
-.lockerSwatch{
-    width:28px;
-    height:28px;
-    border-radius:7px;
-    margin:0 auto 5px;
-    border:1px solid #ffffff55;
-}
-.lockerClose{
-    position:absolute;
-    right:34px;
-    bottom:28px;
-    z-index:5;
-    display:block;
-    width:130px;
-    margin:0;
-    height:44px;
-    border-radius:10px;
-    border:1px solid #ffffff30;
-    background:#172642;
-    color:#fff;
-    font-weight:900;
-    cursor:pointer;
-}
-@media(max-width:650px){
-    .lockerOptions{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .lockerClose{right:16px;bottom:16px}
-    #lockerPanel{top:70px;padding:16px}
-}
 #modeCard{
     position:absolute;
     left:3vw;
@@ -948,40 +765,6 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
       </select>
     </div>
 
-
-    <div id="lockerPanel">
-      <div class="lockerLayout">
-        <aside class="lockerSidebar">
-          <div class="lockerSidebarTitle">👕 LOCKER</div>
-          <div class="lockerSidebarSub">აირჩიე კატეგორია</div>
-          <button class="lockerCategory active" data-locker-category="shirt">👕 &nbsp; მაისური</button>
-          <button class="lockerCategory" data-locker-category="shorts">🩳 &nbsp; შორტი</button>
-          <button class="lockerCategory" data-locker-category="shoe">👟 &nbsp; ფეხსაცმელი</button>
-        </aside>
-
-        <section class="lockerContent">
-          <div class="lockerTitle">ტანსაცმელი</div>
-          <div class="lockerSub">აირჩიე შენი პერსონაჟისთვის სასურველი ნივთი</div>
-
-          <div class="lockerSection active" data-locker-section="shirt">
-            <div class="lockerSectionTitle">👕 მაისური</div>
-            <div class="lockerOptions" id="shirtOptions"></div>
-          </div>
-
-          <div class="lockerSection" data-locker-section="shorts">
-            <div class="lockerSectionTitle">🩳 შორტი</div>
-            <div class="lockerOptions" id="shortsOptions"></div>
-          </div>
-
-          <div class="lockerSection" data-locker-section="shoe">
-            <div class="lockerSectionTitle">👟 ფეხსაცმელი</div>
-            <div class="lockerOptions" id="shoeOptions"></div>
-          </div>
-        </section>
-      </div>
-      <button class="lockerClose" id="lockerClose">CLOSE</button>
-    </div>
-
     <div class="menuPanel" id="characterPanel">
       <div id="characterPreview">🧍</div>
       <div style="text-align:center"><b>Player Character</b><br><small>შენი პერსონაჟი</small></div>
@@ -1020,6 +803,102 @@ scene.fog=new THREE.Fog(
     110
 );
 
+
+
+/* =========================================================
+   ONLINE REMOTE PLAYER ANIMATION
+   The remote player's movement + walk/run state is sent
+   over WebSocket, then animated locally on the cloned bot.
+========================================================= */
+const remoteParts={
+    leftLeg:bot.getObjectByName("BOT_LEFT_LEG"),
+    rightLeg:bot.getObjectByName("BOT_RIGHT_LEG"),
+    leftThigh:bot.getObjectByName("BOT_LEFT_THIGH"),
+    rightThigh:bot.getObjectByName("BOT_RIGHT_THIGH"),
+    leftShin:bot.getObjectByName("BOT_LEFT_SHIN"),
+    rightShin:bot.getObjectByName("BOT_RIGHT_SHIN"),
+    leftFoot:bot.getObjectByName("BOT_LEFT_FOOT"),
+    rightFoot:bot.getObjectByName("BOT_RIGHT_FOOT"),
+    leftUpper:bot.getObjectByName("BOT_LEFT_UPPER"),
+    rightUpper:bot.getObjectByName("BOT_RIGHT_UPPER"),
+    leftForearm:bot.getObjectByName("BOT_LEFT_FOREARM"),
+    rightForearm:bot.getObjectByName("BOT_RIGHT_FOREARM"),
+    pelvis:bot.getObjectByName("BOT_PELVIS"),
+    torso:bot.getObjectByName("BOT_TORSO"),
+    head:bot.getObjectByName("BOT_HEAD")
+};
+
+function animateRemoteBot(delta){
+    if(!onlineMode || !bot.visible) return;
+
+    if(remoteMoving){
+        remoteWalkTime += delta * (remoteRunning ? 11.5 : 6.5);
+
+        const phase=remoteWalkTime;
+        const s=Math.sin(phase);
+        const c=Math.cos(phase);
+        const rp=remoteParts;
+
+        if(remoteRunning){
+            const rs=Math.sin(phase+Math.PI);
+
+            rp.leftThigh.rotation.x=s*.58;
+            rp.rightThigh.rotation.x=rs*.58;
+            rp.leftShin.rotation.x=-(.08+Math.max(0,s)*1.05);
+            rp.rightShin.rotation.x=-(.08+Math.max(0,rs)*1.05);
+            rp.leftFoot.rotation.x=-.10+Math.max(0,s)*.28;
+            rp.rightFoot.rotation.x=-.10+Math.max(0,rs)*.28;
+            rp.leftUpper.rotation.x=rs*.70;
+            rp.rightUpper.rotation.x=s*.70;
+            rp.leftForearm.rotation.x=.72;
+            rp.rightForearm.rotation.x=.72;
+            rp.pelvis.rotation.y=THREE.MathUtils.lerp(rp.pelvis.rotation.y,s*.055,delta*12);
+            rp.pelvis.rotation.z=THREE.MathUtils.lerp(rp.pelvis.rotation.z,c*.035,delta*12);
+            rp.torso.rotation.y=THREE.MathUtils.lerp(rp.torso.rotation.y,-s*.035,delta*10);
+            rp.torso.rotation.z=THREE.MathUtils.lerp(rp.torso.rotation.z,-c*.018,delta*10);
+            rp.head.rotation.y=THREE.MathUtils.lerp(rp.head.rotation.y,-s*.025,delta*10);
+            rp.head.rotation.z=THREE.MathUtils.lerp(rp.head.rotation.z,-c*.018,delta*10);
+            bot.position.y=THREE.MathUtils.lerp(bot.position.y,Math.abs(Math.sin(phase*2))*.045,delta*14);
+        }else{
+            const rs=Math.sin(phase+Math.PI);
+
+            rp.leftThigh.rotation.x=s*.42;
+            rp.rightThigh.rotation.x=rs*.42;
+            rp.leftShin.rotation.x=-(.03+Math.max(0,-s)*.38);
+            rp.rightShin.rotation.x=-(.03+Math.max(0,-rs)*.38);
+            rp.leftFoot.rotation.x=-.04+Math.max(0,-s)*.10;
+            rp.rightFoot.rotation.x=-.04+Math.max(0,-rs)*.10;
+            rp.leftUpper.rotation.x=rs*.38;
+            rp.rightUpper.rotation.x=s*.38;
+            rp.leftForearm.rotation.x=.28;
+            rp.rightForearm.rotation.x=.28;
+            rp.pelvis.rotation.y=THREE.MathUtils.lerp(rp.pelvis.rotation.y,s*.025,delta*10);
+            rp.pelvis.rotation.z=THREE.MathUtils.lerp(rp.pelvis.rotation.z,c*.018,delta*10);
+            rp.torso.rotation.y=THREE.MathUtils.lerp(rp.torso.rotation.y,-s*.018,delta*10);
+            rp.torso.rotation.z=THREE.MathUtils.lerp(rp.torso.rotation.z,-c*.012,delta*10);
+            rp.head.rotation.y=THREE.MathUtils.lerp(rp.head.rotation.y,-s*.025,delta*10);
+            rp.head.rotation.z=THREE.MathUtils.lerp(rp.head.rotation.z,-c*.018,delta*10);
+            bot.position.y=THREE.MathUtils.lerp(bot.position.y,Math.abs(Math.sin(phase*2))*.014,delta*10);
+        }
+    }else{
+        remoteWalkTime=0;
+        const rp=remoteParts;
+        const speed=10;
+        [rp.leftThigh,rp.rightThigh,rp.leftShin,rp.rightShin,rp.leftFoot,rp.rightFoot].forEach(o=>{
+            if(o) o.rotation.x=THREE.MathUtils.lerp(o.rotation.x,0,delta*speed);
+        });
+        [rp.leftUpper,rp.rightUpper,rp.leftForearm,rp.rightForearm].forEach(o=>{
+            if(o) o.rotation.x=THREE.MathUtils.lerp(o.rotation.x,0,delta*speed);
+        });
+        [rp.pelvis,rp.torso,rp.head].forEach(o=>{
+            if(o){
+                o.rotation.y=THREE.MathUtils.lerp(o.rotation.y,0,delta*speed);
+                o.rotation.z=THREE.MathUtils.lerp(o.rotation.z,0,delta*speed);
+            }
+        });
+        bot.position.y=THREE.MathUtils.lerp(bot.position.y,0,delta*10);
+    }
+}
 
 /* =========================================================
    CAMERA
@@ -2660,16 +2539,6 @@ createLeg(leftLeg,-.19);
 createLeg(rightLeg,.19);
 
 
-
-// Mark clothing meshes so the locker can recolor the player and the remote model.
-person.traverse(obj=>{
-    if(!obj.isMesh || !obj.material) return;
-    if(obj.material===shirt) obj.userData.clothingType="shirt";
-    if(obj.material===shorts) obj.userData.clothingType="shorts";
-    if(obj.material===shoe) obj.userData.clothingType="shoe";
-    if(obj.material===shoeDark) obj.userData.clothingType="shoeDark";
-});
-
 /* =========================================================
    BOT
 ========================================================= */
@@ -2736,165 +2605,6 @@ const botTorso=bot.getObjectByName("BOT_TORSO");
 const botPelvis=bot.getObjectByName("BOT_PELVIS");
 const botHead=bot.getObjectByName("BOT_HEAD");
 
-// Give the online/remote player its own clothing materials.
-// This keeps your locker outfit from changing the BOT accidentally.
-bot.traverse(obj=>{
-    if(obj.isMesh && obj.material){
-        if(obj.material===shirt) obj.material=shirt.clone();
-        else if(obj.material===shorts) obj.material=shorts.clone();
-        else if(obj.material===shoe) obj.material=shoe.clone();
-        else if(obj.material===shoeDark) obj.material=shoeDark.clone();
-    }
-});
-
-const CLOTHING={
-    shirt:[
-        {id:"white",name:"თეთრი",color:0xe8edf2},
-        {id:"black",name:"შავი",color:0x20242b},
-        {id:"red",name:"წითელი",color:0xd9363e},
-        {id:"blue",name:"ლურჯი",color:0x2676d8},
-        {id:"green",name:"მწვანე",color:0x22a06b}
-    ],
-    shorts:[
-        {id:"dark",name:"შავი",color:0x293343},
-        {id:"red",name:"წითელი",color:0xb72d39},
-        {id:"blue",name:"ლურჯი",color:0x255eb0},
-        {id:"sand",name:"ბეჟი",color:0xa8865b},
-        {id:"green",name:"მწვანე",color:0x28734f}
-    ],
-    shoe:[
-        {id:"white",name:"თეთრი",color:0xe8edf4},
-        {id:"black",name:"შავი",color:0x252a33},
-        {id:"red",name:"წითელი",color:0xd0444d}
-    ]
-};
-
-let equipped={
-    shirt:localStorage.getItem("sg_shirt")||"white",
-    shorts:localStorage.getItem("sg_shorts")||"dark",
-    shoe:localStorage.getItem("sg_shoe")||"white"
-};
-
-function findClothing(type,id){
-    return CLOTHING[type].find(x=>x.id===id)||CLOTHING[type][0];
-}
-
-const shirtOptions=document.getElementById("shirtOptions");
-const shortsOptions=document.getElementById("shortsOptions");
-const shoeOptions=document.getElementById("shoeOptions");
-
-function applyPlayerClothing(){
-    const sh=findClothing("shirt",equipped.shirt);
-    const shrt=findClothing("shorts",equipped.shorts);
-    const shoePick=findClothing("shoe",equipped.shoe);
-
-    shirt.color.setHex(sh.color);
-    shorts.color.setHex(shrt.color);
-    shoe.color.setHex(shoePick.color);
-
-    // Keep the darker shoe sole visually darker than the shoe itself.
-    shoeDark.color.copy(
-        new THREE.Color(shoePick.color).multiplyScalar(.62)
-    );
-
-    renderLockerOptions();
-}
-
-function applyRemoteClothing(data){
-    if(data && data.shirt){
-        const sh=findClothing("shirt",data.shirt);
-        bot.traverse(obj=>{
-            if(obj.isMesh && obj.material && obj.userData.clothingType==="shirt"){
-                obj.material.color.setHex(sh.color);
-            }
-        });
-    }
-
-    if(data && data.shorts){
-        const shrt=findClothing("shorts",data.shorts);
-        bot.traverse(obj=>{
-            if(obj.isMesh && obj.material && obj.userData.clothingType==="shorts"){
-                obj.material.color.setHex(shrt.color);
-            }
-        });
-    }
-
-    if(data && data.shoe){
-        const shoePick=findClothing("shoe",data.shoe);
-        bot.traverse(obj=>{
-            if(obj.isMesh && obj.material && obj.userData.clothingType==="shoe"){
-                obj.material.color.setHex(shoePick.color);
-            }
-            if(obj.isMesh && obj.material && obj.userData.clothingType==="shoeDark"){
-                obj.material.color.setHex(Math.max(0x111111,Math.floor(shoePick.color*0.62)));
-            }
-        });
-    }
-}
-
-
-function renderLockerOptions(){
-    const groups=[
-        [shirtOptions,"shirt",CLOTHING.shirt],
-        [shortsOptions,"shorts",CLOTHING.shorts],
-        [shoeOptions,"shoe",CLOTHING.shoe]
-    ];
-
-    groups.forEach(([root,type,list])=>{
-        if(!root) return;
-        root.innerHTML="";
-        list.forEach(item=>{
-            const b=document.createElement("button");
-            b.className="lockerItem"+(equipped[type]===item.id?" active":"");
-            b.innerHTML='<div class="lockerSwatch"></div><div>'+item.name+'</div>';
-            b.querySelector(".lockerSwatch").style.background="#"+item.color.toString(16).padStart(6,"0");
-            b.addEventListener("click",()=>{
-                equipped[type]=item.id;
-                localStorage.setItem("sg_"+type,item.id);
-                applyPlayerClothing();
-
-                if(onlineConn && onlineConn.open){
-                    onlineConn.send({
-                        type:"clothing",
-                        shirt:equipped.shirt,
-                        shorts:equipped.shorts,
-                        shoe:equipped.shoe
-                    });
-                }
-            });
-            root.appendChild(b);
-        });
-    });
-}
-
-function tagPlayerClothing(){
-    person.traverse(obj=>{
-        if(!obj.isMesh || !obj.material) return;
-        if(obj.material===shirt) obj.userData.clothingType="shirt";
-        if(obj.material===shorts) obj.userData.clothingType="shorts";
-        if(obj.material===shoe) obj.userData.clothingType="shoe";
-        if(obj.material===shoeDark) obj.userData.clothingType="shoeDark";
-    });
-    bot.traverse(obj=>{
-        if(!obj.isMesh || !obj.material) return;
-        // Identify the cloned materials by matching the original material values.
-        if(obj.material!==skin && obj.material!==skinLight && obj.material!==skinDark &&
-           obj.material!==hair && obj.material!==eyeWhite && obj.material!==pupil &&
-           obj.material!==mouthMat && obj.material!==noseMat){
-            // The bot was cloned from the player before customization.
-            // Use geometry/object names and position to classify clothing safely.
-            const n=(obj.parent && obj.parent.name)||"";
-            const y=obj.getWorldPosition(new THREE.Vector3()).y;
-            if(n==="BOT_TORSO" || n===""){
-                if(y>1.9 && y<3.1) obj.userData.clothingType="shirt";
-            }
-        }
-    });
-}
-
-
-tagPlayerClothing();
-applyPlayerClothing();
 
 let redRoundsWon=0;
 let blueRoundsWon=0;
@@ -4479,6 +4189,9 @@ let firstPerson=false;
 let freeMouse=false;
 let dragging=false;
 let walkTime=0;
+let remoteWalkTime=0;
+let remoteMoving=false;
+let remoteRunning=false;
 
 
 /* =========================================================
@@ -5481,6 +5194,102 @@ function updatePlayer(delta){
 }
 
 
+
+/* =========================================================
+   ONLINE REMOTE PLAYER ANIMATION
+   The remote player's movement + walk/run state is sent
+   over WebSocket, then animated locally on the cloned bot.
+========================================================= */
+const remoteParts={
+    leftLeg:bot.getObjectByName("BOT_LEFT_LEG"),
+    rightLeg:bot.getObjectByName("BOT_RIGHT_LEG"),
+    leftThigh:bot.getObjectByName("BOT_LEFT_THIGH"),
+    rightThigh:bot.getObjectByName("BOT_RIGHT_THIGH"),
+    leftShin:bot.getObjectByName("BOT_LEFT_SHIN"),
+    rightShin:bot.getObjectByName("BOT_RIGHT_SHIN"),
+    leftFoot:bot.getObjectByName("BOT_LEFT_FOOT"),
+    rightFoot:bot.getObjectByName("BOT_RIGHT_FOOT"),
+    leftUpper:bot.getObjectByName("BOT_LEFT_UPPER"),
+    rightUpper:bot.getObjectByName("BOT_RIGHT_UPPER"),
+    leftForearm:bot.getObjectByName("BOT_LEFT_FOREARM"),
+    rightForearm:bot.getObjectByName("BOT_RIGHT_FOREARM"),
+    pelvis:bot.getObjectByName("BOT_PELVIS"),
+    torso:bot.getObjectByName("BOT_TORSO"),
+    head:bot.getObjectByName("BOT_HEAD")
+};
+
+function animateRemoteBot(delta){
+    if(!onlineMode || !bot.visible) return;
+
+    if(remoteMoving){
+        remoteWalkTime += delta * (remoteRunning ? 11.5 : 6.5);
+
+        const phase=remoteWalkTime;
+        const s=Math.sin(phase);
+        const c=Math.cos(phase);
+        const rp=remoteParts;
+
+        if(remoteRunning){
+            const rs=Math.sin(phase+Math.PI);
+
+            rp.leftThigh.rotation.x=s*.58;
+            rp.rightThigh.rotation.x=rs*.58;
+            rp.leftShin.rotation.x=-(.08+Math.max(0,s)*1.05);
+            rp.rightShin.rotation.x=-(.08+Math.max(0,rs)*1.05);
+            rp.leftFoot.rotation.x=-.10+Math.max(0,s)*.28;
+            rp.rightFoot.rotation.x=-.10+Math.max(0,rs)*.28;
+            rp.leftUpper.rotation.x=rs*.70;
+            rp.rightUpper.rotation.x=s*.70;
+            rp.leftForearm.rotation.x=.72;
+            rp.rightForearm.rotation.x=.72;
+            rp.pelvis.rotation.y=THREE.MathUtils.lerp(rp.pelvis.rotation.y,s*.055,delta*12);
+            rp.pelvis.rotation.z=THREE.MathUtils.lerp(rp.pelvis.rotation.z,c*.035,delta*12);
+            rp.torso.rotation.y=THREE.MathUtils.lerp(rp.torso.rotation.y,-s*.035,delta*10);
+            rp.torso.rotation.z=THREE.MathUtils.lerp(rp.torso.rotation.z,-c*.018,delta*10);
+            rp.head.rotation.y=THREE.MathUtils.lerp(rp.head.rotation.y,-s*.025,delta*10);
+            rp.head.rotation.z=THREE.MathUtils.lerp(rp.head.rotation.z,-c*.018,delta*10);
+            bot.position.y=THREE.MathUtils.lerp(bot.position.y,Math.abs(Math.sin(phase*2))*.045,delta*14);
+        }else{
+            const rs=Math.sin(phase+Math.PI);
+
+            rp.leftThigh.rotation.x=s*.42;
+            rp.rightThigh.rotation.x=rs*.42;
+            rp.leftShin.rotation.x=-(.03+Math.max(0,-s)*.38);
+            rp.rightShin.rotation.x=-(.03+Math.max(0,-rs)*.38);
+            rp.leftFoot.rotation.x=-.04+Math.max(0,-s)*.10;
+            rp.rightFoot.rotation.x=-.04+Math.max(0,-rs)*.10;
+            rp.leftUpper.rotation.x=rs*.38;
+            rp.rightUpper.rotation.x=s*.38;
+            rp.leftForearm.rotation.x=.28;
+            rp.rightForearm.rotation.x=.28;
+            rp.pelvis.rotation.y=THREE.MathUtils.lerp(rp.pelvis.rotation.y,s*.025,delta*10);
+            rp.pelvis.rotation.z=THREE.MathUtils.lerp(rp.pelvis.rotation.z,c*.018,delta*10);
+            rp.torso.rotation.y=THREE.MathUtils.lerp(rp.torso.rotation.y,-s*.018,delta*10);
+            rp.torso.rotation.z=THREE.MathUtils.lerp(rp.torso.rotation.z,-c*.012,delta*10);
+            rp.head.rotation.y=THREE.MathUtils.lerp(rp.head.rotation.y,-s*.025,delta*10);
+            rp.head.rotation.z=THREE.MathUtils.lerp(rp.head.rotation.z,-c*.018,delta*10);
+            bot.position.y=THREE.MathUtils.lerp(bot.position.y,Math.abs(Math.sin(phase*2))*.014,delta*10);
+        }
+    }else{
+        remoteWalkTime=0;
+        const rp=remoteParts;
+        const speed=10;
+        [rp.leftThigh,rp.rightThigh,rp.leftShin,rp.rightShin,rp.leftFoot,rp.rightFoot].forEach(o=>{
+            if(o) o.rotation.x=THREE.MathUtils.lerp(o.rotation.x,0,delta*speed);
+        });
+        [rp.leftUpper,rp.rightUpper,rp.leftForearm,rp.rightForearm].forEach(o=>{
+            if(o) o.rotation.x=THREE.MathUtils.lerp(o.rotation.x,0,delta*speed);
+        });
+        [rp.pelvis,rp.torso,rp.head].forEach(o=>{
+            if(o){
+                o.rotation.y=THREE.MathUtils.lerp(o.rotation.y,0,delta*speed);
+                o.rotation.z=THREE.MathUtils.lerp(o.rotation.z,0,delta*speed);
+            }
+        });
+        bot.position.y=THREE.MathUtils.lerp(bot.position.y,0,delta*10);
+    }
+}
+
 /* =========================================================
    CAMERA
 ========================================================= */
@@ -5628,9 +5437,6 @@ document.getElementById("fullscreenBtn");
 const characterBtn=
 document.getElementById("characterBtn");
 
-const lockerBtn=document.getElementById("lockerBtn");
-const lockerPanel=document.getElementById("lockerPanel");
-const lockerClose=document.getElementById("lockerClose");
 const menuClose=
 document.getElementById("menuClose");
 
@@ -5707,8 +5513,6 @@ startBtn.addEventListener(
 
         settingsPanel.classList.remove("show");
         characterPanel.classList.remove("show");
-        lockerPanel.classList.remove("show");
-        mainMenu.classList.remove("locker-open");
 
         menuClose.style.display="none";
 
@@ -5918,7 +5722,7 @@ function makeOnlineSocket(code,role){
             if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! START GAME მზადაა.";
             setOnlineStatus("🟢 მეგობარი შემოვიდა!","#55ff9a");
             conn.send({type:"hello",name:onlinePlayerName});
-            conn.send({type:"state",x:person.position.x,y:person.position.y,z:person.position.z,ry:person.rotation.y,hp:playerHP,dead:dead,round:currentRound,shirt:equipped.shirt,shorts:equipped.shorts,shoe:equipped.shoe});
+            conn.send({type:"state",x:person.position.x,y:person.position.y,z:person.position.z,ry:person.rotation.y,hp:playerHP,dead:dead,round:currentRound});
             if(gameStarted) conn.send({type:"start"});
             return;
         }
@@ -5999,18 +5803,13 @@ function handleOnlineData(data){
         return;
     }
 
-
-    if(data.type==="clothing"){
-        applyRemoteClothing(data);
-        return;
-    }
-
     if(data.type==="state"){
-        if(data.shirt || data.shorts || data.shoe) applyRemoteClothing(data);
         if(Number.isFinite(data.x)) bot.position.x=data.x;
         if(Number.isFinite(data.y)) bot.position.y=data.y;
         if(Number.isFinite(data.z)) bot.position.z=data.z;
         if(Number.isFinite(data.ry)) bot.rotation.y=data.ry;
+        remoteMoving=!!data.moving;
+        remoteRunning=!!data.running;
         if(Number.isFinite(data.hp)){
             botHP=Math.max(0,Math.min(BOT_MAX_HP,data.hp));
             updateBotHPUI();
@@ -6058,9 +5857,8 @@ function sendOnlineState(){
         hp:playerHP,
         dead:dead,
         round:currentRound,
-        shirt:equipped.shirt,
-        shorts:equipped.shorts,
-        shoe:equipped.shoe
+        moving:(!dead && (keys.up||keys.down||keys.left||keys.right)),
+        running:(!dead && (keys.up||keys.down||keys.left||keys.right) && keys.run)
     });
 }
 
@@ -6176,18 +5974,6 @@ modeSelectPanel.addEventListener("click",e=>{
     }
 });
 
-// LOCKER CATEGORY TABS
-document.querySelectorAll(".lockerCategory").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-        const category=btn.dataset.lockerCategory;
-        document.querySelectorAll(".lockerCategory").forEach(b=>b.classList.remove("active"));
-        document.querySelectorAll(".lockerSection").forEach(sec=>sec.classList.remove("active"));
-        btn.classList.add("active");
-        const section=document.querySelector('.lockerSection[data-locker-section="'+category+'"]');
-        if(section) section.classList.add("active");
-    });
-});
-
 /* =========================================================
    MENU
 ========================================================= */
@@ -6208,7 +5994,6 @@ settingsBtn.addEventListener(
     ()=>{
 
         characterPanel.classList.remove("show");
-        lockerPanel.classList.remove("show");
 
         settingsPanel.classList.toggle("show");
 
@@ -6221,7 +6006,6 @@ characterBtn.addEventListener(
     ()=>{
 
         settingsPanel.classList.remove("show");
-        lockerPanel.classList.remove("show");
 
         characterPanel.classList.toggle("show");
 
@@ -6229,32 +6013,12 @@ characterBtn.addEventListener(
     }
 );
 
-
-lockerBtn.addEventListener("click",()=>{
-    settingsPanel.classList.remove("show");
-    characterPanel.classList.remove("show");
-    mainMenu.classList.add("locker-open");
-    lockerPanel.classList.add("show");
-    menuClose.style.display="block";
-    renderLockerOptions();
-});
-
-function closeLocker(){
-    lockerPanel.classList.remove("show");
-    mainMenu.classList.remove("locker-open");
-    menuClose.style.display="none";
-}
-
-lockerClose.addEventListener("click",closeLocker);
-
 menuClose.addEventListener(
     "click",
     ()=>{
 
         settingsPanel.classList.remove("show");
         characterPanel.classList.remove("show");
-        lockerPanel.classList.remove("show");
-        mainMenu.classList.remove("locker-open");
 
         menuClose.style.display="none";
     }
@@ -6387,6 +6151,7 @@ function animate(now){
             updatePlayer(delta);
             if(onlineMode){
                 bot.visible=!!onlineConn && !!onlineConn.open;
+                animateRemoteBot(delta);
             }else{
                 updateBot(delta);
             }
