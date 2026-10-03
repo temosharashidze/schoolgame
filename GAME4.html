@@ -4,7 +4,39 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SchoolGame 3D</title>
+// იარაღის მოძრაობა ხელში
+function animateWeapon(player, speed){
 
+    if(!player.weapon) return;
+
+    let t = performance.now() * 0.006;
+
+    if(speed > 0){
+
+        // სიარული
+        player.weapon.rotation.x =
+            Math.sin(t) * 0.03;
+
+        player.weapon.position.y =
+            Math.sin(t*2) * 0.02;
+
+    } else {
+
+        // გაჩერებული
+        player.weapon.rotation.x = 0;
+        player.weapon.position.y = 0;
+
+    }
+
+
+    if(speed > 6){
+
+        // სირბილი
+        player.weapon.position.z =
+            Math.sin(t) * 0.05;
+
+    }
+}
 <style>
 html,body{
     margin:0;
