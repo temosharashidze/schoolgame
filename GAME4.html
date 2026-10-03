@@ -5492,11 +5492,16 @@ function createOnlineRoom(code){
 }
 
 function joinOnlineRoom(code){
+    // JOIN ROOM არასდროს ქმნის ოთახს — მხოლოდ უკვე არსებულ Room ID-ს უერთდება.
     closeOnlineConnection();
     onlineHost=false;
-    setOnlineStatus("⏳ ოთახს ვუერთდები...","#ffd45c");
+    onlinePlayersConnected=1;
+    remotePlayerName="";
+    setOnlineStatus("⏳ ვუკავშირდები Room "+code+"...","#ffd45c");
+    if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ვუკავშირდები მეგობრის ოთახს...";
 
     try{
+        // სტუმარს საკუთარი ოთახის ID არ აქვს; Peer() მხოლოდ დროებით კლიენტს ქმნის.
         onlinePeer=new Peer();
     }catch(e){
         setOnlineStatus("❌ ონლაინ კავშირი ვერ შეიქმნა","#ff6b6b");
@@ -5504,16 +5509,38 @@ function joinOnlineRoom(code){
     }
 
     onlinePeer.on("open",()=>{
-        onlinePlayersConnected=1;
-        remotePlayerName="";
-        openOnlineLobby(code);
-        if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ვუერთდები ოთახს...";
-        const conn=onlinePeer.connect(code,{reliable:true});
-        attachOnlineConnection(conn);
+        // მხოლოდ კავშირის გახსნის შემდეგ ვაჩვენებთ ლობს.
+        const conn=onlinePeer.connect(code,{reliable:true,serialization:"json"});
+        onlineConn=conn;
+
+        conn.on("open",()=>{
+            onlinePlayersConnected=2;
+            updateOnlineLobbyUI();
+            openOnlineLobby(code);
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობრის ოთახში შეხვედი! START GAME მზადაა.";
+            setOnlineStatus("🟢 Room-ში წარმატებით შეხვედი!","#55ff9a");
+            conn.send({type:"hello",name:onlinePlayerName});
+        });
+
+        conn.on("data",handleOnlineData);
+        conn.on("close",()=>{
+            onlinePlayersConnected=1;
+            remotePlayerName="";
+            updateOnlineLobbyUI();
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🔴 კავშირი გაწყდა.";
+            setOnlineStatus("🔴 მეგობართან კავშირი გაწყდა","#ff6b6b");
+        });
+        conn.on("error",err=>{
+            setOnlineStatus("❌ JOIN ვერ მოხერხდა: "+(err?.type||"connection-error"),"#ff6b6b");
+        });
     });
 
     onlinePeer.on("error",err=>{
-        setOnlineStatus("❌ ოთახთან დაკავშირება ვერ მოხერხდა: "+(err?.type||"unknown"),"#ff6b6b");
+        let msg="❌ JOIN ვერ მოხერხდა";
+        if(err && err.type==="peer-unavailable") msg="❌ ეს Room Code არ არსებობს ან ოთახის მფლობელი აღარ არის ონლაინ";
+        else if(err && err.type) msg += ": "+err.type;
+        setOnlineStatus(msg,"#ff6b6b");
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent=msg;
     });
 }
 
