@@ -645,7 +645,6 @@ body.menu-active #deadScreen{
 #onlineLobbyClose{margin-top:10px;background:transparent;border:1px solid #ffffff30;color:#fff;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer}
 
 </style>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 
 <body class="menu-active">
@@ -5314,12 +5313,14 @@ startBtn.addEventListener(
 
 
 /* =========================================================
-   ONLINE 1V1 — PEERJS P2P
+   ONLINE 1V1 — RENDER WEBSOCKET
+   Uses the same Render server for both players.
 ========================================================= */
 
 let onlineMode=false;
 let onlinePeer=null;
 let onlineConn=null;
+let onlineSocket=null;
 let onlineHost=false;
 let onlineStateTimer=0;
 let onlinePlayerName="Player";
@@ -5355,7 +5356,6 @@ function closeOnlineLobby(){
     if(onlineLobbyModal) onlineLobbyModal.classList.remove("show");
 }
 
-
 function setOnlineStatus(message,color="#ffd45c"){
     if(roomStatus){
         roomStatus.textContent=message;
@@ -5364,11 +5364,170 @@ function setOnlineStatus(message,color="#ffd45c"){
 }
 
 function closeOnlineConnection(){
+    try{ if(onlineSocket) onlineSocket.close(); }catch(e){}
     try{ if(onlineConn) onlineConn.close(); }catch(e){}
-    try{ if(onlinePeer) onlinePeer.destroy(); }catch(e){}
+    onlineSocket=null;
     onlineConn=null;
     onlinePeer=null;
     onlineHost=false;
+    onlinePlayersConnected=1;
+    remotePlayerName="";
+    updateOnlineLobbyUI();
+}
+
+function createSocketConn(ws){
+    const listeners={};
+    const conn={
+        open:false,
+        send(data){
+            if(ws.readyState===WebSocket.OPEN){
+                ws.send(JSON.stringify({type:"relay",data:data}));
+            }
+        },
+        close(){
+            try{ws.close();}catch(e){}
+        },
+        on(event,callback){
+            if(!listeners[event]) listeners[event]=[];
+            listeners[event].push(callback);
+        }
+    };
+    const emit=(event,arg)=>{
+        (listeners[event]||[]).forEach(fn=>{
+            try{fn(arg);}catch(e){console.error(e);}
+        });
+    };
+    ws.addEventListener("open",()=>{
+        conn.open=true;
+        emit("open");
+    });
+    ws.addEventListener("close",()=>{
+        conn.open=false;
+        emit("close");
+    });
+    ws.addEventListener("error",e=>emit("error",e));
+    ws.addEventListener("message",e=>{
+        try{
+            const msg=JSON.parse(e.data);
+            if(msg.type==="relay") emit("data",msg.data);
+        }catch(err){
+            console.error("Bad WebSocket message",err);
+        }
+    });
+    return conn;
+}
+
+function makeOnlineSocket(code,role){
+    closeOnlineConnection();
+    onlineHost=(role==="host");
+    onlinePlayersConnected=1;
+    remotePlayerName="";
+
+    const protocol=location.protocol==="https:" ? "wss:" : "ws:";
+    const wsUrl=protocol+"//"+location.host+"/ws";
+    setOnlineStatus(role==="host" ? "⏳ ოთახს ვქმნი..." : "⏳ სერვერთან ვუკავშირდები...","#ffd45c");
+
+    let ws;
+    try{
+        ws=new WebSocket(wsUrl);
+    }catch(e){
+        console.error("WebSocket create error:",e);
+        setOnlineStatus("❌ WebSocket ვერ შეიქმნა","#ff6b6b");
+        return;
+    }
+
+    onlineSocket=ws;
+    const conn=createSocketConn(ws);
+    onlineConn=conn;
+
+    ws.addEventListener("open",()=>{
+        ws.send(JSON.stringify({type:role==="host"?"create":"join",code:code,name:onlinePlayerName}));
+    });
+
+    ws.addEventListener("message",e=>{
+        let msg;
+        try{msg=JSON.parse(e.data);}catch(err){return;}
+        if(!msg || msg.type==="relay") return;
+
+        if(msg.type==="room-created"){
+            onlinePlayersConnected=1;
+            remotePlayerName="";
+            openOnlineLobby(code);
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ველოდები მეგობარს...";
+            setOnlineStatus("🟢 ოთახი მზადაა! კოდი: "+code,"#55ff9a");
+            updateOnlineLobbyUI();
+            return;
+        }
+
+        if(msg.type==="joined"){
+            onlinePlayersConnected=2;
+            remotePlayerName=String(msg.name||"Friend").slice(0,16);
+            conn.open=true;
+            openOnlineLobby(code);
+            updateOnlineLobbyUI();
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობრის ოთახში შეხვედი! START GAME მზადაა.";
+            setOnlineStatus("🟢 Room-ში წარმატებით შეხვედი!","#55ff9a");
+            conn.send({type:"hello",name:onlinePlayerName});
+            return;
+        }
+
+        if(msg.type==="peer-joined"){
+            onlinePlayersConnected=2;
+            remotePlayerName=String(msg.name||"Friend").slice(0,16);
+            conn.open=true;
+            openOnlineLobby(code);
+            updateOnlineLobbyUI();
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! START GAME მზადაა.";
+            setOnlineStatus("🟢 მეგობარი შემოვიდა!","#55ff9a");
+            conn.send({type:"hello",name:onlinePlayerName});
+            conn.send({type:"state",x:person.position.x,y:person.position.y,z:person.position.z,ry:person.rotation.y,hp:playerHP,dead:dead,round:currentRound});
+            if(gameStarted) conn.send({type:"start"});
+            return;
+        }
+
+        if(msg.type==="room-full"){
+            setOnlineStatus("❌ ოთახი უკვე სავსეა (2/2)","#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ ეს ოთახი უკვე სავსეა.";
+            try{ws.close();}catch(err){}
+            return;
+        }
+
+        if(msg.type==="room-not-found"){
+            setOnlineStatus("❌ ეს Room Code არ არსებობს ან მეგობარი გასულია.","#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ Room ვერ მოიძებნა.";
+            try{ws.close();}catch(err){}
+            return;
+        }
+
+        if(msg.type==="server-error"){
+            setOnlineStatus("❌ სერვერი: "+String(msg.message||"შეცდომა"),"#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ "+String(msg.message||"სერვერის შეცდომა");
+            return;
+        }
+
+        if(msg.type==="peer-left"){
+            onlinePlayersConnected=1;
+            remotePlayerName="";
+            conn.open=false;
+            updateOnlineLobbyUI();
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🔴 მეგობარი გავიდა. ველოდები ახალ მოთამაშეს...";
+            setOnlineStatus("🔴 მეგობართან კავშირი გაწყდა","#ff6b6b");
+            bot.visible=false;
+            return;
+        }
+    });
+
+    conn.on("data",handleOnlineData);
+    conn.on("close",()=>{
+        if(onlineHost && onlineSocket && onlineSocket.readyState!==WebSocket.CLOSED){
+            onlinePlayersConnected=1;
+            remotePlayerName="";
+            updateOnlineLobbyUI();
+        }
+    });
+    conn.on("error",()=>{
+        setOnlineStatus("❌ WebSocket კავშირი გაწყდა","#ff6b6b");
+    });
 }
 
 function handleOnlineData(data){
@@ -5408,9 +5567,7 @@ function handleOnlineData(data){
     }
 
     if(data.type==="start"){
-        if(!gameStarted){
-            startBtn.click();
-        }
+        if(!gameStarted) startBtn.click();
         return;
     }
 
@@ -5429,149 +5586,12 @@ function handleOnlineData(data){
     }
 }
 
-function attachOnlineConnection(conn){
-    onlineConn=conn;
-
-    conn.on("open",()=>{
-        onlinePlayersConnected=2;
-        updateOnlineLobbyUI();
-        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! START GAME მზადაა.";
-        setOnlineStatus("🟢 მეგობარი შემოვიდა!","#55ff9a");
-        conn.send({type:"hello",name:onlinePlayerName});
-        if(gameStarted) conn.send({type:"start"});
-    });
-
-    conn.on("data",handleOnlineData);
-
-    conn.on("close",()=>{
-        onlinePlayersConnected=1;
-        remotePlayerName="";
-        updateOnlineLobbyUI();
-        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🔴 მეგობარი გავიდა. ველოდები ახალ მოთამაშეს...";
-        setOnlineStatus("🔴 მეგობარი გავიდა ოთახიდან","#ff6b6b");
-        bot.visible=false;
-    });
-
-    conn.on("error",()=>{
-        setOnlineStatus("🔴 ონლაინ კავშირი გაწყდა","#ff6b6b");
-    });
-}
-
 function createOnlineRoom(code){
-    closeOnlineConnection();
-    onlineHost=true;
-    setOnlineStatus("⏳ ოთახს ვქმნი...","#ffd45c");
-
-    // Use the PeerJS server hosted on the same Render service as the game.
-    const peerOptions={
-        host:location.hostname,
-        port:location.port ? Number(location.port) : (location.protocol==="https:" ? 443 : 80),
-        path:"/schoolgame",
-        secure:location.protocol==="https:",
-        debug:2
-    };
-
-    try{
-        onlinePeer=new Peer("SGROOM_"+code,peerOptions);
-    }catch(e){
-        console.error("PeerJS create error:",e);
-        setOnlineStatus("❌ ოთახის შექმნა ვერ მოხერხდა","#ff6b6b");
-        return;
-    }
-
-    onlinePeer.on("open",id=>{
-        roomCodeInput.value=(id.startsWith("SGROOM_")?id.slice(7):id);
-        onlinePlayersConnected=1;
-        remotePlayerName="";
-        if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ველოდები მეგობარს...";
-        openOnlineLobby(id.startsWith("SGROOM_")?id.slice(7):id);
-        setOnlineStatus("🟢 ოთახი მზადაა!","#55ff9a");
-    });
-
-    onlinePeer.on("connection",conn=>{
-        attachOnlineConnection(conn);
-    });
-
-    onlinePeer.on("error",err=>{
-        console.error("PeerJS host error:",err);
-        if(err && err.type==="unavailable-id"){
-            setOnlineStatus("⚠️ ეს კოდი უკვე დაკავებულია. დააჭირე CREATE ROOM თავიდან.","#ff6b6b");
-        }else{
-            setOnlineStatus("❌ ონლაინ შეცდომა: "+(err?.type||err?.message||"unknown"),"#ff6b6b");
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ PeerJS: "+(err?.type||err?.message||"unknown");
-        }
-    });
+    makeOnlineSocket(code,"host");
 }
 
 function joinOnlineRoom(code){
-    // JOIN ROOM never creates a room; it only connects to the host room.
-    closeOnlineConnection();
-    onlineHost=false;
-    onlinePlayersConnected=1;
-    remotePlayerName="";
-    setOnlineStatus("⏳ ვუკავშირდები Room "+code+"...","#ffd45c");
-    if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ვუკავშირდები მეგობრის ოთახს...";
-
-    // Guest connects to the PeerJS server hosted by this Render service.
-    const peerOptions={
-        host:location.hostname,
-        port:location.port ? Number(location.port) : (location.protocol==="https:" ? 443 : 80),
-        path:"/schoolgame",
-        secure:location.protocol==="https:",
-        debug:2
-    };
-
-    try{
-        onlinePeer=new Peer(peerOptions);
-    }catch(e){
-        console.error("PeerJS join error:",e);
-        setOnlineStatus("❌ ონლაინ კავშირი ვერ შეიქმნა","#ff6b6b");
-        return;
-    }
-
-    onlinePeer.on("open",id=>{
-        console.log("PeerJS guest connected to signaling server:",id);
-        setOnlineStatus("🟡 სერვერთან დაკავშირებულია, ოთახში შევდივარ...","#ffd45c");
-
-        const conn=onlinePeer.connect("SGROOM_"+code,{reliable:true,serialization:"json"});
-        onlineConn=conn;
-
-        conn.on("open",()=>{
-            onlinePlayersConnected=2;
-            updateOnlineLobbyUI();
-            openOnlineLobby(code);
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობრის ოთახში შეხვედი! START GAME მზადაა.";
-            setOnlineStatus("🟢 Room-ში წარმატებით შეხვედი!","#55ff9a");
-            conn.send({type:"hello",name:onlinePlayerName});
-        });
-
-        conn.on("data",handleOnlineData);
-        conn.on("close",()=>{
-            onlinePlayersConnected=1;
-            remotePlayerName="";
-            updateOnlineLobbyUI();
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="🔴 კავშირი გაწყდა.";
-            setOnlineStatus("🔴 მეგობართან კავშირი გაწყდა","#ff6b6b");
-        });
-        conn.on("error",err=>{
-            console.error("PeerJS data connection error:",err);
-            const type=err?.type||err?.message||"unknown";
-            setOnlineStatus("❌ Room კავშირი: "+type,"#ff6b6b");
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ Room კავშირი ვერ დამყარდა: "+type;
-        });
-    });
-
-    onlinePeer.on("error",err=>{
-        console.error("PeerJS guest error:",err);
-        const type=err?.type||err?.message||"unknown";
-        if(type==="peer-unavailable"){
-            setOnlineStatus("❌ Room ვერ მოიძებნა. შეამოწმე კოდი.","#ff6b6b");
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ ეს Room Code აქტიური არ არის.";
-        }else{
-            setOnlineStatus("❌ PeerJS: "+type,"#ff6b6b");
-            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ PeerJS: "+type;
-        }
-    });
+    makeOnlineSocket(code,"guest");
 }
 
 function sendOnlineState(){
