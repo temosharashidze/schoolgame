@@ -1,12 +1,11 @@
 {
-  "name": "schoolgame-online-server",
+  "name": "schoolgame-online",
   "version": "1.0.0",
-  "description": "SchoolGame 3D Online Server",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js"
   },
   "dependencies": {
-    "peer": "^1.0.2"
+    "peer": "^1.5.4"
   }
 }
