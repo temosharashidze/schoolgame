@@ -1,15 +1,17 @@
 const { PeerServer } = require("peer");
 
+const PORT = process.env.PORT || 10000;
+
 const server = PeerServer({
-    port: 9000,
+    port: PORT,
     path: "/schoolgame"
 });
 
 console.log("=================================");
 console.log("   SCHOOLGAME 3D ONLINE SERVER");
 console.log("=================================");
-console.log("Server running on port 9000");
-console.log("Path: /schoolgame");
+console.log("PORT:", PORT);
+console.log("PATH: /schoolgame");
 
 server.on("connection", (client) => {
     console.log("PLAYER CONNECTED:", client.getId());
