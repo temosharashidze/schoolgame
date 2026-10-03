@@ -1,11 +1,12 @@
 {
-  "name": "blockworld4",
+  "name": "schoolgame-online-server",
   "version": "1.0.0",
-  "private": true,
+  "description": "SchoolGame 3D Online Server",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "dependencies": {
-    "ws": "^8.18.0"
+    "peer": "^1.0.2"
   }
 }
