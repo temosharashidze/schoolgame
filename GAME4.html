@@ -5271,6 +5271,11 @@ startBtn.addEventListener(
             }
         }
 
+        // GAME START: hide every 1v1 / ONLINE setup panel automatically.
+        if(onlineRoomPanel) onlineRoomPanel.classList.remove("show");
+        if(modeSelectPanel) modeSelectPanel.classList.remove("show");
+        closeOnlineLobby();
+
         currentRound=1;
         redRoundsWon=0;
         blueRoundsWon=0;
