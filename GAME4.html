@@ -3535,6 +3535,28 @@ function showRoundMessage(message){
     },1600);
 }
 
+// TEAM SPAWNS
+const RED_SPAWN_X = -23;
+const BLUE_SPAWN_X = 23;
+
+function getLocalSpawnX(){
+    // ONLINE: HOST = RED, GUEST = BLUE
+    if(typeof onlineMode !== "undefined" && onlineMode){
+        return onlineHost ? RED_SPAWN_X : BLUE_SPAWN_X;
+    }
+    // BOT mode: player stays on RED
+    return RED_SPAWN_X;
+}
+
+function getRemoteSpawnX(){
+    // ONLINE: remote player is always on the opposite base
+    if(typeof onlineMode !== "undefined" && onlineMode){
+        return onlineHost ? BLUE_SPAWN_X : RED_SPAWN_X;
+    }
+    // BOT mode: bot stays on BLUE
+    return BLUE_SPAWN_X;
+}
+
 function startRound(){
 
     roundTransition=false;
@@ -3554,11 +3576,11 @@ function startRound(){
 
     botHP=BOT_MAX_HP;
     bot.visible=true;
-    bot.position.set(23,0,0);
-    bot.rotation.set(0,Math.PI,0);
+    bot.position.set(getRemoteSpawnX(),0,0);
+    bot.rotation.set(0, getRemoteSpawnX() < person.position.x ? 0 : Math.PI, 0);
 
-    person.position.set(-23,0,0);
-    person.rotation.set(0,0,0);
+    person.position.set(getLocalSpawnX(),0,0);
+    person.rotation.set(0, getLocalSpawnX() < 0 ? 0 : Math.PI, 0);
 
     playerHP=MAX_PLAYER_HP;
     dead=false;
@@ -3914,13 +3936,16 @@ function startDeathCountdown(){
             hitCooldown=0;
             damageFlashTimer=0;
 
-            person.position.set(-23,0,0);
-            person.rotation.y=0;
+            const localSpawnX=getLocalSpawnX();
+            const remoteSpawnX=getRemoteSpawnX();
+
+            person.position.set(localSpawnX,0,0);
+            person.rotation.y=localSpawnX < 0 ? 0 : Math.PI;
 
             botHP=BOT_MAX_HP;
             bot.visible=true;
-            bot.position.set(23,0,0);
-            bot.rotation.y=Math.PI;
+            bot.position.set(remoteSpawnX,0,0);
+            bot.rotation.y=remoteSpawnX < 0 ? 0 : Math.PI;
 
             if(typeof updatePlayerHPUI==="function") updatePlayerHPUI();
             if(typeof updateBotHPPosition==="function") updateBotHPPosition();
@@ -3989,17 +4014,19 @@ function respawnPlayer(){
     playerHP=MAX_PLAYER_HP;
     dead=false;
 
-    /* 🔴 RED SPAWN */
+    // ONLINE: HOST spawns on RED, GUEST spawns on BLUE.
+    // BOT mode: player spawns on RED.
+    const localSpawnX=getLocalSpawnX();
 
     person.position.set(
-        -23,
+        localSpawnX,
         0,
         0
     );
 
     person.rotation.set(
         0,
-        0,
+        localSpawnX < 0 ? 0 : Math.PI,
         0
     );
 
@@ -5837,7 +5864,7 @@ cameraSetting.addEventListener(
    INITIAL POSITIONS
 ========================================================= */
 
-/* 🔴 PLAYER — RED SPAWN */
+/* PLAYER INITIAL POSITION (menu) */
 
 person.position.set(0,0,-1.7);
 person.rotation.set(0,Math.PI,0);
