@@ -5423,8 +5423,8 @@ function makeOnlineSocket(code,role){
     onlinePlayersConnected=1;
     remotePlayerName="";
 
-    const protocol=location.protocol==="https:" ? "wss:" : "ws:";
-    const wsUrl=protocol+"//"+location.host+"/ws";
+    // ONLINE SERVER: always use the Render server, even when GAME4.html is opened locally.
+    const wsUrl="wss://schoolgame-rivals.onrender.com/ws";
     setOnlineStatus(role==="host" ? "⏳ ოთახს ვქმნი..." : "⏳ სერვერთან ვუკავშირდები...","#ffd45c");
 
     let ws;
@@ -5526,7 +5526,9 @@ function makeOnlineSocket(code,role){
         }
     });
     conn.on("error",()=>{
-        setOnlineStatus("❌ WebSocket კავშირი გაწყდა","#ff6b6b");
+        // A WebSocket error event does not necessarily mean the connection is closed.
+        // The close handler below reports an actual disconnect.
+        console.warn("WebSocket error event");
     });
 }
 
