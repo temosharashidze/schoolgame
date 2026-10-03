@@ -2921,13 +2921,8 @@ function createBlueSideM4(){
     return g;
 }
 
-// Remove the cloned AK from the BLUE bot and replace it with the M4.
-bot.traverse(o=>{
-    if(o.name==="WORLD_AK47_EXACT" || o.name==="PLAYER_WEAPON"){
-        if(o.parent) o.parent.remove(o);
-    }
-});
-
+// BLUE team gets its dedicated M4 model.  Team visibility is applied later,
+// after all weapon and spawn functions have been initialized.
 const blueM4=createBlueSideM4();
 blueM4.position.set(.30,1.42,-.18);
 blueM4.rotation.set(0,.02,-.025);
@@ -2939,7 +2934,6 @@ blueM4.traverse(o=>{
     }
 });
 bot.add(blueM4);
-
 
 /* =========================================================
    ONLINE REMOTE PLAYER WALK/RUN ANIMATION
@@ -3844,6 +3838,23 @@ fpsSlingRear.renderOrder=1000;
 fpsGun.add(fpsSlingRear);
 
 /* =========================================================
+   FIRST-PERSON BLUE M4A1
+   The blue team sees the M4A1 in first person; red keeps the AK-47.
+========================================================= */
+const fpsM4=createBlueSideM4();
+fpsM4.name="FPS_M4A1";
+// Camera-space transform tuned for the same readable FPS framing.
+fpsM4.position.set(.48,-.39,-1.00);
+fpsM4.rotation.set(-.035,-.095,-.030);
+fpsM4.scale.set(.82,.82,.82);
+fpsM4.visible=false;
+fpsWeaponRoot.add(fpsM4);
+fpsM4.traverse(o=>{
+    if(o.isMesh){ o.renderOrder=1000; }
+});
+
+
+/* =========================================================
    EXTERNAL WORLD WEAPON — USE THE EXACT SAME AK MODEL AS FPS
    This replaces the older simplified outside weapon so third-person
    players see the same rifle silhouette/details as first-person.
@@ -3900,14 +3911,10 @@ function attachExactWorldAK(character, rightArmName, forearmName){
 // the arms continue their own walking/running animation.
 attachExactWorldAK(person,"BOT_RIGHT_ARM","BOT_RIGHT_FOREARM");
 
-/* BLUE BOT: keep only the dedicated M4 reference model. */
-if(typeof bot !== "undefined"){
-    bot.traverse(o=>{
-        if(o.name==="WORLD_AK47_EXACT" || o.name==="PLAYER_WEAPON"){
-            if(o.parent) o.parent.remove(o);
-        }
-    });
-}
+/* The remote character can be RED in ONLINE mode, so give it the same
+   detailed AK as the local character. Team visibility decides which
+   rifle is actually shown. In BOT mode this AK is simply hidden. */
+attachExactWorldAK(bot,"BOT_RIGHT_ARM","BOT_RIGHT_FOREARM");
 
 /* =========================================================
    FPS ARMS
@@ -4308,7 +4315,7 @@ function getLocalSpawnX(){
     if(typeof onlineMode !== "undefined" && onlineMode){
         return onlineHost ? RED_SPAWN_X : BLUE_SPAWN_X;
     }
-    // BOT mode: player stays on RED
+    // BOT MODE: player is RED. RED uses AK-47.
     return RED_SPAWN_X;
 }
 
@@ -4317,8 +4324,63 @@ function getRemoteSpawnX(){
     if(typeof onlineMode !== "undefined" && onlineMode){
         return onlineHost ? BLUE_SPAWN_X : RED_SPAWN_X;
     }
-    // BOT mode: bot stays on BLUE
+    // BOT MODE: bot is BLUE. BLUE uses M4A1.
     return BLUE_SPAWN_X;
+}
+
+/* =========================================================
+   TEAM WEAPONS — initialized only after all weapon models exist
+   RED  = AK-47
+   BLUE = M4A1
+========================================================= */
+const personAK=person.getObjectByName("WORLD_AK47_EXACT");
+
+const blueM4Template=createBlueSideM4();
+blueM4Template.visible=false;
+blueM4Template.position.set(.30,1.42,-.18);
+blueM4Template.rotation.set(0,.02,-.025);
+blueM4Template.scale.set(.72,.72,.72);
+blueM4Template.traverse(o=>{
+    if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; }
+});
+
+const personM4=blueM4Template.clone(true);
+personM4.name="WORLD_M4A1";
+personM4.visible=false;
+person.add(personM4);
+
+let botM4=bot.getObjectByName("BLUE_SIDE_M4");
+if(!botM4){
+    botM4=blueM4Template.clone(true);
+    botM4.name="BLUE_SIDE_M4";
+    bot.add(botM4);
+}
+botM4.position.set(.30,1.42,-.18);
+botM4.rotation.set(0,.02,-.025);
+botM4.scale.set(.72,.72,.72);
+botM4.visible=false;
+
+const botAK=bot.getObjectByName("WORLD_AK47_EXACT");
+
+function localIsBlueTeam(){
+    return getLocalSpawnX()===BLUE_SPAWN_X;
+}
+
+function applyTeamWeapons(){
+    const localBlue=localIsBlueTeam();
+
+    // Local character: RED gets AK / BLUE gets M4.
+    if(personAK) personAK.visible=!localBlue;
+    if(personM4) personM4.visible=localBlue;
+
+    // Remote character is always the opposite team.
+    const remoteBlue=!localBlue;
+    if(botAK) botAK.visible=!remoteBlue;
+    if(botM4) botM4.visible=remoteBlue;
+
+    // First-person rifle follows the same team.
+    if(typeof fpsGun!=="undefined") fpsGun.visible=!localBlue;
+    if(typeof fpsM4!=="undefined") fpsM4.visible=localBlue;
 }
 
 function startRound(){
@@ -4356,6 +4418,7 @@ function startRound(){
     updatePlayerHP();
     updateCamera();
     updateBotHPPosition();
+    applyTeamWeapons();
 }
 
 function finishRound(){
@@ -4779,7 +4842,7 @@ function respawnPlayer(){
     dead=false;
 
     // ONLINE: HOST spawns on RED, GUEST spawns on BLUE.
-    // BOT mode: player spawns on RED.
+    // BOT mode: player spawns on RED with AK-47.
     const localSpawnX=getLocalSpawnX();
 
     person.position.set(
@@ -4827,6 +4890,7 @@ function respawnPlayer(){
     updatePlayerHP();
     updateCamera();
     updateBotHPPosition();
+    applyTeamWeapons();
     updateMode();
 }
 
@@ -6694,7 +6758,7 @@ cameraSetting.addEventListener(
 person.position.set(0,0,-1.7);
 person.rotation.set(0,Math.PI,0);
 
-/* 🔵 BOT — BLUE SPAWN */
+/* 🔵 BOT — BLUE TEAM / M4A1 */
 
 bot.position.set(
     23,
