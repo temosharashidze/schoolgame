@@ -5463,18 +5463,18 @@ function createOnlineRoom(code){
     setOnlineStatus("⏳ ოთახს ვქმნი...","#ffd45c");
 
     try{
-        onlinePeer=new Peer(code);
+        onlinePeer=new Peer("SGROOM_"+code);
     }catch(e){
         setOnlineStatus("❌ ოთახის შექმნა ვერ მოხერხდა","#ff6b6b");
         return;
     }
 
     onlinePeer.on("open",id=>{
-        roomCodeInput.value=id;
+        roomCodeInput.value=(id.startsWith("SGROOM_")?id.slice(7):id);
         onlinePlayersConnected=1;
         remotePlayerName="";
         if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ველოდები მეგობარს...";
-        openOnlineLobby(id);
+        openOnlineLobby(id.startsWith("SGROOM_")?id.slice(7):id);
         setOnlineStatus("🟢 ოთახი მზადაა!","#55ff9a");
     });
 
@@ -5510,7 +5510,7 @@ function joinOnlineRoom(code){
 
     onlinePeer.on("open",()=>{
         // მხოლოდ კავშირის გახსნის შემდეგ ვაჩვენებთ ლობს.
-        const conn=onlinePeer.connect(code,{reliable:true,serialization:"json"});
+        const conn=onlinePeer.connect("SGROOM_"+code,{reliable:true,serialization:"json"});
         onlineConn=conn;
 
         conn.on("open",()=>{
