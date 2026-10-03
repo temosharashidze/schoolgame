@@ -5462,9 +5462,19 @@ function createOnlineRoom(code){
     onlineHost=true;
     setOnlineStatus("⏳ ოთახს ვქმნი...","#ffd45c");
 
+    // Use the PeerJS server hosted on the same Render service as the game.
+    const peerOptions={
+        host:location.hostname,
+        port:location.port ? Number(location.port) : (location.protocol==="https:" ? 443 : 80),
+        path:"/schoolgame",
+        secure:location.protocol==="https:",
+        debug:2
+    };
+
     try{
-        onlinePeer=new Peer("SGROOM_"+code);
+        onlinePeer=new Peer("SGROOM_"+code,peerOptions);
     }catch(e){
+        console.error("PeerJS create error:",e);
         setOnlineStatus("❌ ოთახის შექმნა ვერ მოხერხდა","#ff6b6b");
         return;
     }
@@ -5483,16 +5493,18 @@ function createOnlineRoom(code){
     });
 
     onlinePeer.on("error",err=>{
+        console.error("PeerJS host error:",err);
         if(err && err.type==="unavailable-id"){
             setOnlineStatus("⚠️ ეს კოდი უკვე დაკავებულია. დააჭირე CREATE ROOM თავიდან.","#ff6b6b");
         }else{
-            setOnlineStatus("❌ ონლაინ შეცდომა: "+(err?.type||"unknown"),"#ff6b6b");
+            setOnlineStatus("❌ ონლაინ შეცდომა: "+(err?.type||err?.message||"unknown"),"#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ PeerJS: "+(err?.type||err?.message||"unknown");
         }
     });
 }
 
 function joinOnlineRoom(code){
-    // JOIN ROOM არასდროს ქმნის ოთახს — მხოლოდ უკვე არსებულ Room ID-ს უერთდება.
+    // JOIN ROOM never creates a room; it only connects to the host room.
     closeOnlineConnection();
     onlineHost=false;
     onlinePlayersConnected=1;
@@ -5500,16 +5512,27 @@ function joinOnlineRoom(code){
     setOnlineStatus("⏳ ვუკავშირდები Room "+code+"...","#ffd45c");
     if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ვუკავშირდები მეგობრის ოთახს...";
 
+    // Guest connects to the PeerJS server hosted by this Render service.
+    const peerOptions={
+        host:location.hostname,
+        port:location.port ? Number(location.port) : (location.protocol==="https:" ? 443 : 80),
+        path:"/schoolgame",
+        secure:location.protocol==="https:",
+        debug:2
+    };
+
     try{
-        // სტუმარს საკუთარი ოთახის ID არ აქვს; Peer() მხოლოდ დროებით კლიენტს ქმნის.
-        onlinePeer=new Peer();
+        onlinePeer=new Peer(peerOptions);
     }catch(e){
+        console.error("PeerJS join error:",e);
         setOnlineStatus("❌ ონლაინ კავშირი ვერ შეიქმნა","#ff6b6b");
         return;
     }
 
-    onlinePeer.on("open",()=>{
-        // მხოლოდ კავშირის გახსნის შემდეგ ვაჩვენებთ ლობს.
+    onlinePeer.on("open",id=>{
+        console.log("PeerJS guest connected to signaling server:",id);
+        setOnlineStatus("🟡 სერვერთან დაკავშირებულია, ოთახში შევდივარ...","#ffd45c");
+
         const conn=onlinePeer.connect("SGROOM_"+code,{reliable:true,serialization:"json"});
         onlineConn=conn;
 
@@ -5531,16 +5554,23 @@ function joinOnlineRoom(code){
             setOnlineStatus("🔴 მეგობართან კავშირი გაწყდა","#ff6b6b");
         });
         conn.on("error",err=>{
-            setOnlineStatus("❌ JOIN ვერ მოხერხდა: "+(err?.type||"connection-error"),"#ff6b6b");
+            console.error("PeerJS data connection error:",err);
+            const type=err?.type||err?.message||"unknown";
+            setOnlineStatus("❌ Room კავშირი: "+type,"#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ Room კავშირი ვერ დამყარდა: "+type;
         });
     });
 
     onlinePeer.on("error",err=>{
-        let msg="❌ JOIN ვერ მოხერხდა";
-        if(err && err.type==="peer-unavailable") msg="❌ ეს Room Code არ არსებობს ან ოთახის მფლობელი აღარ არის ონლაინ";
-        else if(err && err.type) msg += ": "+err.type;
-        setOnlineStatus(msg,"#ff6b6b");
-        if(onlineLobbyStatus) onlineLobbyStatus.textContent=msg;
+        console.error("PeerJS guest error:",err);
+        const type=err?.type||err?.message||"unknown";
+        if(type==="peer-unavailable"){
+            setOnlineStatus("❌ Room ვერ მოიძებნა. შეამოწმე კოდი.","#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ ეს Room Code აქტიური არ არის.";
+        }else{
+            setOnlineStatus("❌ PeerJS: "+type,"#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ PeerJS: "+type;
+        }
     });
 }
 
