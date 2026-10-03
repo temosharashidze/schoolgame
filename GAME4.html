@@ -5440,7 +5440,15 @@ function makeOnlineSocket(code,role){
     const conn=createSocketConn(ws);
     onlineConn=conn;
 
+    let onlineHandshakeTimer=setTimeout(()=>{
+        if(ws.readyState===WebSocket.OPEN){
+            setOnlineStatus("❌ Render სერვერი პასუხს არ აბრუნებს /ws-ზე","#ff6b6b");
+            if(onlineLobbyStatus) onlineLobbyStatus.textContent="❌ სერვერთან კავშირი არის, მაგრამ Room სერვისი არ პასუხობს. Render-ზე ახალი server.js უნდა იყოს ატვირთული.";
+        }
+    },10000);
+
     ws.addEventListener("open",()=>{
+        setOnlineStatus(role==="host" ? "🟡 სერვერთან დაკავშირებულია. Room იქმნება..." : "🟡 სერვერთან დაკავშირებულია. Room იძებნება...","#ffd45c");
         ws.send(JSON.stringify({type:role==="host"?"create":"join",code:code,name:onlinePlayerName}));
     });
 
@@ -5449,7 +5457,14 @@ function makeOnlineSocket(code,role){
         try{msg=JSON.parse(e.data);}catch(err){return;}
         if(!msg || msg.type==="relay") return;
 
+        if(msg.type==="server-ready"){
+            clearTimeout(onlineHandshakeTimer);
+            setOnlineStatus(role==="host" ? "🟡 სერვერი მზადაა. Room იქმნება..." : "🟡 სერვერი მზადაა. Room იძებნება...","#ffd45c");
+            return;
+        }
+
         if(msg.type==="room-created"){
+            clearTimeout(onlineHandshakeTimer);
             onlinePlayersConnected=1;
             remotePlayerName="";
             openOnlineLobby(code);
@@ -5519,10 +5534,16 @@ function makeOnlineSocket(code,role){
 
     conn.on("data",handleOnlineData);
     conn.on("close",()=>{
+        clearTimeout(onlineHandshakeTimer);
         if(onlineHost && onlineSocket && onlineSocket.readyState!==WebSocket.CLOSED){
             onlinePlayersConnected=1;
             remotePlayerName="";
             updateOnlineLobbyUI();
+        }
+        if(onlineLobbyStatus && !onlineLobbyStatus.textContent.includes("Room ვერ მოიძებნა") && !onlineLobbyStatus.textContent.includes("ოთახი უკვე სავსეა")){
+            if(onlinePlayersConnected<2){
+                onlineLobbyStatus.textContent="🔴 WebSocket კავშირი გაწყდა. Render-ის /ws სერვისი შეამოწმე.";
+            }
         }
     });
     conn.on("error",()=>{
