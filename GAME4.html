@@ -2375,139 +2375,117 @@ function createArm(group,x){
 
     if(x>0){
 
+        /* =====================================================
+           AK-47 THIRD-PERSON WEAPON — MATCH THE FPS MODEL
+           Same silhouette/details as the first-person AK.
+        ===================================================== */
         const weapon=new THREE.Group();
-
         weapon.name="PLAYER_WEAPON";
 
-        const gunDark=new THREE.MeshStandardMaterial({
-            color:0x17191d,
-            roughness:.62,
-            metalness:.35,
-            flatShading:true
+        const akBlack=new THREE.MeshStandardMaterial({color:0x101214,roughness:.48,metalness:.58,flatShading:true});
+        const akSteel=new THREE.MeshStandardMaterial({color:0x292b2c,roughness:.40,metalness:.70,flatShading:true});
+        const akMetal=new THREE.MeshStandardMaterial({color:0x55575a,roughness:.32,metalness:.78,flatShading:true});
+        const akWood=new THREE.MeshStandardMaterial({color:0x9a5424,roughness:.82,flatShading:true});
+        const akWoodDark=new THREE.MeshStandardMaterial({color:0x6d3215,roughness:.88,flatShading:true});
+        const akWoodLight=new THREE.MeshStandardMaterial({color:0xb46a31,roughness:.80,flatShading:true});
+
+        function akPart(geo,mat,pos,rot){
+            const m=makeMesh(geo,mat);
+            m.position.copy(pos);
+            if(rot) m.rotation.set(rot.x||0,rot.y||0,rot.z||0);
+            weapon.add(m);
+            return m;
+        }
+
+        // Main receiver — long, flat AK profile
+        akPart(new THREE.BoxGeometry(.235,.16,.48),akSteel,new THREE.Vector3(0,-.65,-.02));
+        akPart(new THREE.BoxGeometry(.215,.045,.43),akBlack,new THREE.Vector3(0,-.555,-.03));
+        akPart(new THREE.BoxGeometry(.19,.035,.34),akBlack,new THREE.Vector3(0,-.535,.04));
+
+        // Rear receiver / stock hinge
+        akPart(new THREE.BoxGeometry(.20,.18,.16),akBlack,new THREE.Vector3(0,-.645,.25));
+        akPart(new THREE.BoxGeometry(.17,.14,.10),akSteel,new THREE.Vector3(0,-.66,.34));
+
+        // Bolt carrier + charging handle
+        akPart(new THREE.BoxGeometry(.10,.065,.24),akSteel,new THREE.Vector3(.075,-.595,.035));
+        akPart(new THREE.BoxGeometry(.065,.04,.17),akMetal,new THREE.Vector3(.085,-.555,.035));
+        akPart(new THREE.CylinderGeometry(.017,.017,.075,8),akBlack,new THREE.Vector3(.12,-.59,.00),new THREE.Vector3(0,0,Math.PI/2));
+
+        // Selector lever
+        akPart(new THREE.BoxGeometry(.018,.085,.105),akBlack,new THREE.Vector3(.145,-.69,.17),new THREE.Vector3(0,.15,-.18));
+
+        // Gas tube + wooden upper handguard
+        akPart(new THREE.CylinderGeometry(.025,.025,.40,12),akBlack,new THREE.Vector3(0,-.525,-.49),new THREE.Vector3(-Math.PI/2,0,0));
+        akPart(new THREE.CylinderGeometry(.043,.043,.31,8),akWood,new THREE.Vector3(0,-.57,-.40),new THREE.Vector3(-Math.PI/2,0,0));
+        akPart(new THREE.BoxGeometry(.18,.11,.34),akWood,new THREE.Vector3(0,-.62,-.43),new THREE.Vector3(.02,0,0));
+        akPart(new THREE.BoxGeometry(.145,.03,.30),akWoodLight,new THREE.Vector3(0,-.565,-.43),new THREE.Vector3(.02,0,0));
+
+        // Front gas block
+        akPart(new THREE.BoxGeometry(.115,.12,.13),akBlack,new THREE.Vector3(0,-.56,-.70));
+        akPart(new THREE.BoxGeometry(.08,.10,.06),akSteel,new THREE.Vector3(0,-.545,-.755));
+
+        // Long barrel
+        akPart(new THREE.CylinderGeometry(.024,.029,.62,12),akBlack,new THREE.Vector3(0,-.555,-.94),new THREE.Vector3(-Math.PI/2,0,0));
+        akPart(new THREE.CylinderGeometry(.016,.016,.13,10),akSteel,new THREE.Vector3(0,-.555,-.72),new THREE.Vector3(-Math.PI/2,0,0));
+
+        // Front sight block + post
+        akPart(new THREE.BoxGeometry(.095,.065,.10),akBlack,new THREE.Vector3(0,-.49,-1.075));
+        akPart(new THREE.BoxGeometry(.022,.11,.032),akBlack,new THREE.Vector3(0,-.405,-1.11));
+        akPart(new THREE.BoxGeometry(.05,.022,.04),akBlack,new THREE.Vector3(0,-.37,-1.11));
+
+        // Slotted muzzle brake
+        akPart(new THREE.CylinderGeometry(.041,.034,.15,12),akBlack,new THREE.Vector3(0,-.555,-1.245),new THREE.Vector3(-Math.PI/2,0,0));
+        akPart(new THREE.BoxGeometry(.065,.022,.03),akSteel,new THREE.Vector3(0,-.525,-1.28));
+        akPart(new THREE.BoxGeometry(.06,.022,.03),akSteel,new THREE.Vector3(0,-.585,-1.23));
+
+        // Rear iron sight
+        akPart(new THREE.BoxGeometry(.09,.06,.115),akBlack,new THREE.Vector3(0,-.47,-.28));
+        akPart(new THREE.BoxGeometry(.04,.03,.065),akMetal,new THREE.Vector3(0,-.435,-.28));
+        akPart(new THREE.BoxGeometry(.018,.018,.04),akBlack,new THREE.Vector3(0,-.415,-.28));
+
+        // Trigger guard + trigger
+        akPart(new THREE.BoxGeometry(.14,.03,.17),akBlack,new THREE.Vector3(0,-.775,.00),new THREE.Vector3(.08,0,0));
+        akPart(new THREE.BoxGeometry(.022,.075,.05),akMetal,new THREE.Vector3(0,-.755,-.025),new THREE.Vector3(-.23,0,0));
+
+        // Strongly curved wooden AK magazine
+        const magGroup=new THREE.Group();
+        magGroup.position.set(0,-.82,-.005);
+        weapon.add(magGroup);
+        const magShape=[
+          [0,.00,.00,-.08],[0,-.045,-.012,-.13],[0,-.09,-.035,-.18],
+          [0,-.132,-.068,-.24],[0,-.17,-.108,-.30],[0,-.202,-.155,-.34],
+          [0,-.228,-.205,-.38],[0,-.247,-.258,-.40],[0,-.26,-.31,-.40]
+        ];
+        magShape.forEach((v,i)=>{
+            const seg=makeMesh(new THREE.BoxGeometry(.115,.082,.135),i<2?akWood:akWoodDark);
+            seg.position.set(v[0],v[1],v[2]);
+            seg.rotation.x=v[3];
+            magGroup.add(seg);
         });
+        const magHighlight=makeMesh(new THREE.BoxGeometry(.018,.20,.045),akWoodLight);
+        magHighlight.position.set(.059,-.34,-.15);
+        magHighlight.rotation.x=-.42;
+        magGroup.add(magHighlight);
 
-        const gunMid=new THREE.MeshStandardMaterial({
-            color:0x343941,
-            roughness:.58,
-            metalness:.25,
-            flatShading:true
-        });
+        // Classic swept wooden pistol grip
+        akPart(new THREE.BoxGeometry(.105,.25,.13),akWoodDark,new THREE.Vector3(0,-.90,.12),new THREE.Vector3(-.27,0,0));
+        akPart(new THREE.BoxGeometry(.07,.18,.05),akWood,new THREE.Vector3(0,-.92,.095),new THREE.Vector3(-.27,0,0));
 
-        const gunWood=new THREE.MeshStandardMaterial({
-            color:0x4a3022,
-            roughness:.9,
-            flatShading:true
-        });
+        // Long fixed wooden stock — wide shoulder end like the reference
+        akPart(new THREE.BoxGeometry(.17,.18,.20),akWood,new THREE.Vector3(0,-.65,.43),new THREE.Vector3(.035,0,0));
+        akPart(new THREE.BoxGeometry(.15,.16,.29),akWood,new THREE.Vector3(0,-.65,.62),new THREE.Vector3(.035,0,0));
+        akPart(new THREE.BoxGeometry(.18,.17,.16),akWoodLight,new THREE.Vector3(0,-.65,.81),new THREE.Vector3(.035,0,0));
+        akPart(new THREE.BoxGeometry(.195,.18,.05),akWoodDark,new THREE.Vector3(0,-.66,.905),new THREE.Vector3(.035,0,0));
+        akPart(new THREE.BoxGeometry(.13,.045,.27),akWoodLight,new THREE.Vector3(0,-.55,.62),new THREE.Vector3(.035,0,0));
 
-        const receiver=makeMesh(
-            new THREE.BoxGeometry(.18,.16,.48),
-            gunMid
-        );
-
-        receiver.position.set(
-            0,-.67,-.12
-        );
-
-        weapon.add(receiver);
-
-        const upper=makeMesh(
-            new THREE.BoxGeometry(.13,.09,.48),
-            gunDark
-        );
-
-        upper.position.set(
-            0,-.58,-.18
-        );
-
-        weapon.add(upper);
-
-        const barrel=makeMesh(
-            new THREE.CylinderGeometry(
-                .035,.035,.58,10
-            ),
-            gunDark
-        );
-
-        barrel.rotation.x=-Math.PI/2;
-
-        barrel.position.set(
-            0,-.59,-.62
-        );
-
-        weapon.add(barrel);
-
-        const muzzle=makeMesh(
-            new THREE.CylinderGeometry(
-                .052,.045,.11,10
-            ),
-            gunDark
-        );
-
-        muzzle.rotation.x=-Math.PI/2;
-
-        muzzle.position.set(
-            0,-.59,-.94
-        );
-
-        weapon.add(muzzle);
-
-        const magazine=makeMesh(
-            new THREE.BoxGeometry(
-                .12,.28,.16
-            ),
-            gunDark
-        );
-
-        magazine.rotation.x=-.18;
-
-        magazine.position.set(
-            0,-.87,-.02
-        );
-
-        weapon.add(magazine);
-
-        const grip=makeMesh(
-            new THREE.BoxGeometry(
-                .10,.24,.13
-            ),
-            gunWood
-        );
-
-        grip.rotation.x=-.30;
-
-        grip.position.set(
-            0,-.88,.07
-        );
-
-        weapon.add(grip);
-
-        const stock=makeMesh(
-            new THREE.BoxGeometry(
-                .13,.13,.34
-            ),
-            gunWood
-        );
-
-        stock.position.set(
-            0,-.68,.27
-        );
-
-        weapon.add(stock);
-
-        const sightBase=makeMesh(
-            new THREE.BoxGeometry(
-                .06,.055,.15
-            ),
-            gunDark
-        );
-
-        sightBase.position.set(
-            0,-.48,-.25
-        );
-
-        weapon.add(sightBase);
+        // Sling loop
+        const sling=makeMesh(new THREE.TorusGeometry(.032,.007,6,10,Math.PI*1.5),akBlack);
+        sling.rotation.y=Math.PI/2;
+        sling.position.set(0,-.72,.87);
+        weapon.add(sling);
 
         forearmGroup.add(weapon);
+
     }
 
     group.userData.upperArm=upperArm;
@@ -3449,171 +3427,133 @@ person.traverse(obj=>{
 
 
 /* =========================================================
-   FPS WEAPON
+   FPS WEAPON — HIGH DETAIL AK-47 REFERENCE SHAPE
+   Front = negative Z, stock = positive Z
 ========================================================= */
 
 const fpsWeaponRoot=new THREE.Group();
-
 fpsWeaponRoot.name="FPS_WEAPON_ROOT";
-
 camera.add(fpsWeaponRoot);
 
 const fpsGun=new THREE.Group();
-
 fpsGun.name="FPS_GUN";
-
 fpsWeaponRoot.add(fpsGun);
 
-fpsGun.position.set(
-    .48,
-    -.40,
-    -.92
-);
+fpsGun.position.set(.50,-.39,-.94);
+fpsGun.rotation.set(-.035,-.085,-.018);
 
-fpsGun.rotation.set(
-    -.025,
-    -.075,
-    -.015
-);
+const fpsDark=new THREE.MeshStandardMaterial({color:0x101214,roughness:.48,metalness:.58,flatShading:true});
+const fpsSteel=new THREE.MeshStandardMaterial({color:0x292b2c,roughness:.40,metalness:.70,flatShading:true});
+const fpsMetal=new THREE.MeshStandardMaterial({color:0x55575a,roughness:.32,metalness:.78,flatShading:true});
+const fpsWood=new THREE.MeshStandardMaterial({color:0x9a5424,roughness:.82,flatShading:true});
+const fpsWoodDark=new THREE.MeshStandardMaterial({color:0x6d3215,roughness:.88,flatShading:true});
+const fpsWoodLight=new THREE.MeshStandardMaterial({color:0xb46a31,roughness:.80,flatShading:true});
 
-
-/* =========================================================
-   FPS MATERIALS
-========================================================= */
-
-const fpsDark=new THREE.MeshStandardMaterial({
-    color:0x101216,
-    roughness:.48,
-    metalness:.48,
-    flatShading:true
-});
-
-const fpsMid=new THREE.MeshStandardMaterial({
-    color:0x343941,
-    roughness:.48,
-    metalness:.32,
-    flatShading:true
-});
-
-const fpsMetal=new THREE.MeshStandardMaterial({
-    color:0x555a61,
-    roughness:.35,
-    metalness:.72,
-    flatShading:true
-});
-
-const fpsWood=new THREE.MeshStandardMaterial({
-    color:0x513525,
-    roughness:.82,
-    flatShading:true
-});
-
-
-function fpsPart(
-    geo,
-    mat,
-    pos,
-    rot,
-    scale
-){
-
-    const m=new THREE.Mesh(
-        geo,
-        mat
-    );
-
-    if(pos)
-        m.position.copy(pos);
-
-    if(rot)
-        m.rotation.set(
-            rot.x||0,
-            rot.y||0,
-            rot.z||0
-        );
-
-    if(scale)
-        m.scale.copy(scale);
-
+function fpsPart(geo,mat,pos,rot,scale){
+    const m=new THREE.Mesh(geo,mat);
+    if(pos) m.position.copy(pos);
+    if(rot) m.rotation.set(rot.x||0,rot.y||0,rot.z||0);
+    if(scale) m.scale.copy(scale);
     m.castShadow=true;
     m.receiveShadow=true;
     m.renderOrder=1000;
-
     fpsGun.add(m);
-
     return m;
 }
 
+/* Main AK receiver — long, flat and slightly tapered silhouette */
+fpsPart(new THREE.BoxGeometry(.30,.205,.56),fpsSteel,new THREE.Vector3(0,0,0));
+fpsPart(new THREE.BoxGeometry(.275,.055,.50),fpsDark,new THREE.Vector3(0,.112,-.015));
+fpsPart(new THREE.BoxGeometry(.245,.045,.39),fpsDark,new THREE.Vector3(0,.145,.055));
 
-/* =========================================================
-   FPS GUN
-========================================================= */
+/* Rear receiver / stock hinge */
+fpsPart(new THREE.BoxGeometry(.255,.19,.18),fpsDark,new THREE.Vector3(0,.005,.31));
+fpsPart(new THREE.BoxGeometry(.215,.15,.11),fpsSteel,new THREE.Vector3(0,-.015,.405));
 
-fpsPart(
-    new THREE.BoxGeometry(.25,.19,.60),
-    fpsMid,
-    new THREE.Vector3(0,0,0)
-);
+/* Bolt carrier and charging handle */
+fpsPart(new THREE.BoxGeometry(.125,.075,.29),fpsSteel,new THREE.Vector3(.095,.052,.055));
+fpsPart(new THREE.BoxGeometry(.075,.045,.20),fpsMetal,new THREE.Vector3(.105,.095,.055));
+fpsPart(new THREE.CylinderGeometry(.020,.020,.085,8),fpsDark,new THREE.Vector3(.155,.052,.01),new THREE.Vector3(0,0,Math.PI/2));
 
-fpsPart(
-    new THREE.BoxGeometry(.17,.095,.58),
-    fpsDark,
-    new THREE.Vector3(0,.115,-.16)
-);
+/* Selector lever */
+fpsPart(new THREE.BoxGeometry(.018,.10,.12),fpsDark,new THREE.Vector3(.158,-.015,.19),new THREE.Vector3(0,.15,-.18));
 
-fpsPart(
-    new THREE.BoxGeometry(.13,.045,.43),
-    fpsMetal,
-    new THREE.Vector3(0,.17,-.18)
-);
+/* Gas tube + wood upper handguard */
+fpsPart(new THREE.CylinderGeometry(.032,.032,.48,12),fpsDark,new THREE.Vector3(0,.115,-.59),new THREE.Vector3(-Math.PI/2,0,0));
+fpsPart(new THREE.CylinderGeometry(.055,.055,.37,8),fpsWood,new THREE.Vector3(0,.045,-.48),new THREE.Vector3(-Math.PI/2,0,0));
+fpsPart(new THREE.BoxGeometry(.20,.105,.39),fpsWood,new THREE.Vector3(0,.005,-.49),new THREE.Vector3(.02,0,0));
+fpsPart(new THREE.BoxGeometry(.16,.035,.34),fpsWoodLight,new THREE.Vector3(0,.078,-.49),new THREE.Vector3(.02,0,0));
 
-fpsPart(
-    new THREE.CylinderGeometry(.036,.036,.82,12),
-    fpsDark,
-    new THREE.Vector3(0,.065,-.68),
-    new THREE.Vector3(-Math.PI/2,0,0)
-);
+/* Front gas block */
+fpsPart(new THREE.BoxGeometry(.135,.14,.15),fpsDark,new THREE.Vector3(0,.045,-.79));
+fpsPart(new THREE.BoxGeometry(.095,.12,.07),fpsSteel,new THREE.Vector3(0,.075,-.855));
 
-fpsPart(
-    new THREE.CylinderGeometry(.058,.048,.12,12),
-    fpsDark,
-    new THREE.Vector3(0,.065,-1.095),
-    new THREE.Vector3(-Math.PI/2,0,0)
-);
+/* Long AK barrel */
+fpsPart(new THREE.CylinderGeometry(.027,.032,.72,12),fpsDark,new THREE.Vector3(0,.045,-1.105),new THREE.Vector3(-Math.PI/2,0,0));
+fpsPart(new THREE.CylinderGeometry(.018,.018,.15,10),fpsSteel,new THREE.Vector3(0,.045,-.79),new THREE.Vector3(-Math.PI/2,0,0));
 
-fpsPart(
-    new THREE.BoxGeometry(.145,.34,.18),
-    fpsDark,
-    new THREE.Vector3(0,-.22,-.015),
-    new THREE.Vector3(-.18,0,0)
-);
+/* Front sight block and post */
+fpsPart(new THREE.BoxGeometry(.11,.075,.12),fpsDark,new THREE.Vector3(0,.12,-1.27));
+fpsPart(new THREE.BoxGeometry(.026,.135,.035),fpsDark,new THREE.Vector3(0,.205,-1.31));
+fpsPart(new THREE.BoxGeometry(.055,.025,.045),fpsDark,new THREE.Vector3(0,.245,-1.31));
 
-fpsPart(
-    new THREE.BoxGeometry(.12,.28,.15),
-    fpsWood,
-    new THREE.Vector3(0,-.29,.13),
-    new THREE.Vector3(-.30,0,0)
-);
+/* Slotted AK muzzle brake */
+fpsPart(new THREE.CylinderGeometry(.047,.038,.17,12),fpsDark,new THREE.Vector3(0,.045,-1.47),new THREE.Vector3(-Math.PI/2,0,0));
+fpsPart(new THREE.BoxGeometry(.075,.025,.035),fpsSteel,new THREE.Vector3(0,.075,-1.505));
+fpsPart(new THREE.BoxGeometry(.070,.025,.035),fpsSteel,new THREE.Vector3(0,.015,-1.455));
 
-fpsPart(
-    new THREE.BoxGeometry(.16,.15,.42),
-    fpsWood,
-    new THREE.Vector3(0,.005,.38),
-    new THREE.Vector3(.035,0,0)
-);
+/* Rear iron sight */
+fpsPart(new THREE.BoxGeometry(.105,.065,.13),fpsDark,new THREE.Vector3(0,.175,-.275));
+fpsPart(new THREE.BoxGeometry(.045,.035,.075),fpsMetal,new THREE.Vector3(0,.215,-.275));
+fpsPart(new THREE.BoxGeometry(.020,.020,.045),fpsDark,new THREE.Vector3(0,.238,-.275));
 
-fpsPart(
-    new THREE.BoxGeometry(.075,.06,.18),
-    fpsDark,
-    new THREE.Vector3(0,.205,-.25)
-);
+/* Trigger guard + trigger */
+fpsPart(new THREE.BoxGeometry(.16,.035,.20),fpsDark,new THREE.Vector3(0,-.205,.005),new THREE.Vector3(.08,0,0));
+fpsPart(new THREE.BoxGeometry(.026,.09,.055),fpsMetal,new THREE.Vector3(0,-.195,-.025),new THREE.Vector3(-.23,0,0));
 
-fpsPart(
-    new THREE.BoxGeometry(.035,.075,.055),
-    fpsDark,
-    new THREE.Vector3(0,.25,-.49)
-);
+/* Distinctive strongly curved AK magazine */
+const fpsMag=new THREE.Group();
+fpsMag.position.set(0,-.22,-.005);
+fpsGun.add(fpsMag);
+const magShape=[
+ [0,.00, .00,-.08],
+ [0,-.045,-.012,-.13],
+ [0,-.090,-.035,-.18],
+ [0,-.132,-.068,-.24],
+ [0,-.170,-.108,-.30],
+ [0,-.202,-.155,-.34],
+ [0,-.228,-.205,-.38],
+ [0,-.247,-.258,-.40],
+ [0,-.260,-.310,-.40]
+];
+magShape.forEach((v,i)=>{
+    const seg=new THREE.Mesh(new THREE.BoxGeometry(.145,.105,.17),i<2?fpsWood:fpsWoodDark);
+    seg.position.set(v[0],v[1],v[2]);
+    seg.rotation.x=v[3];
+    seg.castShadow=true; seg.receiveShadow=true; seg.renderOrder=1000;
+    fpsMag.add(seg);
+});
+/* magazine spine highlight */
+fpsPart(new THREE.BoxGeometry(.025,.24,.06),fpsWoodLight,new THREE.Vector3(.075,-.36,-.15),new THREE.Vector3(-.42,0,0));
 
+/* Classic AK pistol grip — swept rearward */
+fpsPart(new THREE.BoxGeometry(.135,.30,.16),fpsWoodDark,new THREE.Vector3(0,-.325,.125),new THREE.Vector3(-.27,0,0));
+fpsPart(new THREE.BoxGeometry(.09,.22,.055),fpsWood,new THREE.Vector3(0,-.35,.095),new THREE.Vector3(-.27,0,0));
+
+/* Fixed wooden AK stock, wide at shoulder and narrow at receiver */
+fpsPart(new THREE.BoxGeometry(.19,.20,.23),fpsWood,new THREE.Vector3(0,.015,.49),new THREE.Vector3(.035,0,0));
+fpsPart(new THREE.BoxGeometry(.17,.18,.30),fpsWood,new THREE.Vector3(0,.018,.70),new THREE.Vector3(.035,0,0));
+fpsPart(new THREE.BoxGeometry(.20,.19,.18),fpsWoodLight,new THREE.Vector3(0,.015,.90),new THREE.Vector3(.035,0,0));
+fpsPart(new THREE.BoxGeometry(.215,.20,.055),fpsWoodDark,new THREE.Vector3(0,-.005,.995),new THREE.Vector3(.035,0,0));
+/* Stock cheek/upper contour */
+fpsPart(new THREE.BoxGeometry(.145,.055,.30),fpsWoodLight,new THREE.Vector3(0,.105,.70),new THREE.Vector3(.035,0,0));
+
+/* Sling loop */
+const fpsSling=new THREE.Mesh(new THREE.TorusGeometry(.037,.008,6,10,Math.PI*1.5),fpsDark);
+fpsSling.rotation.y=Math.PI/2;
+fpsSling.position.set(0,-.055,.95);
+fpsSling.renderOrder=1000;
+fpsGun.add(fpsSling);
 
 /* =========================================================
    FPS ARMS
