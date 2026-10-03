@@ -625,7 +625,27 @@ body.menu-active #deadScreen{
 }
 
 
+
+/* ONLINE LOBBY MODAL */
+#onlineLobbyModal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);z-index:20000;padding:20px;box-sizing:border-box}
+#onlineLobbyModal.show{display:flex}
+.onlineLobbyBox{width:min(460px,92vw);background:linear-gradient(180deg,#12294d,#081426);border:1px solid #ffffff2b;border-radius:18px;padding:24px;box-shadow:0 25px 80px #000c;color:#fff;text-align:center;font-family:Arial,sans-serif}
+.onlineLobbyBox h2{margin:0 0 8px;font-size:30px;font-weight:1000}
+.onlineLobbySub{color:#b8c7df;margin-bottom:18px}
+.onlineLobbyLabel{display:block;text-align:left;color:#b8c7df;font-size:13px;font-weight:800;margin:10px 0 6px}
+#onlineNameInput{width:100%;box-sizing:border-box;height:48px;border-radius:10px;border:1px solid #ffffff2e;background:#0007;color:#fff;padding:0 14px;font-size:18px;font-weight:800;outline:none}
+.roomCodeBig{display:flex;gap:8px;margin-top:8px}
+#onlineLobbyCode{flex:1;height:58px;box-sizing:border-box;border:1px solid #ffffff30;border-radius:11px;background:#0008;color:#fff;text-align:center;font-size:30px;font-weight:1000;letter-spacing:6px}
+#copyRoomCodeBtn{width:115px;border:0;border-radius:11px;background:#2b72ff;color:#fff;font-weight:1000;font-size:15px;cursor:pointer}
+.onlineLobbyInfo{margin:16px 0;padding:13px;border-radius:11px;background:#0005;border:1px solid #ffffff18;text-align:left}
+.onlineLobbyInfo div{margin:5px 0;font-weight:800}
+.onlineLobbyStatus{min-height:22px;color:#ffd45c;font-weight:900;margin:10px 0}
+#onlineLobbyStart{width:100%;height:52px;border:0;border-radius:11px;background:#18a85a;color:#fff;font-size:20px;font-weight:1000;cursor:pointer}
+#onlineLobbyStart:disabled{background:#405064;color:#aab4c0;cursor:not-allowed}
+#onlineLobbyClose{margin-top:10px;background:transparent;border:1px solid #ffffff30;color:#fff;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer}
+
 </style>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 </head>
 
 <body class="menu-active">
@@ -699,6 +719,28 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
     </div>
 
     <button class="modeClose" id="modeSelectClose">CLOSE</button>
+  </div>
+</div>
+
+<div id="onlineLobbyModal">
+  <div class="onlineLobbyBox">
+    <h2>🌐 1v1 ONLINE</h2>
+    <div class="onlineLobbySub">გაუგზავნე ეს კოდი შენს მეგობარს</div>
+    <label class="onlineLobbyLabel">შენი სახელი</label>
+    <input id="onlineNameInput" maxlength="16" placeholder="შეიყვანე სახელი" value="Player">
+    <label class="onlineLobbyLabel">ROOM CODE</label>
+    <div class="roomCodeBig">
+      <input id="onlineLobbyCode" readonly>
+      <button id="copyRoomCodeBtn">📋 COPY</button>
+    </div>
+    <div class="onlineLobbyInfo">
+      <div>👤 შენ: <span id="onlineLobbyMe">Player</span></div>
+      <div>👥 მოთამაშეები: <span id="onlineLobbyCount">1 / 2</span></div>
+      <div>🎮 მოწინააღმდეგე: <span id="onlineLobbyOpponent">ველოდები...</span></div>
+    </div>
+    <div class="onlineLobbyStatus" id="onlineLobbyStatus">⏳ ველოდები მეგობარს...</div>
+    <button id="onlineLobbyStart" disabled>▶ START GAME</button>
+    <button id="onlineLobbyClose">CLOSE</button>
   </div>
 </div>
 
@@ -2914,7 +2956,7 @@ function updateBot(delta){
    PLAYER SIZE
 ========================================================= */
 
-person.scale.set(1.18,1.18,1.18);
+person.scale.set(0.40,0.40,0.40);
 
 
 /* =========================================================
@@ -3771,6 +3813,10 @@ function shootWeapon(){
 
         updateBotHPUI();
 
+        sendOnlineHit(25);
+
+        sendOnlineHit(25);
+
         if(botHP===0){
             finishRound();
         }
@@ -4442,6 +4488,15 @@ window.addEventListener(
 window.addEventListener(
     "keyup",
     e=>{
+
+        if(!gameStarted){
+            keys.up=false;
+            keys.down=false;
+            keys.left=false;
+            keys.right=false;
+            keys.run=false;
+            return;
+        }
 
         if(
             e.code==="KeyW"||
@@ -5130,6 +5185,16 @@ const initialPlayerHPBox=document.getElementById("playerHP");
 if(initialRoundHUD) initialRoundHUD.style.display="none";
 if(initialPlayerHPBox) initialPlayerHPBox.style.display="none";
 
+// HARD MENU LOCK: no gameplay weapon, arms, or movement before PLAY.
+keys.up=false;
+keys.down=false;
+keys.left=false;
+keys.right=false;
+keys.run=false;
+fpsWeaponRoot.visible=false;
+fpsLeftArm.visible=false;
+fpsRightArm.visible=false;
+
 const mainMenu=
 document.getElementById("mainMenu");
 
@@ -5172,6 +5237,14 @@ startBtn.addEventListener(
     "click",
     ()=>{
 
+        if(onlineMode){
+            if(!(onlineConn && onlineConn.open && onlinePlayersConnected>=2)){
+                openOnlineLobby(onlineLobbyCode ? onlineLobbyCode.value : roomCodeInput.value);
+                if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ჯერ დაელოდე მეგობრის შემოსვლას.";
+                return;
+            }
+        }
+
         currentRound=1;
         redRoundsWon=0;
         blueRoundsWon=0;
@@ -5182,6 +5255,18 @@ startBtn.addEventListener(
         respawnPlayer();
 
         gameStarted=true;
+
+        // GAMEPLAY PLAYER SIZE: match BOT height exactly.
+        // Menu character keeps its original larger menu scale.
+        person.scale.set(0.84,0.84,0.84);
+
+        keys.up=false;
+        keys.down=false;
+        keys.left=false;
+        keys.right=false;
+        keys.run=false;
+        dragging=false;
+        freeMouse=false;
 
         const roundHUD=document.getElementById("roundHUD");
         const playerHPBox=document.getElementById("playerHP");
@@ -5217,11 +5302,240 @@ startBtn.addEventListener(
         }
 
         updateBotHPPosition();
+
+        if(onlineMode && onlineConn && onlineConn.open){
+            onlineConn.send({type:"start"});
+            sendOnlineState();
+        }
     }
 );
 
 
 
+
+/* =========================================================
+   ONLINE 1V1 — PEERJS P2P
+========================================================= */
+
+let onlineMode=false;
+let onlinePeer=null;
+let onlineConn=null;
+let onlineHost=false;
+let onlineStateTimer=0;
+let onlinePlayerName="Player";
+let remotePlayerName="";
+let onlinePlayersConnected=1;
+
+const onlineLobbyModal=document.getElementById("onlineLobbyModal");
+const onlineNameInput=document.getElementById("onlineNameInput");
+const onlineLobbyCode=document.getElementById("onlineLobbyCode");
+const onlineLobbyMe=document.getElementById("onlineLobbyMe");
+const onlineLobbyCount=document.getElementById("onlineLobbyCount");
+const onlineLobbyOpponent=document.getElementById("onlineLobbyOpponent");
+const onlineLobbyStatus=document.getElementById("onlineLobbyStatus");
+const onlineLobbyStart=document.getElementById("onlineLobbyStart");
+const onlineLobbyClose=document.getElementById("onlineLobbyClose");
+const copyRoomCodeBtn=document.getElementById("copyRoomCodeBtn");
+
+function updateOnlineLobbyUI(){
+    if(onlineLobbyMe) onlineLobbyMe.textContent=onlinePlayerName;
+    if(onlineLobbyCount) onlineLobbyCount.textContent=onlinePlayersConnected+" / 2";
+    if(onlineLobbyOpponent) onlineLobbyOpponent.textContent=remotePlayerName || "ველოდები...";
+    if(onlineLobbyStart){
+        onlineLobbyStart.disabled=!(onlinePlayersConnected>=2 && onlineConn && onlineConn.open);
+    }
+}
+function openOnlineLobby(code){
+    if(onlineLobbyCode) onlineLobbyCode.value=code||"";
+    if(onlineNameInput) onlineNameInput.value=onlinePlayerName;
+    updateOnlineLobbyUI();
+    if(onlineLobbyModal) onlineLobbyModal.classList.add("show");
+}
+function closeOnlineLobby(){
+    if(onlineLobbyModal) onlineLobbyModal.classList.remove("show");
+}
+
+
+function setOnlineStatus(message,color="#ffd45c"){
+    if(roomStatus){
+        roomStatus.textContent=message;
+        roomStatus.style.color=color;
+    }
+}
+
+function closeOnlineConnection(){
+    try{ if(onlineConn) onlineConn.close(); }catch(e){}
+    try{ if(onlinePeer) onlinePeer.destroy(); }catch(e){}
+    onlineConn=null;
+    onlinePeer=null;
+    onlineHost=false;
+}
+
+function handleOnlineData(data){
+    if(!data || typeof data!="object") return;
+
+    if(data.type==="hello"){
+        remotePlayerName=String(data.name||"Friend").slice(0,16);
+        onlinePlayersConnected=2;
+        updateOnlineLobbyUI();
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! ახლა შეგიძლია START GAME.";
+        if(onlineConn && onlineConn.open){
+            onlineConn.send({type:"helloAck",name:onlinePlayerName});
+            onlineConn.send({type:"state",x:person.position.x,y:person.position.y,z:person.position.z,ry:person.rotation.y,hp:playerHP,dead:dead,round:currentRound});
+        }
+        return;
+    }
+
+    if(data.type==="helloAck"){
+        remotePlayerName=String(data.name||"Friend").slice(0,16);
+        onlinePlayersConnected=2;
+        updateOnlineLobbyUI();
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! ახლა შეგიძლია START GAME.";
+        return;
+    }
+
+    if(data.type==="state"){
+        if(Number.isFinite(data.x)) bot.position.x=data.x;
+        if(Number.isFinite(data.y)) bot.position.y=data.y;
+        if(Number.isFinite(data.z)) bot.position.z=data.z;
+        if(Number.isFinite(data.ry)) bot.rotation.y=data.ry;
+        if(Number.isFinite(data.hp)){
+            botHP=Math.max(0,Math.min(BOT_MAX_HP,data.hp));
+            updateBotHPUI();
+        }
+        bot.visible=gameStarted;
+        return;
+    }
+
+    if(data.type==="start"){
+        if(!gameStarted){
+            startBtn.click();
+        }
+        return;
+    }
+
+    if(data.type==="hit"){
+        if(gameStarted && !roundTransition && !dead){
+            damagePlayer(Number(data.damage)||25);
+        }
+        return;
+    }
+
+    if(data.type==="round"){
+        if(Number.isFinite(data.round)) currentRound=data.round;
+        if(Number.isFinite(data.red)) redRoundsWon=data.red;
+        if(Number.isFinite(data.blue)) blueRoundsWon=data.blue;
+        updateTeamScore();
+    }
+}
+
+function attachOnlineConnection(conn){
+    onlineConn=conn;
+
+    conn.on("open",()=>{
+        onlinePlayersConnected=2;
+        updateOnlineLobbyUI();
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🟢 მეგობარი შემოვიდა! START GAME მზადაა.";
+        setOnlineStatus("🟢 მეგობარი შემოვიდა!","#55ff9a");
+        conn.send({type:"hello",name:onlinePlayerName});
+        if(gameStarted) conn.send({type:"start"});
+    });
+
+    conn.on("data",handleOnlineData);
+
+    conn.on("close",()=>{
+        onlinePlayersConnected=1;
+        remotePlayerName="";
+        updateOnlineLobbyUI();
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="🔴 მეგობარი გავიდა. ველოდები ახალ მოთამაშეს...";
+        setOnlineStatus("🔴 მეგობარი გავიდა ოთახიდან","#ff6b6b");
+        bot.visible=false;
+    });
+
+    conn.on("error",()=>{
+        setOnlineStatus("🔴 ონლაინ კავშირი გაწყდა","#ff6b6b");
+    });
+}
+
+function createOnlineRoom(code){
+    closeOnlineConnection();
+    onlineHost=true;
+    setOnlineStatus("⏳ ოთახს ვქმნი...","#ffd45c");
+
+    try{
+        onlinePeer=new Peer(code);
+    }catch(e){
+        setOnlineStatus("❌ ოთახის შექმნა ვერ მოხერხდა","#ff6b6b");
+        return;
+    }
+
+    onlinePeer.on("open",id=>{
+        roomCodeInput.value=id;
+        onlinePlayersConnected=1;
+        remotePlayerName="";
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ველოდები მეგობარს...";
+        openOnlineLobby(id);
+        setOnlineStatus("🟢 ოთახი მზადაა!","#55ff9a");
+    });
+
+    onlinePeer.on("connection",conn=>{
+        attachOnlineConnection(conn);
+    });
+
+    onlinePeer.on("error",err=>{
+        if(err && err.type==="unavailable-id"){
+            setOnlineStatus("⚠️ ეს კოდი უკვე დაკავებულია. დააჭირე CREATE ROOM თავიდან.","#ff6b6b");
+        }else{
+            setOnlineStatus("❌ ონლაინ შეცდომა: "+(err?.type||"unknown"),"#ff6b6b");
+        }
+    });
+}
+
+function joinOnlineRoom(code){
+    closeOnlineConnection();
+    onlineHost=false;
+    setOnlineStatus("⏳ ოთახს ვუერთდები...","#ffd45c");
+
+    try{
+        onlinePeer=new Peer();
+    }catch(e){
+        setOnlineStatus("❌ ონლაინ კავშირი ვერ შეიქმნა","#ff6b6b");
+        return;
+    }
+
+    onlinePeer.on("open",()=>{
+        onlinePlayersConnected=1;
+        remotePlayerName="";
+        openOnlineLobby(code);
+        if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ვუერთდები ოთახს...";
+        const conn=onlinePeer.connect(code,{reliable:true});
+        attachOnlineConnection(conn);
+    });
+
+    onlinePeer.on("error",err=>{
+        setOnlineStatus("❌ ოთახთან დაკავშირება ვერ მოხერხდა: "+(err?.type||"unknown"),"#ff6b6b");
+    });
+}
+
+function sendOnlineState(){
+    if(!onlineMode || !onlineConn || !onlineConn.open || !gameStarted) return;
+    onlineConn.send({
+        type:"state",
+        x:person.position.x,
+        y:person.position.y,
+        z:person.position.z,
+        ry:person.rotation.y,
+        hp:playerHP,
+        dead:dead,
+        round:currentRound
+    });
+}
+
+function sendOnlineHit(damage){
+    if(onlineMode && onlineConn && onlineConn.open){
+        onlineConn.send({type:"hit",damage:damage});
+    }
+}
 
 /* =========================================================
    1V1 MODE SELECTOR
@@ -5246,14 +5560,19 @@ modeCard.addEventListener("click",()=>{
 });
 
 botModeBtn.addEventListener("click",()=>{
+    onlineMode=false;
+    closeOnlineConnection();
     modeCard.textContent="1v1 • BOT";
+    onlineRoomPanel.classList.remove("show");
     modeSelectPanel.classList.remove("show");
 });
 
 onlineModeBtn.addEventListener("click",()=>{
-    onlineRoomPanel.classList.toggle("show");
+    onlineMode=true;
+    modeCard.textContent="1v1 • ONLINE";
+    onlineRoomPanel.classList.add("show");
     roomStatus.textContent="";
-    if(onlineRoomPanel.classList.contains("show")) roomCodeInput.focus();
+    roomCodeInput.focus();
 });
 
 function makeRoomCode(){
@@ -5264,26 +5583,52 @@ function makeRoomCode(){
 }
 
 createRoomBtn.addEventListener("click",()=>{
+    onlineMode=true;
+    modeCard.textContent="1v1 • ONLINE";
     const code=makeRoomCode();
     roomCodeInput.value=code;
-    roomStatus.textContent="ოთახი შეიქმნა • ეს კოდი გაუგზავნე მეგობარს";
-    roomStatus.style.color="#55ff9a";
+    createOnlineRoom(code);
 });
 
 joinRoomBtn.addEventListener("click",()=>{
+    onlineMode=true;
+    modeCard.textContent="1v1 • ONLINE";
     const code=roomCodeInput.value.trim().toUpperCase();
     roomCodeInput.value=code;
     if(code.length!==6){
-        roomStatus.textContent="შეიყვანე 6-ნიშნა Room Code";
-        roomStatus.style.color="#ff6b6b";
+        setOnlineStatus("შეიყვანე 6-ნიშნა Room Code","#ff6b6b");
         return;
     }
-    roomStatus.textContent="Join მოთხოვნა მზადაა: "+code;
-    roomStatus.style.color="#ffd45c";
+    joinOnlineRoom(code);
 });
 
 roomCodeInput.addEventListener("input",()=>{
     roomCodeInput.value=roomCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+});
+
+onlineNameInput.addEventListener("input",()=>{
+    const v=onlineNameInput.value.trim().slice(0,16);
+    onlinePlayerName=v||"Player";
+    onlineLobbyMe.textContent=onlinePlayerName;
+    if(onlineConn && onlineConn.open) onlineConn.send({type:"hello",name:onlinePlayerName});
+});
+
+copyRoomCodeBtn.addEventListener("click",async()=>{
+    const code=onlineLobbyCode.value;
+    try{ await navigator.clipboard.writeText(code); }catch(e){ onlineLobbyCode.select(); document.execCommand("copy"); }
+    copyRoomCodeBtn.textContent="✓ COPIED";
+    setTimeout(()=>copyRoomCodeBtn.textContent="📋 COPY",900);
+});
+
+onlineLobbyStart.addEventListener("click",()=>{
+    if(onlineLobbyStart.disabled) return;
+    if(onlineConn && onlineConn.open) onlineConn.send({type:"start"});
+    closeOnlineLobby();
+    startBtn.click();
+});
+
+onlineLobbyClose.addEventListener("click",()=>{
+    closeOnlineLobby();
 });
 
 modeSelectClose.addEventListener("click",()=>{
@@ -5473,7 +5818,17 @@ function animate(now){
             // The 5-second round countdown is handled by beginRoundTransition().
         }else{
             updatePlayer(delta);
-            updateBot(delta);
+            if(onlineMode){
+                bot.visible=!!onlineConn && !!onlineConn.open;
+            }else{
+                updateBot(delta);
+            }
+        }
+
+        onlineStateTimer-=delta;
+        if(onlineStateTimer<=0){
+            onlineStateTimer=.05;
+            sendOnlineState();
         }
 
         updateCamera();
