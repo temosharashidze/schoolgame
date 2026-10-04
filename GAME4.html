@@ -718,6 +718,30 @@ canvas{
 }
 .scoreFlash{animation:scoreFlash .55s ease}
 
+#finalResult{
+    position:fixed;inset:0;z-index:10050;display:none;
+    align-items:center;justify-content:center;flex-direction:column;
+    background:rgba(0,0,0,.72);backdrop-filter:blur(8px);
+    font-family:Arial,sans-serif;text-align:center;color:#fff;
+}
+#finalResultTitle{
+    font-size:clamp(54px,9vw,120px);font-weight:1000;letter-spacing:6px;
+    line-height:1;text-shadow:0 6px 24px #000;animation:roundPop .6s ease-out;
+}
+#finalResult.win #finalResultTitle{color:#35ff78}
+#finalResult.lose #finalResultTitle{color:#ff4040}
+#finalResultSub{margin-top:10px;font-size:22px;font-weight:900;text-shadow:0 3px 8px #000}
+#finalStats{
+    margin-top:28px;display:grid;grid-template-columns:repeat(2,minmax(150px,220px));
+    gap:10px;width:min(460px,88vw);
+}
+.finalStat{padding:13px 12px;border:1px solid #ffffff28;border-radius:12px;background:#111b;box-shadow:0 5px 18px #0008}
+.finalStatLabel{font-size:12px;color:#bfc7d2;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.finalStatValue{margin-top:4px;font-size:25px;font-weight:1000}
+#finalScore{margin-top:20px;font-size:21px;font-weight:1000}
+#finalClose{margin-top:25px;border:0;border-radius:11px;padding:12px 28px;background:#fff;color:#111;font-size:16px;font-weight:1000;cursor:pointer}
+#finalClose:hover{transform:translateY(-1px)}
+
 #deathCountdown{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.58);backdrop-filter:blur(4px);pointer-events:none;font-family:Arial,sans-serif;text-align:center}
 #deathCountdownTitle{color:#ff3030;font-size:clamp(44px,7vw,88px);font-weight:1000;letter-spacing:5px;text-shadow:0 5px 20px #000}
 #deathCountdownNumber{margin-top:4px;color:#fff;font-size:clamp(70px,11vw,140px);line-height:1;font-weight:1000;text-shadow:0 5px 20px #000}
@@ -879,6 +903,18 @@ body.menu-active #deadScreen{
 <div id="roundResult">
   <div id="roundResultTitle"></div>
   <div id="roundResultSub"></div>
+</div>
+<div id="finalResult">
+  <div id="finalResultTitle">VICTORY!</div>
+  <div id="finalResultSub">MATCH OVER</div>
+  <div id="finalStats">
+    <div class="finalStat"><div class="finalStatLabel">Kills</div><div class="finalStatValue" id="finalKills">0</div></div>
+    <div class="finalStat"><div class="finalStatLabel">Deaths</div><div class="finalStatValue" id="finalDeaths">0</div></div>
+    <div class="finalStat"><div class="finalStatLabel">Rounds Won</div><div class="finalStatValue" id="finalWins">0</div></div>
+    <div class="finalStat"><div class="finalStatLabel">Rounds Lost</div><div class="finalStatValue" id="finalLosses">0</div></div>
+  </div>
+  <div id="finalScore">RED 0 — 0 BLUE</div>
+  <button id="finalClose">მთავარ მენიუში</button>
 </div>
 
 
@@ -3194,6 +3230,8 @@ applyPlayerClothing();
 
 let redRoundsWon=0;
 let blueRoundsWon=0;
+let playerKills=0;
+let playerDeaths=0;
 
 function updateTeamScore(){
     const r=document.getElementById("redScore");
@@ -3210,28 +3248,85 @@ function showRoundResult(playerWon){
     const sub=document.getElementById("roundResultSub");
     if(!box || !title || !sub) return;
 
+    const localBlue=localIsBlueTeam();
+    const winningTeam=playerWon
+        ? (localBlue ? "BLUE" : "RED")
+        : (localBlue ? "RED" : "BLUE");
+
     box.className=playerWon ? "win" : "lose";
     title.textContent=playerWon ? "ROUND WON!" : "ROUND LOST!";
-    sub.textContent=playerWon
-        ? "🔴 RED TEAM WINS THIS ROUND"
-        : "🔵 BLUE TEAM WINS THIS ROUND";
+    sub.textContent="🔴 RED "+redRoundsWon+" — "+blueRoundsWon+" BLUE 🔵 • "+winningTeam+" TEAM";
     box.style.display="flex";
 
-    const score=document.getElementById(playerWon ? "redScore" : "blueScore");
+    const score=document.getElementById(localBlue ? "blueScore" : "redScore");
     if(score){
         score.classList.remove("scoreFlash");
         void score.offsetWidth;
         score.classList.add("scoreFlash");
     }
 
-    setTimeout(()=>{ box.style.display="none"; },1800);
+    setTimeout(()=>{
+        if(box.style.display!=="none") box.style.display="none";
+    },1800);
 }
 
 function awardRound(playerWon){
-    if(playerWon) redRoundsWon++;
-    else blueRoundsWon++;
+    if(playerWon){
+        playerKills++;
+        if(localIsBlueTeam()) blueRoundsWon++;
+        else redRoundsWon++;
+    }else{
+        playerDeaths++;
+        if(localIsBlueTeam()) redRoundsWon++;
+        else blueRoundsWon++;
+    }
     updateTeamScore();
     showRoundResult(playerWon);
+}
+
+function showFinalResult(){
+    const box=document.getElementById("finalResult");
+    const title=document.getElementById("finalResultTitle");
+    const sub=document.getElementById("finalResultSub");
+    const kills=document.getElementById("finalKills");
+    const deaths=document.getElementById("finalDeaths");
+    const wins=document.getElementById("finalWins");
+    const losses=document.getElementById("finalLosses");
+    const score=document.getElementById("finalScore");
+    if(!box) return;
+
+    const playerWonMatch=redRoundsWon!==blueRoundsWon
+        ? (localIsBlueTeam() ? blueRoundsWon>redRoundsWon : redRoundsWon>blueRoundsWon)
+        : playerKills>playerDeaths;
+
+    box.className=playerWonMatch ? "win" : "lose";
+    title.textContent=playerWonMatch ? "VICTORY!" : "DEFEAT";
+    sub.textContent=playerWonMatch ? "YOU WIN THE MATCH" : "YOU LOSE THE MATCH";
+    kills.textContent=playerKills;
+    deaths.textContent=playerDeaths;
+    wins.textContent=localIsBlueTeam() ? blueRoundsWon : redRoundsWon;
+    losses.textContent=localIsBlueTeam() ? redRoundsWon : blueRoundsWon;
+    score.textContent="🔴 RED "+redRoundsWon+" — "+blueRoundsWon+" BLUE 🔵";
+    box.style.display="flex";
+
+    if(document.pointerLockElement===canvas){
+        document.exitPointerLock();
+    }
+}
+
+const finalClose=document.getElementById("finalClose");
+if(finalClose){
+    finalClose.addEventListener("click",()=>{
+        const box=document.getElementById("finalResult");
+        if(box) box.style.display="none";
+        gameStarted=false;
+        roundTransition=false;
+        document.body.classList.add("menu-active");
+        const mainMenu=document.getElementById("mainMenu");
+        if(mainMenu) mainMenu.style.display="flex";
+        const roundHUD=document.getElementById("roundHUD");
+        if(roundHUD) roundHUD.style.display="none";
+    });
 }
 
 let botPhase=0;
@@ -4670,6 +4765,20 @@ function beginRoundTransition(playerWon){
         roundTransitionTimer=null;
 
         const completedRound=currentRound;
+
+        // The match ends after ROUND 9. Never start ROUND 10.
+        if(completedRound>=9){
+            roundTransition=false;
+            gameStarted=false;
+            bot.visible=false;
+            const deathBox=document.getElementById("deathCountdown");
+            if(deathBox) deathBox.style.display="none";
+            const roundHUD=document.getElementById("roundHUD");
+            if(roundHUD) roundHUD.style.display="none";
+            showFinalResult();
+            return;
+        }
+
         currentRound++;
 
         // After rounds 5, 10, 15... swap RED and BLUE.
@@ -6399,6 +6508,10 @@ startBtn.addEventListener(
         teamsSwapped=false;
         redRoundsWon=0;
         blueRoundsWon=0;
+        playerKills=0;
+        playerDeaths=0;
+        const finalResult=document.getElementById("finalResult");
+        if(finalResult) finalResult.style.display="none";
         roundTransition=false;
         roundTimer=0;
 
