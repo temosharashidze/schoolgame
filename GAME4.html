@@ -4758,6 +4758,46 @@ function updateBotHPUI(){
 }
 
 const botHeadWorld=new THREE.Vector3();
+const botVisibilityDirection=new THREE.Vector3();
+
+function botVisibleFromCamera(){
+
+    if(!bot.visible)
+        return false;
+
+    bot.updateMatrixWorld(true);
+    botHead.getWorldPosition(botHeadWorld);
+    botHeadWorld.y+=.10;
+
+    botVisibilityDirection
+        .subVectors(botHeadWorld,camera.position);
+
+    const distance=botVisibilityDirection.length();
+
+    if(distance<=0.001)
+        return true;
+
+    botVisibilityDirection.normalize();
+
+    raycaster.set(
+        camera.position,
+        botVisibilityDirection
+    );
+
+    const wallMeshes=[];
+
+    for(const c of arenaColliders){
+        if(c.mesh) wallMeshes.push(c.mesh);
+    }
+
+    const wallHits=raycaster.intersectObjects(
+        wallMeshes,
+        false
+    );
+
+    // If a wall is closer than the bot's head, the bot is hidden.
+    return !wallHits.length || wallHits[0].distance >= distance-.05;
+}
 
 function updateBotHPPosition(){
 
@@ -4776,6 +4816,12 @@ function updateBotHPPosition(){
     botHead.getWorldPosition(
         botHeadWorld
     );
+
+    // Do not reveal the BOT HP through arena walls.
+    if(!botVisibleFromCamera()){
+        botHPUI.style.display="none";
+        return;
+    }
 
     // Put the HP bar clearly above the head. The old offset was too small
     // for distant targets, so the 110px bar visually covered the head.
@@ -4874,6 +4920,24 @@ function shootWeapon(){
         );
 
     if(hits.length){
+
+        // A wall must block the shot. The bullet can only hit the BOT
+        // if no arena collider is between the camera and the hit point.
+        const botHitDistance=hits[0].distance;
+        const wallMeshes=[];
+
+        for(const c of arenaColliders){
+            if(c.mesh) wallMeshes.push(c.mesh);
+        }
+
+        const wallHits=raycaster.intersectObjects(
+            wallMeshes,
+            false
+        );
+
+        if(wallHits.length && wallHits[0].distance < botHitDistance-.05){
+            return;
+        }
 
         botHP=Math.max(
             0,
