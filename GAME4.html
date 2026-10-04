@@ -4493,7 +4493,7 @@ const botHPUI=document.createElement("div");
 
 botHPUI.style.position="absolute";
 botHPUI.style.zIndex="10";
-botHPUI.style.width="110px";
+botHPUI.style.width="96px";
 botHPUI.style.pointerEvents="none";
 botHPUI.style.textAlign="center";
 botHPUI.style.display="none";
@@ -4510,8 +4510,8 @@ BOT — 100 / 100
 </div>
 
 <div style="
-width:110px;
-height:9px;
+width:96px;
+height:8px;
 background:#222;
 border:1px solid #ffffff66;
 border-radius:6px;
@@ -4582,7 +4582,9 @@ function updateBotHPPosition(){
         botHeadWorld
     );
 
-    botHeadWorld.y+=.45;
+    // Put the HP bar clearly above the head. The old offset was too small
+    // for distant targets, so the 110px bar visually covered the head.
+    botHeadWorld.y+=.55;
 
     const projected=
         botHeadWorld
@@ -4610,10 +4612,19 @@ function updateBotHPPosition(){
         (-projected.y*.5+.5)*
         innerHeight;
 
-    botHPUI.style.display="block";
+    // Scale the nameplate down as the bot gets farther away so it never
+    // dominates the character or hides the head at long range.
+    const distanceToBot=camera.position.distanceTo(botHeadWorld);
+    const uiScale=THREE.MathUtils.clamp(
+        1.0-(distanceToBot-8)*0.025,
+        0.55,
+        1.0
+    );
 
+    botHPUI.style.display="block";
+    botHPUI.style.transform=`translate(-50%,-100%) scale(${uiScale})`;
     botHPUI.style.left=x+"px";
-    botHPUI.style.top=(y-10)+"px";
+    botHPUI.style.top=(y-4)+"px";
 }
 
 
