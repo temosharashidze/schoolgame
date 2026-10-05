@@ -4682,6 +4682,16 @@ function applyTeamWeapons(){
 
 function startRound(){
 
+    // RESET AMMO AT THE START OF EVERY ROUND
+    // Keep the same starting ammo as the weapon had at game start.
+    ammo=30;
+    reserveAmmo=120;
+    reloading=false;
+    weaponReloadAnim=0;
+    shotCooldown=0;
+    muzzleTimer=0;
+    updateWeaponHud();
+
     roundTransition=false;
     roundTimer=0;
 
@@ -6506,6 +6516,15 @@ startBtn.addEventListener(
 
         currentRound=1;
         teamsSwapped=false;
+
+        // Start every new match with full ammunition too.
+        ammo=30;
+        reserveAmmo=120;
+        reloading=false;
+        weaponReloadAnim=0;
+        shotCooldown=0;
+        muzzleTimer=0;
+        updateWeaponHud();
         redRoundsWon=0;
         blueRoundsWon=0;
         playerKills=0;
