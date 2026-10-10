@@ -3027,6 +3027,61 @@ bot.scale.set(
 
 scene.add(bot);
 
+// Additional BOT teammates/opponents for 3v3 and 5v5 modes.
+// The original bot remains the first bot; extra bots get their own HP and AI.
+const extraBots=[];
+function syncExtraBotCount(){
+    const wanted=Math.max(0, selectedModeSize-1);
+    while(extraBots.length<wanted){
+        const model=bot.clone(true);
+        model.name="BOT_EXTRA_"+(extraBots.length+1);
+        model.visible=false;
+        scene.add(model);
+        extraBots.push({model,hp:100,cooldown:0,dead:false});
+    }
+    extraBots.forEach((entry,i)=>{ entry.model.visible=i<wanted && gameStarted && !onlineMode; });
+}
+function resetExtraBots(){
+    const offsets=[[-5,-5],[5,5],[-8,4],[8,-4]];
+    syncExtraBotCount();
+    extraBots.forEach((entry,i)=>{
+        const on=i<Math.max(0,selectedModeSize-1);
+        entry.hp=100; entry.cooldown=.6+i*.3; entry.dead=!on;
+        entry.model.visible=on && !onlineMode;
+        if(on){
+            const o=offsets[i%offsets.length];
+            entry.model.position.set(getRemoteSpawnX()+o[0],0,(selectedMap==="field"?1:0)+o[1]);
+            entry.model.rotation.set(0,getRemoteSpawnX()<person.position.x?0:Math.PI,0);
+        }
+    });
+}
+function updateExtraBots(delta){
+    if(!gameStarted || onlineMode || dead || roundTransition) return;
+    extraBots.forEach((entry)=>{
+        const b=entry.model;
+        if(entry.dead || !b.visible) return;
+        const dx=person.position.x-b.position.x, dz=person.position.z-b.position.z;
+        const dist=Math.hypot(dx,dz);
+        if(dist>2.8){
+            const step=Math.min(3.0*delta,dist-2.8);
+            b.position.x+=dx/(dist||1)*step;
+            b.position.z+=dz/(dist||1)*step;
+        }
+        b.rotation.y=Math.atan2(-dx,-dz);
+        entry.cooldown-=delta;
+        if(dist<24 && entry.cooldown<=0){
+            entry.cooldown=1.15+Math.random()*.7;
+            if(Math.random()<.28 && playerHP>0){
+                playerHP=Math.max(0,playerHP-8);
+                if(typeof updatePlayerHP==="function") updatePlayerHP();
+                if(typeof damageFlash!=="undefined") damageFlash.style.opacity=".35";
+                damageFlashTimer=.12;
+                if(playerHP<=0 && typeof handlePlayerDeath==="function") handlePlayerDeath();
+            }
+        }
+    });
+}
+
 const botLeftArm=bot.getObjectByName("BOT_LEFT_ARM");
 const botRightArm=bot.getObjectByName("BOT_RIGHT_ARM");
 const botLeftUpper=bot.getObjectByName("BOT_LEFT_UPPER");
@@ -4960,6 +5015,7 @@ function startRound(){
     bot.visible=true;
     bot.position.set(getRemoteSpawnX(),0, selectedMap==="field" ? 1 : 0);
     bot.rotation.set(0, getRemoteSpawnX() < person.position.x ? 0 : Math.PI, 0);
+    resetExtraBots();
 
     person.position.set(getLocalSpawnX(),0, selectedMap==="field" ? -1 : 0);
     person.rotation.set(0, getLocalSpawnX() < 0 ? 0 : Math.PI, 0);
@@ -5308,18 +5364,14 @@ function shootWeapon(){
     );
 
     const targets=[];
-
-    bot.traverse(o=>{
-
-        if(o.isMesh)
-            targets.push(o);
+    const targetOwners=[];
+    bot.traverse(o=>{ if(o.isMesh){ targets.push(o); targetOwners.push({mesh:o,entry:null}); } });
+    extraBots.forEach(entry=>{
+        if(entry.dead || !entry.model.visible) return;
+        entry.model.traverse(o=>{ if(o.isMesh){ targets.push(o); targetOwners.push({mesh:o,entry}); } });
     });
 
-    const hits=
-        raycaster.intersectObjects(
-            targets,
-            false
-        );
+    const hits=raycaster.intersectObjects(targets,false);
 
     if(hits.length){
 
@@ -5342,18 +5394,20 @@ function shootWeapon(){
             return;
         }
 
-        botHP=Math.max(
-            0,
-            botHP-25
-        );
-
-        updateBotHPUI();
-
-        sendOnlineHit(25,shotAt);
-
-        if(botHP===0){
-            if(onlineMode) pendingOnlineWinAt=shotAt;
-            finishRound();
+        const hitObject=hits[0].object;
+        const owner=targetOwners.find(x=>x.mesh===hitObject);
+        if(owner && owner.entry){
+            const entry=owner.entry;
+            entry.hp=Math.max(0,entry.hp-25);
+            if(entry.hp===0){ entry.dead=true; entry.model.visible=false; }
+        }else{
+            botHP=Math.max(0,botHP-25);
+            updateBotHPUI();
+            sendOnlineHit(25,shotAt);
+            if(botHP===0){
+                if(onlineMode) pendingOnlineWinAt=shotAt;
+                finishRound();
+            }
         }
     }
 }
@@ -7678,6 +7732,7 @@ function animate(now){
                 animateRemoteBot(delta);
             }else{
                 updateBot(delta);
+                updateExtraBots(delta);
             }
         }
 
