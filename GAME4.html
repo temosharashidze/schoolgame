@@ -4564,6 +4564,9 @@ let currentRound=1;
 let teamsSwapped=false; // After every 5 completed rounds, RED and BLUE switch sides.
 let roundTransition=false;
 let roundTimer=0;
+// Online lethal-shot arbitration: compare shot timestamps before locking the round.
+let pendingOnlineWinAt=null;
+let pendingOnlineWinTimer=null;
 
 const roundUI=document.createElement("div");
 roundUI.style.position="absolute";
@@ -4687,6 +4690,9 @@ function applyTeamWeapons(){
 
 function startRound(){
 
+    if(pendingOnlineWinTimer!==null){ clearTimeout(pendingOnlineWinTimer); pendingOnlineWinTimer=null; }
+    pendingOnlineWinAt=null;
+
     // RESET AMMO AT THE START OF EVERY ROUND
     // Keep the same starting ammo as the weapon had at game start.
     ammo=30;
@@ -4734,15 +4740,29 @@ function startRound(){
 }
 
 function finishRound(){
-    if(
-        botHP<=0 &&
-        !roundTransition
-    ){
-        botHP=0;
-        bot.visible=false;
-        awardRound(true);
-        beginRoundTransition(true);
+    if(botHP>0 || roundTransition || dead) return;
+
+    // In online mode, briefly wait for any shot already fired by the opponent.
+    // The earlier lethal shot wins; the later hit cannot create a double death.
+    if(onlineMode){
+        if(pendingOnlineWinTimer!==null) return;
+        if(pendingOnlineWinAt===null) pendingOnlineWinAt=Date.now();
+        const winShotAt=pendingOnlineWinAt;
+        pendingOnlineWinTimer=setTimeout(()=>{
+            pendingOnlineWinTimer=null;
+            if(roundTransition || dead || botHP>0) return;
+            botHP=0;
+            bot.visible=false;
+            awardRound(true);
+            beginRoundTransition(true);
+        },180);
+        return;
     }
+
+    botHP=0;
+    bot.visible=false;
+    awardRound(true);
+    beginRoundTransition(true);
 }
 
 
@@ -5013,6 +5033,7 @@ function shootWeapon(){
     }
 
     ammo--;
+    const shotAt=Date.now();
 
     shotCooldown=.11;
     muzzleTimer=.045;
@@ -5070,11 +5091,10 @@ function shootWeapon(){
 
         updateBotHPUI();
 
-        sendOnlineHit(25);
-
-        sendOnlineHit(25);
+        sendOnlineHit(25,shotAt);
 
         if(botHP===0){
+            if(onlineMode) pendingOnlineWinAt=shotAt;
             finishRound();
         }
     }
@@ -5191,7 +5211,11 @@ function startDeathCountdown(){
     },1000);
 }
 
-function damagePlayer(amount){
+function damagePlayer(amount, shotAt=Date.now()){
+
+    if(onlineMode && pendingOnlineWinAt!==null && pendingOnlineWinAt<=shotAt){
+        return; // Our lethal shot was fired first; ignore the later incoming hit.
+    }
 
     if(
         dead ||
@@ -5213,6 +5237,11 @@ function damagePlayer(amount){
     updatePlayerHP();
 
     if(playerHP<=0){
+
+        if(onlineMode && pendingOnlineWinAt!==null && shotAt<pendingOnlineWinAt){
+            if(pendingOnlineWinTimer!==null){ clearTimeout(pendingOnlineWinTimer); pendingOnlineWinTimer=null; }
+            pendingOnlineWinAt=null;
+        }
 
         dead=true;
         damageFlashTimer=0;
@@ -6899,7 +6928,7 @@ function handleOnlineData(data){
 
     if(data.type==="hit"){
         if(gameStarted && !roundTransition && !dead){
-            damagePlayer(Number(data.damage)||25);
+            damagePlayer(Number(data.damage)||25, Number(data.shotAt)||Date.now());
         }
         return;
     }
@@ -6944,9 +6973,9 @@ function sendOnlineState(){
     });
 }
 
-function sendOnlineHit(damage){
+function sendOnlineHit(damage,shotAt=Date.now()){
     if(onlineMode && onlineConn && onlineConn.open){
-        onlineConn.send({type:"hit",damage:damage});
+        onlineConn.send({type:"hit",damage:damage,shotAt:shotAt});
     }
 }
 
