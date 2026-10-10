@@ -94,6 +94,10 @@ canvas{
     font-size:16px
 }
 
+#mapPickerWrap{width:min(330px,78vw);margin:4px auto 8px;text-align:left;font-family:Arial,sans-serif;color:#fff;font-weight:800;font-size:13px;position:relative;z-index:1001;pointer-events:auto!important;}
+#mapPickerWrap label{display:block;margin:0 0 6px 3px;text-shadow:0 2px 6px #000;}
+#mapPicker{display:block;position:relative;z-index:1002;width:100%;height:42px;border:1px solid #ffffff35;border-radius:10px;padding:0 12px;background:#101d35;color:#fff;font-size:15px;font-weight:800;outline:none;cursor:pointer;pointer-events:auto!important;touch-action:manipulation;}
+#mapPicker option{background:#101d35;color:#fff;}
 #mainMenu{
     position:absolute;
     inset:0;
@@ -889,6 +893,18 @@ body.menu-active #deadScreen{
 #onlineLobbyStart:disabled{background:#405064;color:#aab4c0;cursor:not-allowed}
 #onlineLobbyClose{margin-top:10px;background:transparent;border:1px solid #ffffff30;color:#fff;border-radius:10px;padding:10px 22px;font-weight:800;cursor:pointer}
 
+
+#pauseOverlay{position:absolute;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;background:rgba(5,10,18,.78);backdrop-filter:blur(5px);font-family:Arial,sans-serif;color:#fff;pointer-events:auto}
+#pauseOverlay.show{display:flex}
+#pauseCard{width:min(390px,88vw);padding:28px 24px;border:1px solid #ffffff30;border-radius:18px;background:linear-gradient(145deg,#1a2940f5,#080e19f5);box-shadow:0 22px 80px #0009;text-align:center}
+#pauseCard h2{margin:0 0 22px;font-size:28px;letter-spacing:2px}
+.pauseAction{display:block;width:100%;padding:14px 12px;margin:10px 0;border:1px solid #ffffff20;border-radius:10px;background:#263a53;color:white;font-size:16px;font-weight:800;cursor:pointer}
+.pauseAction.primary{background:#36a852;color:#fff}
+.pauseAction.exit{background:#9c3030}
+#pauseSettings{display:none;text-align:left;margin-top:14px;padding-top:12px;border-top:1px solid #ffffff25}
+#pauseSettings label{display:block;margin:12px 0 5px;font-size:13px}
+#pauseSettings input,#pauseSettings select{width:100%;box-sizing:border-box}
+
 </style>
 </head>
 
@@ -1006,6 +1022,13 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
     <button class="menuBtn secondary" id="lockerBtn">👕 &nbsp; Locker</button>
     <button class="menuBtn secondary" id="shopBtn">🛒 &nbsp; Shop</button>
     <button class="menuBtn secondary" id="modeCard">1v1</button>
+    <div id="mapPickerWrap">
+      <label for="mapPicker">🗺 აირჩიე რუკა</label>
+      <select id="mapPicker">
+        <option value="arena">🏙️ ნაცრისფერი არენა</option>
+        <option value="field">🌿 მწვანე მინდორი</option>
+      </select>
+    </div>
     <button class="menuBtn" id="startBtn">PLAY!</button>
     <button class="menuBtn secondary" id="fullscreenBtn" aria-label="Fullscreen">↗</button>
     <button class="menuBtn secondary" id="settingsBtn" aria-label="Settings"></button>
@@ -1061,6 +1084,23 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
     </div>
 
     <button class="menuBtn secondary" id="menuClose" style="display:none">✕</button>
+  </div>
+</div>
+
+
+<div id="pauseOverlay" aria-hidden="true">
+  <div id="pauseCard">
+    <h2>⏸ PAUSED</h2>
+    <button class="pauseAction primary" id="pauseContinue">▶ გაგრძელება</button>
+    <button class="pauseAction" id="pauseSettingsBtn">⚙ სეთინგი</button>
+    <div id="pauseSettings">
+      <label for="pauseSpeed">სირბილის სიჩქარე</label><input id="pauseSpeed" type="range" min="3" max="12" step="0.5" value="6">
+      <label for="pauseMouse">კამერის მგრძნობელობა</label><input id="pauseMouse" type="range" min="0.5" max="2" step="0.1" value="1">
+      <label for="pauseCamera">კამერის რეჟიმი</label><select id="pauseCamera"><option value="third">Third Person</option><option value="first">First Person</option></select>
+      <button class="pauseAction primary" id="pauseSettingsBack">დაბრუნება</button>
+    </div>
+    <button class="pauseAction exit" id="pauseExit">↩ თამაშიდან გასვლა</button>
+    <small style="color:#b8c5d8">გაგრძელებისთვის დააჭირე ESC-ს</small>
   </div>
 </div>
 
@@ -1167,6 +1207,24 @@ scene.add(sun);
 ========================================================= */
 
 /* =========================
+   MAP OBJECT TRACKING
+========================= */
+const mapObjects={arena:[],field:[]};
+let buildingMapId="arena";
+let selectedMap="arena";
+function trackMapObject(object,mapId=buildingMapId){
+    if(!mapObjects[mapId]) mapObjects[mapId]=[];
+    mapObjects[mapId].push(object);
+    return object;
+}
+function applySelectedMap(mapId){
+    selectedMap=(mapId==="field")?"field":"arena";
+    for(const [id,objects] of Object.entries(mapObjects)){
+        for(const object of objects) object.visible=(id===selectedMap);
+    }
+}
+
+/* =========================
    FLOOR
 ========================= */
 
@@ -1193,6 +1251,7 @@ ground.position.set(
 ground.receiveShadow=true;
 
 scene.add(ground);
+trackMapObject(ground,"arena");
 
 
 /* =========================================================
@@ -1234,9 +1293,11 @@ function arenaBox(
     mesh.receiveShadow=true;
 
     scene.add(mesh);
+    trackMapObject(mesh,buildingMapId);
 
     arenaColliders.push({
         mesh,
+        mapId:buildingMapId,
         x,
         z,
         halfX:width/2,
@@ -1316,6 +1377,7 @@ function spawnPad(x,z,color){
     pad.receiveShadow=true;
 
     scene.add(pad);
+    trackMapObject(pad,buildingMapId);
 }
 
 
@@ -1366,6 +1428,7 @@ function makeFlag(x,z,color){
     pole.castShadow=true;
 
     scene.add(pole);
+    trackMapObject(pole,buildingMapId);
 
 
     const flag=new THREE.Mesh(
@@ -1390,6 +1453,7 @@ function makeFlag(x,z,color){
     flag.castShadow=true;
 
     scene.add(flag);
+    trackMapObject(flag,buildingMapId);
 }
 
 
@@ -1518,6 +1582,162 @@ arenaBox(
     0x85898e
 );
 
+/* =========================================================
+   MAP 2: GRASS FIELD WITH BOX COVER
+========================================================= */
+buildingMapId="field";
+const fieldGround=new THREE.Mesh(
+    new THREE.BoxGeometry(60,.5,56),
+    new THREE.MeshStandardMaterial({color:0x3c963f,roughness:1,flatShading:true})
+);
+fieldGround.position.set(0,-.25,0);
+fieldGround.receiveShadow=true;
+scene.add(fieldGround);
+trackMapObject(fieldGround,"field");
+
+// Low grassy edge walls keep the fight area bounded.
+arenaBox(0,-28,60,3,1,0x286b31);
+arenaBox(0,28,60,3,1,0x286b31);
+arenaBox(-30,0,1,3,56,0x286b31);
+arenaBox(30,0,1,3,56,0x286b31);
+
+// Wooden crates and low concrete blocks, arranged symmetrically.
+const fieldCovers=[
+ [-13,-11,4,2.8,4,0x956438],[-13,11,4,2.8,4,0x956438],
+ [13,-11,4,2.8,4,0x956438],[13,11,4,2.8,4,0x956438],
+ [-5,-18,5,2.2,2.5,0x777f72],[5,18,5,2.2,2.5,0x777f72],
+ [-20,0,3,2.4,5,0x956438],[20,0,3,2.4,5,0x956438],
+ [-4,0,3,2.4,7,0x956438],[4,0,3,2.4,7,0x956438],
+ [-8,-6,3,1.5,3,0xb08a5a],[8,6,3,1.5,3,0xb08a5a],
+ [-8,6,3,1.5,3,0xb08a5a],[8,-6,3,1.5,3,0xb08a5a]
+];
+for(const b of fieldCovers) arenaBox(b[0],b[1],b[2],b[3],b[4],b[5]);
+
+// Weathered wooden crate details: plank seams, dark metal straps and corner braces.
+// These are decorative meshes only; the original cover collision boxes remain unchanged.
+const crateDetails = new THREE.Group();
+const crateWoodMats = [
+    new THREE.MeshStandardMaterial({color:0x80532f,roughness:.96}),
+    new THREE.MeshStandardMaterial({color:0xa87949,roughness:.94}),
+    new THREE.MeshStandardMaterial({color:0x674326,roughness:.98})
+];
+const crateMetalMat = new THREE.MeshStandardMaterial({color:0x383a37,roughness:.78,metalness:.32});
+for(let i=0;i<fieldCovers.length;i++){
+    const b=fieldCovers[i];
+    const [x,z,w,h,d,color]=b;
+    if(color!==0x956438 && color!==0xb08a5a) continue;
+    const plankCount=Math.max(3,Math.floor(h/0.38));
+    const seamH=h/plankCount;
+    // Front and rear plank lines, placed just on the outside surface.
+    for(const side of [-1,1]){
+        for(let j=0;j<plankCount;j++){
+            const plank=new THREE.Mesh(new THREE.BoxGeometry(w*.94,Math.max(.045,seamH*.82),.035),crateWoodMats[(i+j)%crateWoodMats.length]);
+            plank.position.set(x,-h/2+seamH*(j+.5)+h/2,z+side*(d/2+.025));
+            plank.castShadow=true; plank.receiveShadow=true; crateDetails.add(plank);
+        }
+        // Two broad dark straps like the reference crates.
+        for(const xx of [-w*.34,w*.34]){
+            const strap=new THREE.Mesh(new THREE.BoxGeometry(.12,h+.04,.075),crateMetalMat);
+            strap.position.set(x+xx,h/2,z+side*(d/2+.065));
+            strap.castShadow=true; crateDetails.add(strap);
+        }
+    }
+    // Side face boards and metal straps.
+    for(const side of [-1,1]){
+        for(let j=0;j<plankCount;j++){
+            const plank=new THREE.Mesh(new THREE.BoxGeometry(.035,Math.max(.045,seamH*.82),d*.92),crateWoodMats[(i+j+1)%crateWoodMats.length]);
+            plank.position.set(x+side*(w/2+.025),-h/2+seamH*(j+.5)+h/2,z);
+            plank.castShadow=true; crateDetails.add(plank);
+        }
+        const strap=new THREE.Mesh(new THREE.BoxGeometry(.075,h+.04,.12),crateMetalMat);
+        strap.position.set(x+side*(w/2+.06),h/2,z);
+        strap.castShadow=true; crateDetails.add(strap);
+    }
+}
+scene.add(crateDetails);
+trackMapObject(crateDetails,"field");
+
+// Decorative grass and trees for the field map.
+// Kept in a single map-tracked group so decorations disappear on the arena map.
+const fieldNature = new THREE.Group();
+const grassBladeMats = [
+    new THREE.MeshStandardMaterial({color:0x55a832, roughness:1}),
+    new THREE.MeshStandardMaterial({color:0x78bd3d, roughness:1}),
+    new THREE.MeshStandardMaterial({color:0x367f2d, roughness:1})
+];
+const treeTrunkMat = new THREE.MeshStandardMaterial({color:0x76502e, roughness:1});
+const treeLeafMats = [
+    new THREE.MeshStandardMaterial({color:0x246b2c, roughness:1, flatShading:true}),
+    new THREE.MeshStandardMaterial({color:0x338638, roughness:1, flatShading:true}),
+    new THREE.MeshStandardMaterial({color:0x4b9637, roughness:1, flatShading:true})
+];
+
+// Small tufts of grass, concentrated around the field edges and open corners.
+const grassPatches = [];
+for(let i=0;i<125;i++){
+    const edge = i % 4;
+    const along = -25 + Math.random()*50;
+    let x, z;
+    if(edge===0){x=along; z=-24+Math.random()*5;}
+    else if(edge===1){x=along; z=19+Math.random()*5;}
+    else if(edge===2){x=-27+Math.random()*5; z=along*0.9;}
+    else {x=22+Math.random()*5; z=along*0.9;}
+    // Leave the spawn pads and immediate fighting lanes uncluttered.
+    if(Math.abs(x)>20 && Math.abs(z)<4) continue;
+    const tuft = new THREE.Group();
+    const blades = 3 + Math.floor(Math.random()*3);
+    for(let j=0;j<blades;j++){
+        const h=0.18+Math.random()*0.28;
+        const blade=new THREE.Mesh(
+            new THREE.ConeGeometry(0.055+Math.random()*0.035,h,4),
+            grassBladeMats[Math.floor(Math.random()*grassBladeMats.length)]
+        );
+        blade.position.set((Math.random()-.5)*0.24,h/2,(Math.random()-.5)*0.24);
+        blade.rotation.z=(Math.random()-.5)*0.5;
+        tuft.add(blade);
+    }
+    tuft.position.set(x,0,z);
+    fieldNature.add(tuft);
+}
+
+// Low-poly trees placed around the perimeter so they decorate the map without blocking the middle.
+const treeSpots = [
+    [-25,-21],[-18,-24],[-8,-24],[4,-24],[17,-24],[25,-20],
+    [-25,20],[-17,24],[-6,24],[7,24],[18,23],[25,19],
+    [-27,-10],[-27,8],[27,-9],[27,9]
+];
+for(let i=0;i<treeSpots.length;i++){
+    const [x,z]=treeSpots[i];
+    const tree=new THREE.Group();
+    const height=1.8+(i%3)*0.25;
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.23,height,6),treeTrunkMat);
+    trunk.position.y=height/2;
+    trunk.castShadow=true;
+    trunk.receiveShadow=true;
+    tree.add(trunk);
+    const leafMat=treeLeafMats[i%treeLeafMats.length];
+    const crown1=new THREE.Mesh(new THREE.ConeGeometry(1.0,1.65,7),leafMat);
+    crown1.position.y=height+0.35;
+    crown1.castShadow=true;
+    tree.add(crown1);
+    const crown2=new THREE.Mesh(new THREE.ConeGeometry(0.72,1.3,7),treeLeafMats[(i+1)%treeLeafMats.length]);
+    crown2.position.y=height+1.0;
+    crown2.castShadow=true;
+    tree.add(crown2);
+    tree.position.set(x,0,z);
+    tree.rotation.y=(i%5)*0.35;
+    fieldNature.add(tree);
+}
+scene.add(fieldNature);
+trackMapObject(fieldNature,"field");
+
+spawnPad(-23,0,0xcc2222);
+spawnPad(23,0,0x2255cc);
+makeFlag(-23,0,0xcc2222);
+makeFlag(23,0,0x2255cc);
+buildingMapId="arena";
+applySelectedMap("arena");
+
 
 /* =========================================================
    ARENA COLLISION
@@ -1529,6 +1749,7 @@ function resolveArenaCollision(
 ){
 
     for(const c of arenaColliders){
+        if(c.mapId && c.mapId!==selectedMap) continue;
 
         const minX=
             c.x-c.halfX-radius;
@@ -3338,7 +3559,9 @@ let botPhase=0;
 let botShootCooldown=0;
 
 const BOT_SPEED=3.2;
-const BOT_STOP_DISTANCE=7.5;
+const BOT_STOP_DISTANCE=2.8; // bot keeps advancing instead of stopping too far away
+let botSteerSide=1;
+let botBlockedTime=0;
 const BOT_SHOOT_DISTANCE=24;
 const BOT_SHOOT_INTERVAL=.65;
 const BOT_DAMAGE=18;
@@ -3385,6 +3608,7 @@ function botHasLineOfSight(){
     const wallMeshes=[];
 
     for(const c of arenaColliders){
+        if(c.mapId && c.mapId!==selectedMap) continue;
 
         if(c.mesh)
             wallMeshes.push(c.mesh);
@@ -3624,57 +3848,62 @@ function updateBot(delta){
 
     let moving=false;
 
-    if(
-        distance>
-        BOT_STOP_DISTANCE
-    ){
-
-        const length=
-            Math.sqrt(
-                dx*dx+
-                dz*dz
-            );
-
+    if(distance>BOT_STOP_DISTANCE){
+        const length=Math.sqrt(dx*dx+dz*dz);
         if(length>0.001){
+            const baseX=dx/length;
+            const baseZ=dz/length;
+            const step=BOT_SPEED*delta;
+            const oldX=bot.position.x;
+            const oldZ=bot.position.z;
+            let foundPath=false;
 
-            const moveX=
-                dx/length;
+            // Try directly toward the player first, then steer around boxes/walls.
+            // The old AI pushed straight into obstacles and got stuck forever.
+            const angles=[0, botSteerSide*.55, -botSteerSide*.55,
+                botSteerSide*1.05, -botSteerSide*1.05,
+                botSteerSide*1.55, -botSteerSide*1.55, Math.PI];
 
-            const moveZ=
-                dz/length;
+            for(const offset of angles){
+                bot.position.x=oldX+(
+                    baseX*Math.cos(offset)-baseZ*Math.sin(offset)
+                )*step;
+                bot.position.z=oldZ+(
+                    baseX*Math.sin(offset)+baseZ*Math.cos(offset)
+                )*step;
 
-            bot.position.x+=
-                moveX*
-                BOT_SPEED*
-                delta;
+                bot.position.x=THREE.MathUtils.clamp(bot.position.x,-28.8,28.8);
+                bot.position.z=THREE.MathUtils.clamp(bot.position.z,-26.8,26.8);
+                resolveArenaCollision(bot,.55);
 
-            bot.position.z+=
-                moveZ*
-                BOT_SPEED*
-                delta;
+                const moved=Math.hypot(bot.position.x-oldX,bot.position.z-oldZ);
+                if(moved>Math.max(.012,step*.22)){
+                    foundPath=true;
+                    moving=true;
+                    // If direct path is blocked, keep choosing the successful side
+                    // for a short while so the bot circles around the obstacle.
+                    if(offset!==0){
+                        botSteerSide=offset>0?1:-1;
+                        botBlockedTime+=delta;
+                    }else{
+                        botBlockedTime=0;
+                    }
+                    break;
+                }
+            }
 
-            moving=true;
+            if(!foundPath){
+                bot.position.x=oldX;
+                bot.position.z=oldZ;
+                botBlockedTime+=delta;
+                // Flip direction periodically if boxed into a corner.
+                if(botBlockedTime>.65){
+                    botSteerSide*=-1;
+                    botBlockedTime=0;
+                }
+            }
         }
     }
-
-    bot.position.x=
-        THREE.MathUtils.clamp(
-            bot.position.x,
-            -28.8,
-            28.8
-        );
-
-    bot.position.z=
-        THREE.MathUtils.clamp(
-            bot.position.z,
-            -26.8,
-            26.8
-        );
-
-    resolveArenaCollision(
-        bot,
-        .55
-    );
 
     if(
         distance<=BOT_SHOOT_DISTANCE
@@ -3896,7 +4125,7 @@ fpsGun.name="FPS_GUN";
 fpsWeaponRoot.add(fpsGun);
 
 /* Slightly lower and farther right so the whole rifle is readable in FPS. */
-fpsGun.position.set(.48,-.39,-1.00);
+fpsGun.position.set(.48,-.29,-1.00);
 fpsGun.rotation.set(-.035,-.095,-.030);
 fpsGun.scale.set(1.12,1.12,1.12);
 
@@ -4177,7 +4406,7 @@ function makeFPSArm(
 
     group.position.set(
         rightSide ? .30 : -.27,
-        -.30,
+        -.22,
         -.66
     );
 
@@ -4720,10 +4949,10 @@ function startRound(){
 
     botHP=BOT_MAX_HP;
     bot.visible=true;
-    bot.position.set(getRemoteSpawnX(),0,0);
+    bot.position.set(getRemoteSpawnX(),0, selectedMap==="field" ? 1 : 0);
     bot.rotation.set(0, getRemoteSpawnX() < person.position.x ? 0 : Math.PI, 0);
 
-    person.position.set(getLocalSpawnX(),0,0);
+    person.position.set(getLocalSpawnX(),0, selectedMap==="field" ? -1 : 0);
     person.rotation.set(0, getLocalSpawnX() < 0 ? 0 : Math.PI, 0);
 
     playerHP=MAX_PLAYER_HP;
@@ -4949,6 +5178,7 @@ function botVisibleFromCamera(){
     const wallMeshes=[];
 
     for(const c of arenaColliders){
+        if(c.mapId && c.mapId!==selectedMap) continue;
         if(c.mesh) wallMeshes.push(c.mesh);
     }
 
@@ -5090,6 +5320,7 @@ function shootWeapon(){
         const wallMeshes=[];
 
         for(const c of arenaColliders){
+        if(c.mapId && c.mapId!==selectedMap) continue;
             if(c.mesh) wallMeshes.push(c.mesh);
         }
 
@@ -5696,6 +5927,20 @@ window.addEventListener(
 window.addEventListener(
     "keydown",
     e=>{
+
+        if(e.code==="Escape" && !e.repeat){
+            if(document.getElementById("pauseOverlay").classList.contains("show")){
+                resumeGame();
+            }else if(gameStarted){
+                pauseGame();
+            }
+            e.preventDefault();
+            return;
+        }
+
+        if(document.getElementById("pauseOverlay")?.classList.contains("show")){
+            return;
+        }
 
         if(
             e.code==="KeyW"||
@@ -6542,6 +6787,60 @@ document.getElementById("mouseSetting");
 
 const cameraSetting=
 document.getElementById("cameraSetting");
+const mapPicker=document.getElementById("mapPicker");
+
+const pauseOverlay=document.getElementById("pauseOverlay");
+const pauseSettings=document.getElementById("pauseSettings");
+const pauseSpeed=document.getElementById("pauseSpeed");
+const pauseMouse=document.getElementById("pauseMouse");
+const pauseCamera=document.getElementById("pauseCamera");
+function pauseGame(){
+    if(!gameStarted) return;
+    pauseOverlay.classList.add("show");
+    pauseOverlay.setAttribute("aria-hidden","false");
+    pauseSettings.style.display="none";
+    pauseSpeed.value=speedSetting.value;
+    pauseMouse.value=mouseSetting.value;
+    pauseCamera.value=cameraSetting.value;
+    keys.up=keys.down=keys.left=keys.right=keys.run=false;
+    dragging=false;
+    if(document.pointerLockElement) document.exitPointerLock();
+    lock.style.display="none";
+}
+function resumeGame(){
+    pauseOverlay.classList.remove("show");
+    pauseOverlay.setAttribute("aria-hidden","true");
+    pauseSettings.style.display="none";
+    speedSetting.value=pauseSpeed.value;
+    mouseSetting.value=pauseMouse.value;
+    cameraSetting.value=pauseCamera.value;
+    playerSpeed=Number(speedSetting.value)||6;
+    mouseSensitivity=Number(mouseSetting.value)||1;
+    firstPerson=cameraSetting.value==="first";
+    updateMode();
+    canvas.focus();
+}
+document.getElementById("pauseContinue").addEventListener("click",resumeGame);
+document.getElementById("pauseSettingsBtn").addEventListener("click",()=>{
+    pauseSettings.style.display=pauseSettings.style.display==="block"?"none":"block";
+});
+document.getElementById("pauseSettingsBack").addEventListener("click",()=>{
+    speedSetting.value=pauseSpeed.value; mouseSetting.value=pauseMouse.value; cameraSetting.value=pauseCamera.value;
+    playerSpeed=Number(speedSetting.value)||6; mouseSensitivity=Number(mouseSetting.value)||1;
+    firstPerson=cameraSetting.value==="first"; updateMode(); pauseSettings.style.display="none";
+});
+document.getElementById("pauseExit").addEventListener("click",()=>{
+    pauseOverlay.classList.remove("show"); pauseOverlay.setAttribute("aria-hidden","true");
+    gameStarted=false;
+    if(document.pointerLockElement) document.exitPointerLock();
+    keys.up=keys.down=keys.left=keys.right=keys.run=false; dragging=false; freeMouse=false;
+    mainMenu.style.display="block"; document.body.classList.add("menu-active");
+    settingsPanel.classList.remove("show"); characterPanel.classList.remove("show"); lockerPanel.classList.remove("show");
+    const roundHUD=document.getElementById("roundHUD"); const playerHPBox=document.getElementById("playerHP");
+    if(roundHUD) roundHUD.style.display="none"; if(playerHPBox) playerHPBox.style.display="none";
+    const finalResult=document.getElementById("finalResult"); if(finalResult) finalResult.style.display="none";
+    updateMode();
+});
 
 
 /* =========================================================
@@ -6558,6 +6857,12 @@ startBtn.addEventListener(
                 if(onlineLobbyStatus) onlineLobbyStatus.textContent="⏳ ჯერ დაელოდე მეგობრის შემოსვლას.";
                 return;
             }
+        }
+
+        // Apply selected map before the round spawns either player.
+        applySelectedMap(mapPicker ? mapPicker.value : "arena");
+        if(onlineMode && onlineConn && onlineConn.open){
+            onlineConn.send({type:"map",map:selectedMap});
         }
 
         // GAME START: hide every 1v1 / ONLINE setup panel automatically.
@@ -6640,7 +6945,7 @@ startBtn.addEventListener(
         updateBotHPPosition();
 
         if(onlineMode && onlineConn && onlineConn.open){
-            onlineConn.send({type:"start"});
+            onlineConn.send({type:"start",map:mapPicker ? mapPicker.value : selectedMap});
             sendOnlineState();
         }
     }
@@ -6833,7 +7138,7 @@ function makeOnlineSocket(code,role){
             setOnlineStatus("🟢 მეგობარი შემოვიდა!","#55ff9a");
             conn.send({type:"hello",name:onlinePlayerName});
             conn.send({type:"state",x:person.position.x,y:person.position.y,z:person.position.z,ry:person.rotation.y,hp:playerHP,dead:dead,round:currentRound,shirt:equipped.shirt,shorts:equipped.shorts,shoe:equipped.shoe});
-            if(gameStarted) conn.send({type:"start"});
+            if(gameStarted) conn.send({type:"start",map:mapPicker ? mapPicker.value : selectedMap});
             return;
         }
 
@@ -6939,7 +7244,14 @@ function handleOnlineData(data){
         return;
     }
 
+    if(data.type==="map"){
+        if(mapPicker && (data.map==="arena" || data.map==="field")) mapPicker.value=data.map;
+        applySelectedMap(data.map);
+        return;
+    }
+
     if(data.type==="start"){
+        if(mapPicker && (data.map==="arena" || data.map==="field")) mapPicker.value=data.map;
         if(!gameStarted) startBtn.click();
         return;
     }
@@ -7093,7 +7405,7 @@ copyRoomCodeBtn.addEventListener("click",async()=>{
 
 onlineLobbyStart.addEventListener("click",()=>{
     if(onlineLobbyStart.disabled) return;
-    if(onlineConn && onlineConn.open) onlineConn.send({type:"start"});
+    if(onlineConn && onlineConn.open) onlineConn.send({type:"start",map:mapPicker ? mapPicker.value : selectedMap});
     closeOnlineLobby();
     startBtn.click();
 });
