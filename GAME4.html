@@ -811,6 +811,10 @@ body.menu-active #deadScreen{
   color:#fff; padding:10px 22px; border-radius:10px; cursor:pointer; font-weight:800;
 }
 #onlineNotice{display:none;color:#ffd45c;font-weight:800;margin-top:10px}
+.modeSizeChoices{display:flex;gap:8px;margin:0 0 10px}
+.modeSizeChoice{flex:1;padding:12px 6px;border:1px solid #ffffff35;border-radius:10px;background:#101d35;color:#dbe8ff;font-size:18px;font-weight:1000;cursor:pointer}
+.modeSizeChoice.active{background:#e3b341;color:#172033;border-color:#ffe18a;box-shadow:0 0 0 2px #e3b34135}
+
 
 #onlineRoomPanel{
     display:none;
@@ -976,13 +980,18 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
 
 <div id="modeSelectPanel">
   <div class="modeSelectBox">
-    <div class="modeSelectTitle">1v1 MODE</div>
-    <div class="modeSelectSub">აირჩიე თამაშის რეჟიმი</div>
-    <button class="modeChoice" id="botModeBtn">🤖 1v1 BOT</button>
-    <button class="modeChoice online" id="onlineModeBtn">🌐 1v1 ONLINE</button>
+    <div class="modeSelectTitle">GAME MODE</div>
+    <div class="modeSelectSub">აირჩიე მოთამაშეების რაოდენობა და რეჟიმი</div>
+    <div class="modeSizeChoices" role="group" aria-label="Team size">
+      <button class="modeSizeChoice active" data-mode-size="1">1v1</button>
+      <button class="modeSizeChoice" data-mode-size="3">3v3</button>
+      <button class="modeSizeChoice" data-mode-size="5">5v5</button>
+    </div>
+    <button class="modeChoice" id="botModeBtn">🤖 BOT</button>
+    <button class="modeChoice online" id="onlineModeBtn">🌐 ONLINE</button>
 
     <div id="onlineRoomPanel">
-      <div class="onlineRoomTitle">1v1 ONLINE</div>
+      <div class="onlineRoomTitle" id="onlineRoomTitle">1v1 ONLINE</div>
       <button class="onlineAction create" id="createRoomBtn">➕ CREATE ROOM</button>
       <div class="joinDivider"><span>ან</span></div>
       <input id="roomCodeInput" class="roomCodeInput" maxlength="6" placeholder="ROOM CODE" autocomplete="off">
@@ -996,7 +1005,7 @@ WASD — მოძრაობა • SHIFT — სირბილი • V — 
 
 <div id="onlineLobbyModal">
   <div class="onlineLobbyBox">
-    <h2>🌐 1v1 ONLINE</h2>
+    <h2 id="onlineLobbyTitle">🌐 1v1 ONLINE</h2>
     <div class="onlineLobbySub">გაუგზავნე ეს კოდი შენს მეგობარს</div>
     <label class="onlineLobbyLabel">შენი სახელი</label>
     <input id="onlineNameInput" maxlength="16" placeholder="შეიყვანე სახელი" value="Player">
@@ -6960,6 +6969,9 @@ startBtn.addEventListener(
 ========================================================= */
 
 let onlineMode=false;
+let selectedModeSize=1;
+let selectedModeType="bot";
+function selectedModeLabel(){return selectedModeSize+"v"+selectedModeSize+" • "+(selectedModeType==="online"?"ONLINE":"BOT");}
 let onlinePeer=null;
 let onlineConn=null;
 let onlineSocket=null;
@@ -6982,10 +6994,10 @@ const copyRoomCodeBtn=document.getElementById("copyRoomCodeBtn");
 
 function updateOnlineLobbyUI(){
     if(onlineLobbyMe) onlineLobbyMe.textContent=onlinePlayerName;
-    if(onlineLobbyCount) onlineLobbyCount.textContent=onlinePlayersConnected+" / 2";
+    if(onlineLobbyCount) onlineLobbyCount.textContent=onlinePlayersConnected+" / "+(selectedModeSize*2);
     if(onlineLobbyOpponent) onlineLobbyOpponent.textContent=remotePlayerName || "ველოდები...";
     if(onlineLobbyStart){
-        onlineLobbyStart.disabled=!(onlinePlayersConnected>=2 && onlineConn && onlineConn.open);
+        onlineLobbyStart.disabled=!(onlinePlayersConnected>=(selectedModeSize*2) && onlineConn && onlineConn.open);
     }
 }
 function openOnlineLobby(code){
@@ -7091,7 +7103,7 @@ function makeOnlineSocket(code,role){
 
     ws.addEventListener("open",()=>{
         setOnlineStatus(role==="host" ? "🟡 სერვერთან დაკავშირებულია. Room იქმნება..." : "🟡 სერვერთან დაკავშირებულია. Room იძებნება...","#ffd45c");
-        ws.send(JSON.stringify({type:role==="host"?"create":"join",code:code,name:onlinePlayerName}));
+        ws.send(JSON.stringify({type:role==="host"?"create":"join",code:code,name:onlinePlayerName,mode:selectedModeSize+"v"+selectedModeSize,maxPlayers:selectedModeSize*2}));
     });
 
     ws.addEventListener("message",e=>{
@@ -7335,25 +7347,46 @@ const joinRoomBtn=document.getElementById("joinRoomBtn");
 const roomCodeInput=document.getElementById("roomCodeInput");
 const roomStatus=document.getElementById("roomStatus");
 
+const modeSizeButtons=[...document.querySelectorAll(".modeSizeChoice")];
+function refreshModeChoiceUI(){
+    modeSizeButtons.forEach(btn=>btn.classList.toggle("active",Number(btn.dataset.modeSize)===selectedModeSize));
+    const label=selectedModeSize+"v"+selectedModeSize;
+    const roomTitle=document.getElementById("onlineRoomTitle");
+    const lobbyTitle=document.getElementById("onlineLobbyTitle");
+    if(roomTitle) roomTitle.textContent=label+" ONLINE";
+    if(lobbyTitle) lobbyTitle.textContent="🌐 "+label+" ONLINE";
+    if(onlineLobbyCount) onlineLobbyCount.textContent=onlinePlayersConnected+" / "+(selectedModeSize*2);
+}
+modeSizeButtons.forEach(btn=>btn.addEventListener("click",()=>{
+    selectedModeSize=Number(btn.dataset.modeSize)||1;
+    refreshModeChoiceUI();
+}));
 modeCard.addEventListener("click",()=>{
     onlineRoomPanel.classList.remove("show");
     roomStatus.textContent="";
     roomCodeInput.value="";
     modeSelectPanel.classList.add("show");
+    refreshModeChoiceUI();
 });
 
 botModeBtn.addEventListener("click",()=>{
+    selectedModeType="bot";
     onlineMode=false;
     closeOnlineConnection();
-    modeCard.textContent="1v1 • BOT";
+    modeCard.textContent=selectedModeLabel();
     onlineRoomPanel.classList.remove("show");
     modeSelectPanel.classList.remove("show");
+    if(selectedModeSize!==1){
+      alert("არჩეულია "+selectedModeSize+"v"+selectedModeSize+" BOT. ამ ვერსიაში BOT-ის AI ჯერ მხოლოდ 1 მოწინააღმდეგეზეა გათვლილი; სრული 3v3/5v5 BOT-ისთვის საჭიროა ბოტების AI/ქულების სისტემის დამატებაც.");
+    }
 });
 
 onlineModeBtn.addEventListener("click",()=>{
+    selectedModeType="online";
     onlineMode=true;
-    modeCard.textContent="1v1 • ONLINE";
+    modeCard.textContent=selectedModeLabel();
     onlineRoomPanel.classList.add("show");
+    refreshModeChoiceUI();
     roomStatus.textContent="";
     roomCodeInput.focus();
 });
@@ -7366,16 +7399,18 @@ function makeRoomCode(){
 }
 
 createRoomBtn.addEventListener("click",()=>{
+    selectedModeType="online";
     onlineMode=true;
-    modeCard.textContent="1v1 • ONLINE";
+    modeCard.textContent=selectedModeLabel();
     const code=makeRoomCode();
     roomCodeInput.value=code;
     createOnlineRoom(code);
 });
 
 joinRoomBtn.addEventListener("click",()=>{
+    selectedModeType="online";
     onlineMode=true;
-    modeCard.textContent="1v1 • ONLINE";
+    modeCard.textContent=selectedModeLabel();
     const code=roomCodeInput.value.trim().toUpperCase();
     roomCodeInput.value=code;
     if(code.length!==6){
