@@ -3062,22 +3062,64 @@ function updateExtraBots(delta){
         if(entry.dead || !b.visible) return;
         const dx=person.position.x-b.position.x, dz=person.position.z-b.position.z;
         const dist=Math.hypot(dx,dz);
-        if(dist>2.8){
-            const step=Math.min(3.0*delta,dist-2.8);
-            b.position.x+=dx/(dist||1)*step;
-            b.position.z+=dz/(dist||1)*step;
-        }
-        b.rotation.y=Math.atan2(-dx,-dz);
-        entry.cooldown-=delta;
-        if(dist<24 && entry.cooldown<=0){
-            entry.cooldown=1.15+Math.random()*.7;
-            if(Math.random()<.28 && playerHP>0){
-                playerHP=Math.max(0,playerHP-8);
-                if(typeof updatePlayerHP==="function") updatePlayerHP();
-                if(typeof damageFlash!=="undefined") damageFlash.style.opacity=".35";
-                damageFlashTimer=.12;
-                if(playerHP<=0 && typeof handlePlayerDeath==="function") handlePlayerDeath();
+        const moving=dist>3.2;
+        // Face the player smoothly.
+        const targetAngle=Math.atan2(-dx,-dz);
+        let da=targetAngle-b.rotation.y;
+        while(da>Math.PI) da-=Math.PI*2;
+        while(da<-Math.PI) da+=Math.PI*2;
+        b.rotation.y+=da*Math.min(1,delta*6);
+        // Move in short steps and resolve the same arena collisions as the main bot.
+        if(moving && dist>.001){
+            const step=Math.min(2.8*delta,dist-3.2);
+            const oldX=b.position.x, oldZ=b.position.z;
+            const tries=[0,.65,-.65,1.25,-1.25,Math.PI];
+            let moved=false;
+            for(const a of tries){
+                const c=Math.cos(a), sn=Math.sin(a);
+                b.position.x=oldX+(dx/dist*c-dz/dist*sn)*step;
+                b.position.z=oldZ+(dx/dist*sn+dz/dist*c)*step;
+                b.position.x=THREE.MathUtils.clamp(b.position.x,-28.5,28.5);
+                b.position.z=THREE.MathUtils.clamp(b.position.z,-26.5,26.5);
+                if(typeof resolveArenaCollision==='function') resolveArenaCollision(b,.55);
+                if(Math.hypot(b.position.x-oldX,b.position.z-oldZ)>.015){moved=true;break;}
             }
+            if(!moved){b.position.x=oldX;b.position.z=oldZ;}
+        }
+        // Animate legs and arms while moving; settle into a rifle-ready pose when stopped.
+        const phase=(entry.phase=(entry.phase||0)+delta*(moving?9:2));
+        const setRot=(name,x)=>{const o=b.getObjectByName(name);if(o)o.rotation.x=x;};
+        const swing=moving?Math.sin(phase)*.48:0;
+        setRot('BOT_LEFT_THIGH',swing); setRot('BOT_RIGHT_THIGH',-swing);
+        setRot('BOT_LEFT_SHIN',moving?-.12-Math.max(0,-Math.sin(phase))*.3:0);
+        setRot('BOT_RIGHT_SHIN',moving?-.12-Math.max(0,Math.sin(phase))*.3:0);
+        setRot('BOT_LEFT_UPPER',-.75); setRot('BOT_RIGHT_UPPER',-.95);
+        setRot('BOT_LEFT_FOREARM',.9); setRot('BOT_RIGHT_FOREARM',.95);
+        // Fire at the player only when there is a clear line of sight through the arena.
+        entry.cooldown=Math.max(0,entry.cooldown-delta);
+        if(dist<24 && entry.cooldown<=0 && playerHP>0){
+            const origin=new THREE.Vector3();
+            const head=b.getObjectByName('BOT_HEAD');
+            if(head) head.getWorldPosition(origin); else origin.copy(b.position).add(new THREE.Vector3(0,2.3,0));
+            origin.y+=.1;
+            const target=new THREE.Vector3(person.position.x,person.position.y+1.55,person.position.z);
+            const dir=target.clone().sub(origin).normalize();
+            raycaster.set(origin,dir);
+            const walls=[];
+            for(const c of arenaColliders){if(c.mapId&&c.mapId!==selectedMap)continue;if(c.mesh)walls.push(c.mesh);}
+            const hit=raycaster.intersectObjects(walls,false);
+            const clear=!hit.length || hit[0].distance>=origin.distanceTo(target);
+            if(clear){
+                entry.cooldown=1.0+Math.random()*.45;
+                // Visible tracer.
+                const end=origin.clone().addScaledVector(dir,Math.min(40,origin.distanceTo(target)));
+                const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin.clone(),end]),new THREE.LineBasicMaterial({color:0xffdf85,transparent:true,opacity:.9}));
+                scene.add(line); setTimeout(()=>{scene.remove(line);line.geometry.dispose();line.material.dispose();},75);
+                if(Math.random()<.42){
+                    if(typeof damagePlayer==='function') damagePlayer(10);
+                    else { playerHP=Math.max(0,playerHP-10); if(typeof updatePlayerHP==='function')updatePlayerHP(); if(playerHP<=0&&typeof handlePlayerDeath==='function')handlePlayerDeath(); }
+                }
+            }else entry.cooldown=.18;
         }
     });
 }
@@ -7430,9 +7472,6 @@ botModeBtn.addEventListener("click",()=>{
     modeCard.textContent=selectedModeLabel();
     onlineRoomPanel.classList.remove("show");
     modeSelectPanel.classList.remove("show");
-    if(selectedModeSize!==1){
-      alert("არჩეულია "+selectedModeSize+"v"+selectedModeSize+" BOT. ამ ვერსიაში BOT-ის AI ჯერ მხოლოდ 1 მოწინააღმდეგეზეა გათვლილი; სრული 3v3/5v5 BOT-ისთვის საჭიროა ბოტების AI/ქულების სისტემის დამატებაც.");
-    }
 });
 
 onlineModeBtn.addEventListener("click",()=>{
