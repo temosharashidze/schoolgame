@@ -4737,6 +4737,24 @@ function startRound(){
     updateCamera();
     updateBotHPPosition();
     applyTeamWeapons();
+
+    // Synchronize the new round across both online clients. This makes both
+    // players respawn at their correct team spawn with full HP after a swap.
+    if(onlineMode && onlineConn && onlineConn.open){
+        onlineConn.send({
+            type:"round",
+            round:currentRound,
+            red:redRoundsWon,
+            blue:blueRoundsWon,
+            swap:teamsSwapped
+        });
+        onlineConn.send({
+            type:"state",
+            x:person.position.x,y:person.position.y,z:person.position.z,
+            ry:person.rotation.y,hp:playerHP,dead:dead,
+            round:currentRound,swap:teamsSwapped
+        });
+    }
 }
 
 function finishRound(){
@@ -6934,14 +6952,25 @@ function handleOnlineData(data){
     }
 
     if(data.type==="round"){
-        if(Number.isFinite(data.round)) currentRound=data.round;
+        const incomingRound=Number.isFinite(data.round) ? data.round : currentRound;
+        const incomingSwap=typeof data.swap==="boolean" ? data.swap : teamsSwapped;
+        const newRoundArrived=incomingRound!==currentRound;
+        const teamSwapArrived=incomingSwap!==teamsSwapped;
+
         if(Number.isFinite(data.red)) redRoundsWon=data.red;
         if(Number.isFinite(data.blue)) blueRoundsWon=data.blue;
-        if(typeof data.swap==="boolean" && data.swap!==teamsSwapped){
-            teamsSwapped=data.swap;
+
+        currentRound=incomingRound;
+        teamsSwapped=incomingSwap;
+        updateTeamScore();
+
+        // Do not leave the remote player at their death position or with
+        // leftover HP when the other client advances to the next round.
+        // startRound() is called only when round/swap actually changed, so
+        // the round sync messages cannot create a feedback loop.
+        if(gameStarted && (newRoundArrived || teamSwapArrived)){
             startRound();
         }
-        updateTeamScore();
     }
 }
 
