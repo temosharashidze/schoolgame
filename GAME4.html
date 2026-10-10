@@ -3055,15 +3055,114 @@ function resetExtraBots(){
         }
     });
 }
+// Friendly AI teammates spawn beside the player in 3v3/5v5 BOT modes.
+const allyBots=[];
+function syncAllyBotCount(){
+    const wanted=Math.max(0,selectedModeSize-1);
+    while(allyBots.length<wanted){
+        const model=bot.clone(true);
+        model.name="BOT_ALLY_"+(allyBots.length+1);
+        model.visible=false;
+        scene.add(model);
+        allyBots.push({model,hp:100,cooldown:.5,dead:false,phase:0});
+    }
+    allyBots.forEach((entry,i)=>{entry.model.visible=i<wanted&&gameStarted&&!onlineMode;});
+}
+function resetAllyBots(){
+    syncAllyBotCount();
+    const offsets=[[-3,-3],[3,-3],[-5,3],[5,3]];
+    allyBots.forEach((entry,i)=>{
+        const on=i<Math.max(0,selectedModeSize-1);
+        entry.hp=100;entry.cooldown=.7+i*.35;entry.dead=!on;
+        entry.model.visible=on&&!onlineMode;
+        if(on){const o=offsets[i%offsets.length];entry.model.position.set(getLocalSpawnX()+o[0],0,(selectedMap==="field"?-1:0)+o[1]);entry.model.rotation.set(0,getLocalSpawnX()<0?0:Math.PI,0);}
+    });
+}
+function updateAllyBots(delta){
+    if(!gameStarted||onlineMode||dead||roundTransition)return;
+    allyBots.forEach(entry=>{
+        const b=entry.model;if(entry.dead||!b.visible)return;
+        // Allies choose the nearest living enemy bot.
+        let enemy=bot;
+        let enemyDist=bot.visible?Math.hypot(bot.position.x-b.position.x,bot.position.z-b.position.z):Infinity;
+        for(const foe of extraBots){if(foe.dead||!foe.model.visible||foe.hp<=0)continue;const d=Math.hypot(foe.model.position.x-b.position.x,foe.model.position.z-b.position.z);if(d<enemyDist){enemy=foe.model;enemyDist=d;}}
+        const dx=enemy.position.x-b.position.x,dz=enemy.position.z-b.position.z;
+        const dist=Math.hypot(dx,dz),moving=dist>4.2;
+        const angle=Math.atan2(-dx,-dz);let da=angle-b.rotation.y;
+        while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;
+        b.rotation.y+=da*Math.min(1,delta*6);
+        if(moving&&dist>.001){
+            const step=Math.max(0,Math.min(3.0*delta,dist-4.2)),ox=b.position.x,oz=b.position.z;
+            const side=(entry.steerSide||((allyBots.indexOf(entry)%2===0)?1:-1));
+            const tries=[0,side*.8,-side*.8,side*1.45,-side*1.45,side*2.15,-side*2.15,Math.PI];let moved=false;
+            for(const a of tries){const c=Math.cos(a),sn=Math.sin(a);b.position.x=THREE.MathUtils.clamp(ox+(dx/dist*c-dz/dist*sn)*step,-28.5,28.5);b.position.z=THREE.MathUtils.clamp(oz+(dx/dist*sn+dz/dist*c)*step,-26.5,26.5);if(typeof resolveArenaCollision==="function")resolveArenaCollision(b,.55);if(Math.hypot(b.position.x-ox,b.position.z-oz)>.035){moved=true;if(a!==0)entry.steerSide=a>0?1:-1;else entry.steerSide=side;break;}}
+            if(!moved){b.position.x=ox;b.position.z=oz;entry.blockedTime=(entry.blockedTime||0)+delta;if(entry.blockedTime>.7){entry.steerSide=-side;entry.blockedTime=0;}}else entry.blockedTime=0;
+        }
+        const phase=entry.phase+=delta*(moving?9:2),swing=moving?Math.sin(phase)*.48:0;
+        const rot=(n,x)=>{const o=b.getObjectByName(n);if(o)o.rotation.x=x;};
+        rot("BOT_LEFT_THIGH",swing);rot("BOT_RIGHT_THIGH",-swing);rot("BOT_LEFT_SHIN",moving?-.12-Math.max(0,-Math.sin(phase))*.3:0);rot("BOT_RIGHT_SHIN",moving?-.12-Math.max(0,Math.sin(phase))*.3:0);rot("BOT_LEFT_UPPER",-.75);rot("BOT_RIGHT_UPPER",-.95);rot("BOT_LEFT_FOREARM",.9);rot("BOT_RIGHT_FOREARM",.95);
+        // Give teammates a visible firing tracer when they have line of sight.
+        entry.cooldown=Math.max(0,entry.cooldown-delta);
+        if(dist<22&&entry.cooldown<=0){
+            const origin=new THREE.Vector3();const head=b.getObjectByName("BOT_HEAD");if(head)head.getWorldPosition(origin);else origin.copy(b.position).add(new THREE.Vector3(0,2.3,0));
+            const target=new THREE.Vector3(enemy.position.x,enemy.position.y+1.4,enemy.position.z),dir=target.clone().sub(origin).normalize();raycaster.set(origin,dir);
+            const walls=[];for(const c of arenaColliders){if(c.mapId&&c.mapId!==selectedMap)continue;if(c.mesh)walls.push(c.mesh);}
+            const hits=raycaster.intersectObjects(walls,false);if(!hits.length||hits[0].distance>=origin.distanceTo(target)){
+                entry.cooldown=.9+Math.random()*.6;const end=origin.clone().addScaledVector(dir,Math.min(35,origin.distanceTo(target)));
+                const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin.clone(),end]),new THREE.LineBasicMaterial({color:0x7cc8ff,transparent:true,opacity:.85}));scene.add(line);setTimeout(()=>{scene.remove(line);line.geometry.dispose();line.material.dispose();},75);
+                if(Math.random()<.3){
+                    if(enemy===bot){botHP=Math.max(0,botHP-8);if(typeof updateBotHPUI==="function")updateBotHPUI();if(botHP<=0&&typeof handleBotDeath==="function")handleBotDeath();}
+                    else {const foe=extraBots.find(e=>e.model===enemy);if(foe){foe.hp=Math.max(0,foe.hp-8);if(foe.hp===0){foe.dead=true;foe.model.visible=false;}if(allEnemyBotsDefeated())finishRound();}}
+                }
+            }else entry.cooldown=.2;
+        }
+    });
+}
+
+// Small world-projected HP bars above every additional bot.
+const squadHPBars=new Map();
+function getSquadHPBar(entry,team){
+    let el=squadHPBars.get(entry);
+    if(el)return el;
+    el=document.createElement("div");
+    el.style.cssText="position:absolute;z-index:12;width:48px;pointer-events:none;transform:translate(-50%,-100%);display:none;text-align:center;font:700 9px Arial;color:#fff;text-shadow:0 1px 2px #000;";
+    el.innerHTML='<div style="height:5px;background:#222;border:1px solid #111;border-radius:3px;overflow:hidden"><div style="height:100%;width:100%;background:#e53935"></div></div>';
+    document.getElementById("game").appendChild(el);squadHPBars.set(entry,el);return el;
+}
+function updateSquadHPBars(){
+    const all=[...extraBots.map(e=>({e,team:"enemy"})),...allyBots.map(e=>({e,team:"ally"}))];
+    const v=new THREE.Vector3();
+    all.forEach(({e,team})=>{
+        const el=getSquadHPBar(e,team);const model=e.model;
+        if(!gameStarted||onlineMode||e.dead||!model.visible||e.hp<=0){el.style.display="none";return;}
+        v.set(model.position.x,model.position.y+3.05,model.position.z).project(camera);
+        if(v.z< -1||v.z>1||Math.abs(v.x)>1.15||Math.abs(v.y)>1.15){el.style.display="none";return;}
+        el.style.left=((v.x*.5+.5)*innerWidth)+"px";el.style.top=((-v.y*.5+.5)*innerHeight)+"px";el.style.display="block";
+        const fill=el.firstElementChild.firstElementChild;
+        const hp=Math.max(0,Math.min(100,e.hp));
+        fill.style.width=hp+"%";
+        // Enemy squad bars are red; friendly squad bars are blue/red
+        // according to the current team assignment and round-side swap.
+        fill.style.background=getHPTeamColor(team==="ally"?"ally":"enemy");
+    });
+}
+
 function updateExtraBots(delta){
     if(!gameStarted || onlineMode || dead || roundTransition) return;
     extraBots.forEach((entry)=>{
         const b=entry.model;
         if(entry.dead || !b.visible) return;
-        const dx=person.position.x-b.position.x, dz=person.position.z-b.position.z;
+        let target=person;
+        let best=Math.hypot(person.position.x-b.position.x,person.position.z-b.position.z);
+        for(const ally of allyBots){
+            if(ally.dead||!ally.model.visible||ally.hp<=0) continue;
+            const d=Math.hypot(ally.model.position.x-b.position.x,ally.model.position.z-b.position.z);
+            if(d<best){best=d;target=ally.model;}
+        }
+        const dx=target.position.x-b.position.x, dz=target.position.z-b.position.z;
         const dist=Math.hypot(dx,dz);
         const moving=dist>3.2;
-        // Face the player smoothly.
+        // Face the nearest living enemy target, not always the human player.
         const targetAngle=Math.atan2(-dx,-dz);
         let da=targetAngle-b.rotation.y;
         while(da>Math.PI) da-=Math.PI*2;
@@ -3071,9 +3170,10 @@ function updateExtraBots(delta){
         b.rotation.y+=da*Math.min(1,delta*6);
         // Move in short steps and resolve the same arena collisions as the main bot.
         if(moving && dist>.001){
-            const step=Math.min(2.8*delta,dist-3.2);
+            const step=Math.max(0,Math.min(3.0*delta,dist-3.2));
             const oldX=b.position.x, oldZ=b.position.z;
-            const tries=[0,.65,-.65,1.25,-1.25,Math.PI];
+            const side=(entry.steerSide||((extraBots.indexOf(entry)%2===0)?1:-1));
+            const tries=[0,side*.8,-side*.8,side*1.45,-side*1.45,side*2.15,-side*2.15,Math.PI];
             let moved=false;
             for(const a of tries){
                 const c=Math.cos(a), sn=Math.sin(a);
@@ -3082,9 +3182,18 @@ function updateExtraBots(delta){
                 b.position.x=THREE.MathUtils.clamp(b.position.x,-28.5,28.5);
                 b.position.z=THREE.MathUtils.clamp(b.position.z,-26.5,26.5);
                 if(typeof resolveArenaCollision==='function') resolveArenaCollision(b,.55);
-                if(Math.hypot(b.position.x-oldX,b.position.z-oldZ)>.015){moved=true;break;}
+                if(Math.hypot(b.position.x-oldX,b.position.z-oldZ)>.035){
+                    moved=true;
+                    if(a!==0) entry.steerSide=a>0?1:-1;
+                    else entry.steerSide=side;
+                    break;
+                }
             }
-            if(!moved){b.position.x=oldX;b.position.z=oldZ;}
+            if(!moved){
+                b.position.x=oldX;b.position.z=oldZ;
+                entry.blockedTime=(entry.blockedTime||0)+delta;
+                if(entry.blockedTime>.7){entry.steerSide=-side;entry.blockedTime=0;}
+            } else entry.blockedTime=0;
         }
         // Animate legs and arms while moving; settle into a rifle-ready pose when stopped.
         const phase=(entry.phase=(entry.phase||0)+delta*(moving?9:2));
@@ -3095,29 +3204,34 @@ function updateExtraBots(delta){
         setRot('BOT_RIGHT_SHIN',moving?-.12-Math.max(0,Math.sin(phase))*.3:0);
         setRot('BOT_LEFT_UPPER',-.75); setRot('BOT_RIGHT_UPPER',-.95);
         setRot('BOT_LEFT_FOREARM',.9); setRot('BOT_RIGHT_FOREARM',.95);
-        // Fire at the player only when there is a clear line of sight through the arena.
+        // Fire at the nearest living target (player or allied bot) when walls allow it.
         entry.cooldown=Math.max(0,entry.cooldown-delta);
-        if(dist<24 && entry.cooldown<=0 && playerHP>0){
+        if(dist<24 && entry.cooldown<=0 && (target!==person || playerHP>0)){
             const origin=new THREE.Vector3();
             const head=b.getObjectByName('BOT_HEAD');
             if(head) head.getWorldPosition(origin); else origin.copy(b.position).add(new THREE.Vector3(0,2.3,0));
             origin.y+=.1;
-            const target=new THREE.Vector3(person.position.x,person.position.y+1.55,person.position.z);
-            const dir=target.clone().sub(origin).normalize();
+            const aimPoint=new THREE.Vector3(target.position.x,target.position.y+1.55,target.position.z);
+            const dir=aimPoint.clone().sub(origin).normalize();
             raycaster.set(origin,dir);
             const walls=[];
             for(const c of arenaColliders){if(c.mapId&&c.mapId!==selectedMap)continue;if(c.mesh)walls.push(c.mesh);}
             const hit=raycaster.intersectObjects(walls,false);
-            const clear=!hit.length || hit[0].distance>=origin.distanceTo(target);
+            const clear=!hit.length || hit[0].distance>=origin.distanceTo(aimPoint);
             if(clear){
                 entry.cooldown=1.0+Math.random()*.45;
                 // Visible tracer.
-                const end=origin.clone().addScaledVector(dir,Math.min(40,origin.distanceTo(target)));
+                const end=origin.clone().addScaledVector(dir,Math.min(40,origin.distanceTo(aimPoint)));
                 const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([origin.clone(),end]),new THREE.LineBasicMaterial({color:0xffdf85,transparent:true,opacity:.9}));
                 scene.add(line); setTimeout(()=>{scene.remove(line);line.geometry.dispose();line.material.dispose();},75);
                 if(Math.random()<.42){
-                    if(typeof damagePlayer==='function') damagePlayer(10);
-                    else { playerHP=Math.max(0,playerHP-10); if(typeof updatePlayerHP==='function')updatePlayerHP(); if(playerHP<=0&&typeof handlePlayerDeath==='function')handlePlayerDeath(); }
+                    if(target===person){
+                        if(typeof damagePlayer==='function') damagePlayer(10);
+                        else { playerHP=Math.max(0,playerHP-10); if(typeof updatePlayerHP==='function')updatePlayerHP(); if(playerHP<=0&&typeof handlePlayerDeath==='function')handlePlayerDeath(); }
+                    }else{
+                        const ally=allyBots.find(a=>a.model===target);
+                        if(ally){ally.hp=Math.max(0,ally.hp-10);if(ally.hp===0){ally.dead=true;ally.model.visible=false;}}
+                    }
                 }
             }else entry.cooldown=.18;
         }
@@ -5061,6 +5175,7 @@ function startRound(){
 
     person.position.set(getLocalSpawnX(),0, selectedMap==="field" ? -1 : 0);
     person.rotation.set(0, getLocalSpawnX() < 0 ? 0 : Math.PI, 0);
+    resetAllyBots();
 
     playerHP=MAX_PLAYER_HP;
     dead=false;
@@ -5093,8 +5208,13 @@ function startRound(){
     }
 }
 
+function allEnemyBotsDefeated(){
+    if(botHP>0 && bot.visible) return false;
+    return extraBots.every(entry=>entry.dead || !entry.model.visible || entry.hp<=0);
+}
 function finishRound(){
-    if(botHP>0 || roundTransition || dead) return;
+    // Do not end the round when only the main bot dies; every enemy must be defeated.
+    if(!allEnemyBotsDefeated() || roundTransition || dead) return;
 
     // In online mode, briefly wait for any shot already fired by the opponent.
     // The earlier lethal shot wins; the later hit cannot create a double death.
@@ -5214,7 +5334,7 @@ box-shadow:0 1px 4px #000;">
 <div style="
 width:100%;
 height:100%;
-background:#39d353;
+background:#e53935;
 border-radius:6px;
 transition:width .15s ease,background .15s ease;">
 </div>
@@ -5230,6 +5350,14 @@ const botHPText=botHPUI.children[0];
 
 const botHPFill=
 botHPUI.children[1].children[0];
+
+function getHPTeamColor(team){
+    // Offline BOT mode: player starts RED; online host is RED and guest BLUE.
+    let localTeamIsRed = onlineMode ? !!onlineHost : true;
+    if(teamsSwapped) localTeamIsRed = !localTeamIsRed;
+    const isRed = team === "ally" ? localTeamIsRed : !localTeamIsRed;
+    return isRed ? "#e53935" : "#258cff";
+}
 
 function updateBotHPUI(){
 
@@ -5247,12 +5375,8 @@ function updateBotHPUI(){
     botHPFill.style.width=
         hp+"%";
 
-    botHPFill.style.background=
-        hp>60
-        ? "#39d353"
-        : hp>30
-        ? "#f1c40f"
-        : "#e74c3c";
+    // The original BOT is on the opposing team.
+    botHPFill.style.background=getHPTeamColor("enemy");
 }
 
 const botHeadWorld=new THREE.Vector3();
@@ -5442,13 +5566,15 @@ function shootWeapon(){
             const entry=owner.entry;
             entry.hp=Math.max(0,entry.hp-25);
             if(entry.hp===0){ entry.dead=true; entry.model.visible=false; }
+            if(allEnemyBotsDefeated()) finishRound();
         }else{
             botHP=Math.max(0,botHP-25);
             updateBotHPUI();
             sendOnlineHit(25,shotAt);
             if(botHP===0){
+                bot.visible=false;
                 if(onlineMode) pendingOnlineWinAt=shotAt;
-                finishRound();
+                if(typeof allEnemyBotsDefeated==="function" && allEnemyBotsDefeated()) finishRound();
             }
         }
     }
@@ -6830,6 +6956,7 @@ window.addEventListener(
         );
 
         updateBotHPPosition();
+        if(typeof updateSquadHPBars==="function") updateSquadHPBars();
     }
 );
 
@@ -7048,6 +7175,7 @@ startBtn.addEventListener(
         }
 
         updateBotHPPosition();
+        if(typeof updateSquadHPBars==="function") updateSquadHPBars();
 
         if(onlineMode && onlineConn && onlineConn.open){
             onlineConn.send({type:"start",map:mapPicker ? mapPicker.value : selectedMap});
@@ -7772,6 +7900,7 @@ function animate(now){
             }else{
                 updateBot(delta);
                 updateExtraBots(delta);
+                updateAllyBots(delta);
             }
         }
 
@@ -7784,6 +7913,7 @@ function animate(now){
         updateCamera();
 
         updateBotHPPosition();
+        if(typeof updateSquadHPBars==="function") updateSquadHPBars();
 
         if(firstPerson){
 
