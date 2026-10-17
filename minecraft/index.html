@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,11 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GAMEXO — Minecraft</title>
   <meta name="description" content="Play Minecraft in your browser on GAMEXO.">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   <style>
-    * { box-sizing: border-box; }
-
     html, body {
       margin: 0;
       padding: 0;
@@ -17,7 +15,6 @@
       height: 100%;
       overflow: hidden;
       background: #000;
-      font-family: Arial, sans-serif;
     }
 
     #game_frame {
@@ -27,29 +24,51 @@
       border: 0;
     }
 
-    #serverPanel {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
+    #error {
       display: none;
-      overflow-y: auto;
-      padding: 24px 14px;
       color: white;
-      background:
-        linear-gradient(#101820eF, #07100ff5),
-        radial-gradient(circle at top, #23613a, #080b10 70%);
+      background: #171717;
+      font: 16px Arial, sans-serif;
+      padding: 20px;
+      white-space: pre-wrap;
     }
+  </style>
 
-    .panel {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 24px;
-      background: #111820;
-      border: 1px solid #34434c;
-      border-radius: 14px;
-      box-shadow: 0 15px 50px #0009;
-    }
+  <script src="./classes.js"></script>
 
-    .logo {
-      margin: 0;
-      color: #55
+  <script>
+    window.addEventListener("load", function () {
+      try {
+        if (typeof window.main !== "function") {
+          document.getElementById("error").style.display = "block";
+          document.getElementById("error").textContent =
+            "Minecraft failed to start: classes.js did not load correctly.";
+          return;
+        }
+
+        // Original Minecraft configuration — unchanged.
+        window.minecraftOpts = [
+          "game_frame",
+          "assets.epk",
+          "CgAACQAHc2VydmVycwoAAAAHCAACaXADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
+        ];
+
+        window.main();
+
+      } catch (error) {
+        console.error("Minecraft startup error:", error);
+
+        const box = document.getElementById("error");
+        box.style.display = "block";
+        box.textContent =
+          "Minecraft startup error:\n" + error.message;
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div id="game_frame"></div>
+  <div id="error"></div>
+</body>
+</html>
