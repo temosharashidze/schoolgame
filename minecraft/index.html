@@ -6,30 +6,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GAMEXO — Minecraft</title>
   <meta name="description" content="Play Minecraft in your browser on GAMEXO.">
+
   <style>
     html, body {
       margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #000;
     }
+
     #game_frame {
+      display: block;
       width: 100%;
       height: 100%;
+      border: 0;
     }
   </style>
+
   <script src="./classes.js"></script>
+
   <script>
     window.addEventListener("load", function () {
       window.minecraftOpts = [
         "game_frame",
         "assets.epk",
-        "CgAACQAHc2VydmVycwoAAAABCAACaXAAIHdzKHMpOi8vIChhZGRyZXNzIGhlcmUpOihwb3J0KSAvCAAEbmFtZQAIdGVtcGxhdGUBAAtoaWRlQWRkcmVzcwEIAApmb3JjZWRNT1REABl0aGlzIGlzIG5vdCBhIHJlYWwgc2VydmVyAAA="
+        "CgAACQAHc2VydmVycwoAAAADCAACaXAAHndzczovL3N1cy5zaGhub3dpc25vdHRoZXRpLm1lLwgABG5hbWUACEF5dW5ib29tAQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAIAAJpcAAWd3NzOi8vbWMudGhlbHVkb3MuY29tLwgABG5hbWUACFRoZUx1ZG9zAQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAIAAJpcAAbd3NzOi8vd2ViLmFzc3BpeGVsLm5ldC9DQVAvCAAEbmFtZQAPQXNzcGl4ZWwgTGVnYWN5AQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAAA="
       ];
-      main();
+
+      if (typeof main === "function") {
+        main();
+      } else {
+        document.body.innerHTML =
+          '<p style="color:white;padding:20px;font-family:Arial">Game failed to load. Check classes.js and assets.epk.</p>';
+      }
     });
   </script>
 </head>
+
 <body id="game_frame"></body>
 </html>
