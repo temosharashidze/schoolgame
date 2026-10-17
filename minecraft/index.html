@@ -1,166 +1,41 @@
-
+```html
 <!DOCTYPE html>
-<html lang="ka">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAMEXO — Minecraft</title>
-<meta name="description" content="GAMEXO Minecraft Survival, OneBlock and Multiplayer">
+<meta name="description" content="Play Minecraft on GAMEXO.">
 
 <style>
-*{box-sizing:border-box}
 html,body{
- margin:0;width:100%;height:100%;overflow:hidden;
- background:#080c10;color:white;font-family:Arial,sans-serif
+ margin:0;padding:0;width:100%;height:100%;
+ overflow:hidden;background:#000;
 }
-#game_frame{display:block;width:100%;height:100%;border:0}
-#serverMenu{
- position:fixed;inset:0;z-index:9999;
- background:linear-gradient(135deg,#07130f,#101d2b);
- display:flex;align-items:center;justify-content:center;
- overflow:auto;padding:20px
-}
-.panel{width:min(900px,100%);padding:25px}
-.logo{font-size:34px;font-weight:900;color:#55ff9a}
-.subtitle{color:#b5c7c0;margin:8px 0 22px}
-.cards{
- display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
- gap:14px
-}
-.card{
- background:#18251f;border:1px solid #355344;border-radius:14px;
- padding:18px;transition:.2s
-}
-.card:hover{transform:translateY(-3px);border-color:#55ff9a}
-.card h3{margin:0 0 9px;font-size:20px}
-.card p{color:#b8c9c0;font-size:14px;min-height:36px;line-height:1.5}
-.tag{font-size:12px;color:#70ffad;margin-bottom:12px}
-button{
- cursor:pointer;border:0;border-radius:8px;padding:12px 15px;
- font-weight:bold;font-size:14px
-}
-.join{background:#55ff9a;color:#07130f;width:100%}
-.play{background:#55ff9a;color:#07130f}
-.secondary{background:#293a32;color:white}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-#gameArea{display:none;position:fixed;inset:0}
-#backBtn{position:fixed;top:12px;left:12px;z-index:10000}
-#notice{font-size:13px;color:#9eb5a8;margin-top:18px;line-height:1.6}
-@media(max-width:500px){
- .panel{padding:5px}.logo{font-size:28px}
- #serverMenu{padding:12px}.card{padding:14px}
+#game_frame{
+ display:block;width:100%;height:100%;border:0;
 }
 </style>
 
 <script src="./classes.js"></script>
-</head>
-<body>
-
-<div id="serverMenu">
- <main class="panel">
-  <div class="top">
-   <div>
-    <div class="logo">GAMEXO <span style="color:white">MINECRAFT</span></div>
-    <div class="subtitle">აირჩიე შენი შემდეგი თავგადასავალი!</div>
-   </div>
-   <button class="secondary" onclick="launchOriginal()">ჩემი თამაში</button>
-  </div>
-
-  <div class="cards">
-   <div class="card">
-    <div class="tag">🌲 SURVIVAL SMP</div>
-    <h3>CommunistMC</h3>
-    <p>გადარჩენა, რესურსები, ეკონომიკა და PvP.</p>
-    <button class="join" onclick="joinServer('wss://cmc.tf')">შეერთება →</button>
-   </div>
-
-   <div class="card">
-    <div class="tag">❤️ LIFESTEAL / SURVIVAL</div>
-    <h3>Lamp LifeSteal</h3>
-    <p>გადარჩენა, ბრძოლები და გულების მოპოვება.</p>
-    <button class="join" onclick="joinServer('wss://mc.lamplifesteal.xyz')">შეერთება →</button>
-   </div>
-
-   <div class="card">
-    <div class="tag">🟩 ONEBLOCK / SMP</div>
-    <h3>FKAS Community</h3>
-    <p>OneBlock-ის გამოწვევები და Survival სამყაროები.</p>
-    <button class="join" onclick="joinServer('wss://fkas.online')">შეერთება →</button>
-   </div>
-
-   <div class="card">
-    <div class="tag">⚔️ SKYWARS / MINIGAMES</div>
-    <h3>Rice Network</h3>
-    <p>SkyWars, BedWars, დუელები და სხვა მინი თამაშები.</p>
-    <button class="join" onclick="joinServer('wss://mc.ricenetwork.xyz')">შეერთება →</button>
-   </div>
-
-   <div class="card">
-    <div class="tag">🏹 PVP / SURVIVAL</div>
-    <h3>Zentic Network</h3>
-    <p>PvP, KitPvP და Survival SMP.</p>
-    <button class="join" onclick="joinServer('wss://zentic.cc')">შეერთება →</button>
-   </div>
-
-   <div class="card">
-    <div class="tag">🏡 SURVIVAL / CREATIVE</div>
-    <h3>WebMC Network</h3>
-    <p>Survival, Creative, დუელები და Parkour.</p>
-    <button class="join" onclick="joinServer('wss://play.webmc.fun')">შეერთება →</button>
-   </div>
-  </div>
-
-  <div id="notice">
-   შენიშვნა: სერვერზე შესასვლელად საჭიროა, რომ ის ხელმისაწვდომი
-   იყოს და შენს Minecraft კლიენტს შეესაბამებოდეს.
-   თუ კავშირი არ შედგა, სცადე სხვა სერვერი.
-  </div>
- </main>
-</div>
-
-<div id="gameArea">
- <button id="backBtn" class="secondary" onclick="showServers()">← სერვერები</button>
- <div id="game_frame" style="width:100%;height:100%"></div>
-</div>
 
 <script>
-const serverMenu = document.getElementById('serverMenu');
-const gameArea = document.getElementById('gameArea');
+window.addEventListener("load",function(){
+ window.minecraftOpts=[
+  "game_frame",
+  "assets.epk",
+  "CgAACQAHc2VydmVycwoAAAADCAACaXAbd3NzOi8vZ2FtZXhvLm9ubGluZQoABG5hbWUMR0FNRVhPIFN1cnZpdmFsAAh0ZW1wbGF0ZQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEUAF1N1cnZpdmFsIE11bHRpcGxheWVy"
+ ];
 
-function launchOriginal(){
- serverMenu.style.display='none';
- gameArea.style.display='block';
-
- // ჩატვირთე არსებული თამაში ისე, როგორც ძველ HTML-ში.
- if(typeof main === 'function'){
-   try{
-     window.minecraftOpts=[
-       "game_frame",
-       "assets.epk",
-       "CgAACQAHc2VydmVycwoAAAADCAACaXAAHndzczovL3N1cy5zaGhub3dpc25vdHRoZXRpLm1lLwgABG5hbWUACEF5dW5ib29tAQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAIAAJpcAAWd3NzOi8vbWMudGhlbHVkb3MuY29tLwgABG5hbWUACFRoZUx1ZG9zAQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAIAAJpcAAbd3NzOi8vd2ViLmFzc3BpeGVsLm5ldC9DQVAvCAAEbmFtZQAPQXNzcGl4ZWwgTGVnYWN5AQAIdGVtcGxhdGUBAQALaGlkZUFkZHJlc3MACAAKZm9yY2VkTU9URAAZUHVibGljIEVhZ2xlcmNyYWZ0IHNlcnZlcgAAA="
-     ];
-     main();
-   }catch(e){
-     alert('თამაშის ჩატვირთვა ვერ მოხერხდა: '+e.message);
-   }
+ if(typeof main==="function"){
+  main();
  }else{
-   alert('თამაში ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.');
+  document.body.innerHTML=
+   '<p style="color:white;padding:20px;font-family:Arial">Game failed to load. Check classes.js and assets.epk.</p>';
  }
-}
-
-function joinServer(address){
- // სერვერის მისამართი იხსნება თავსებად Eaglercraft კლიენტში.
- // ეს გვერდი თავად ვერ გადაამისამართებს არსებულ კლიენტს,
- // თუ მის კონფიგურაციას სერვერის არჩევის მხარდაჭერა არ აქვს.
- const url='https://eaglercraft.com/play?version=1.8.8&joinServer='
-            +encodeURIComponent(address);
- window.open(url,'_blank','noopener');
-}
-
-function showServers(){
- gameArea.style.display='none';
- serverMenu.style.display='flex';
-}
+});
 </script>
-</body>
+</head>
+<body id="game_frame"></body>
 </html>
+```
