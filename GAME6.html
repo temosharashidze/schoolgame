@@ -8,13 +8,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{min-height:100vh;font-family:Arial,sans-serif;color:white;background:radial-gradient(ellipse at top,#18365c 0%,transparent 60%),linear-gradient(135deg,#080d1a,#111a30);display:flex;align-items:center;justify-content:center;padding:20px}
-.screen{width:100%;max-width:420px;text-align:center;animation:appear .35s ease}
+.screen{width:100%;max-width:440px;text-align:center;animation:appear .35s ease}
 .hidden{display:none!important}
 @keyframes appear{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .logo{font-size:54px;font-weight:1000;letter-spacing:5px;margin-bottom:10px}
 .logo .x{color:#38bdf8}.logo .o{color:#fb7185}
 .tagline{color:#8fa6c8;margin-bottom:38px;letter-spacing:3px;font-size:12px}
-.menu-card,.game-card,.online-card{padding:28px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:24px;box-shadow:0 25px 80px #0005;backdrop-filter:blur(12px)}
+.menu-card,.game-card,.online-card{padding:25px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.12);border-radius:24px;box-shadow:0 25px 80px #0005;backdrop-filter:blur(12px)}
 h2{font-size:25px;margin-bottom:10px}
 .description{color:#9aabc5;font-size:14px;line-height:1.6;margin-bottom:25px}
 .menu-btn{display:block;width:100%;padding:16px;margin-top:12px;border:1px solid #ffffff15;border-radius:13px;color:white;background:#ffffff0b;font-size:16px;font-weight:bold;cursor:pointer;transition:.2s}
@@ -22,10 +22,10 @@ h2{font-size:25px;margin-bottom:10px}
 .menu-btn.primary{color:#061321;background:linear-gradient(100deg,#38bdf8,#60a5fa);border:none}
 .menu-btn.online{border-color:#34d39955}
 .small{margin-top:25px;color:#627896;font-size:12px}
-.game-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}
 .back-btn{padding:10px 13px;border:1px solid #ffffff20;border-radius:10px;color:white;background:#ffffff0c;cursor:pointer}
-.game-title{font-size:20px;font-weight:bold}
-.status{min-height:28px;margin-bottom:20px;color:#dbeafe;font-weight:bold;font-size:17px}
+.game-title{font-size:18px;font-weight:bold;overflow-wrap:anywhere}
+.status{min-height:28px;margin:14px 0 18px;color:#dbeafe;font-weight:bold;font-size:16px;line-height:1.5}
 .players{display:flex;gap:10px;margin-bottom:18px}
 .player{flex:1;padding:12px;border-radius:12px;background:#ffffff0a;border:1px solid #ffffff10;color:#a8bad3;font-size:13px;overflow-wrap:anywhere}
 .player strong{display:block;font-size:24px;margin-top:5px}
@@ -39,6 +39,7 @@ h2{font-size:25px;margin-bottom:10px}
 .game-actions button{padding:13px 6px;border:none;border-radius:11px;font-weight:bold;cursor:pointer}
 .restart{background:#38bdf8;color:#082f49}
 .exit{background:#ffffff12;border:1px solid #ffffff20!important;color:white}
+.game-actions button:disabled{opacity:.5;cursor:not-allowed}
 .online-icon{font-size:55px;margin-bottom:15px}
 .online-note{padding:14px;margin-bottom:10px;border-radius:12px;background:#ffffff0a;color:#a9bdd7;font-size:13px;line-height:1.7}
 .online-status{color:#fbbf24;font-size:13px;margin:15px 0;line-height:1.5;overflow-wrap:anywhere}
@@ -46,8 +47,23 @@ h2{font-size:25px;margin-bottom:10px}
 .text-field{width:100%;padding:14px;border-radius:11px;border:1px solid #ffffff22;background:#091426;color:white;font-size:16px;outline:none}
 .text-field:focus{border-color:#38bdf8}
 .online-divider{margin:20px 0;border:0;border-top:1px solid #ffffff18}
-.room-code{font-size:24px;font-weight:900;letter-spacing:4px;color:#38bdf8;overflow-wrap:anywhere}
-@media(max-width:380px){.menu-card,.game-card,.online-card{padding:19px}.cell{font-size:40px}.logo{font-size:46px}}
+.room-code{font-size:26px;font-weight:900;letter-spacing:4px;color:#38bdf8;overflow-wrap:anywhere;margin:12px 0}
+.waiting-panel{padding:20px 14px;margin-bottom:18px;border:1px solid #38bdf855;border-radius:18px;background:linear-gradient(145deg,#102642,#10182a)}
+.waiting-icon{font-size:42px;margin-bottom:10px}
+.waiting-panel h3{font-size:21px;margin-bottom:10px}
+.waiting-panel p{color:#a9bdd7;font-size:13px;line-height:1.7}
+.waiting-dots{color:#38bdf8;font-weight:bold;margin-top:12px;line-height:1.6}
+.copy-code{width:100%;padding:14px;margin-top:10px;border:0;border-radius:11px;background:#38bdf8;color:#082f49;font-size:15px;font-weight:bold;cursor:pointer}
+.online-scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 16px}
+.score-side{padding:12px 7px;border-radius:13px;background:#ffffff09;min-width:0}
+.score-side.mine{border:1px solid #38bdf866}
+.score-side.enemy{border:1px solid #fb718566}
+.score-name{font-size:12px;color:#a9bdd7;overflow-wrap:anywhere}
+.score-number{display:block;font-size:30px;font-weight:900;margin-top:6px}
+.score-side.mine .score-number{color:#38bdf8}
+.score-side.enemy .score-number{color:#fb7185}
+.restart-status{padding:12px;border-radius:11px;background:#ffffff0a;color:#fbbf24;font-size:13px;line-height:1.6;margin-top:12px}
+@media(max-width:380px){.menu-card,.game-card,.online-card{padding:16px}.cell{font-size:40px}.logo{font-size:46px}}
 </style>
 </head>
 <body>
@@ -70,11 +86,34 @@ h2{font-size:25px;margin-bottom:10px}
       <button class="back-btn" onclick="leaveGame()">← მენიუ</button>
       <div class="game-title" id="gameTitle">BOT MATCH</div>
     </div>
+
+    <div class="waiting-panel hidden" id="waitingPanel">
+      <div class="waiting-icon">👥</div>
+      <h3>მოიწვიე მეგობარი</h3>
+      <p id="waitingDescription">გაუზიარე მეგობარს ოთახის კოდი და დაელოდე მის შემოსვლას.</p>
+      <div class="room-code" id="waitingRoomCode">------</div>
+      <button class="copy-code" onclick="copyRoomCode()">📋 კოდის კოპირება</button>
+      <div class="waiting-dots" id="waitingDots">● ველოდებით მეორე მოთამაშეს...</div>
+    </div>
+
+    <div class="online-scoreboard hidden" id="onlineScoreboard">
+      <div class="score-side mine">
+        <div class="score-name" id="myScoreName">შენ</div>
+        <strong class="score-number" id="myWins">0</strong>
+      </div>
+      <div class="score-side enemy">
+        <div class="score-name" id="enemyScoreName">მოწინააღმდეგე</div>
+        <strong class="score-number" id="enemyWins">0</strong>
+      </div>
+    </div>
+
     <div class="players">
       <div class="player" id="playerX">შენ<strong style="color:#38bdf8">X</strong></div>
       <div class="player" id="playerO">ბოტი<strong style="color:#fb7185">0</strong></div>
     </div>
+
     <div class="status" id="status">შენი სვლაა!</div>
+
     <div class="board" id="board">
       <button class="cell" aria-label="უჯრა 1"></button>
       <button class="cell" aria-label="უჯრა 2"></button>
@@ -86,10 +125,12 @@ h2{font-size:25px;margin-bottom:10px}
       <button class="cell" aria-label="უჯრა 8"></button>
       <button class="cell" aria-label="უჯრა 9"></button>
     </div>
+
     <div class="game-actions">
       <button class="restart" id="restartBtn" onclick="resetGame()">🔄 Restart</button>
       <button class="exit" onclick="leaveGame()">🏠 გასვლა</button>
     </div>
+    <div class="restart-status hidden" id="restartStatus"></div>
   </div>
 </section>
 
@@ -103,13 +144,13 @@ h2{font-size:25px;margin-bottom:10px}
     <label class="field-label" for="playerName">შენი სახელი</label>
     <input class="text-field" id="playerName" maxlength="20" placeholder="შეიყვანე სახელი" value="Player">
 
-    <button class="menu-btn primary" id="createBtn" onclick="createRoom()">＋ ოთახის შექმნა</button>
+    <button class="menu-btn primary" onclick="createRoom()">＋ ოთახის შექმნა</button>
 
     <hr class="online-divider">
 
     <label class="field-label" for="roomCodeInput">ოთახის კოდი</label>
     <input class="text-field" id="roomCodeInput" maxlength="12" placeholder="შეიყვანე კოდი" autocomplete="off">
-    <button class="menu-btn online" id="joinBtn" onclick="joinRoom()">↗ ოთახში შესვლა</button>
+    <button class="menu-btn online" onclick="joinRoom()">↗ ოთახში შესვლა</button>
 
     <div class="online-note" id="onlineNote">შექმენი ოთახი ან შეიყვანე მეგობრის კოდი.</div>
     <div class="online-status" id="onlineStatus">● სერვერთან დაკავშირება ჯერ არ მომხდარა</div>
@@ -119,461 +160,646 @@ h2{font-size:25px;margin-bottom:10px}
 </section>
 
 <script>
-const screens = [
+const screens=[
   document.getElementById("mainMenu"),
   document.getElementById("gameScreen"),
   document.getElementById("onlineScreen")
 ];
-const cells = [...document.querySelectorAll(".cell")];
-const statusText = document.getElementById("status");
-const gameTitle = document.getElementById("gameTitle");
-const playerXBox = document.getElementById("playerX");
-const playerOBox = document.getElementById("playerO");
-const onlineStatus = document.getElementById("onlineStatus");
-const onlineNote = document.getElementById("onlineNote");
-const nameInput = document.getElementById("playerName");
-const roomCodeInput = document.getElementById("roomCodeInput");
+const cells=[...document.querySelectorAll(".cell")];
+const statusText=document.getElementById("status");
+const gameTitle=document.getElementById("gameTitle");
+const playerXBox=document.getElementById("playerX");
+const playerOBox=document.getElementById("playerO");
+const onlineStatus=document.getElementById("onlineStatus");
+const onlineNote=document.getElementById("onlineNote");
+const nameInput=document.getElementById("playerName");
+const roomCodeInput=document.getElementById("roomCodeInput");
+const waitingPanel=document.getElementById("waitingPanel");
+const waitingRoomCode=document.getElementById("waitingRoomCode");
+const waitingDots=document.getElementById("waitingDots");
+const waitingDescription=document.getElementById("waitingDescription");
+const onlineScoreboard=document.getElementById("onlineScoreboard");
+const myScoreName=document.getElementById("myScoreName");
+const enemyScoreName=document.getElementById("enemyScoreName");
+const myWinsElement=document.getElementById("myWins");
+const enemyWinsElement=document.getElementById("enemyWins");
+const restartStatus=document.getElementById("restartStatus");
+const restartButton=document.getElementById("restartBtn");
 
-const HUMAN = "X";
-const BOT = "0";
-const wins = [
-  [0,1,2],[3,4,5],[6,7,8],
-  [0,3,6],[1,4,7],[2,5,8],
-  [0,4,8],[2,4,6]
+const HUMAN="X";
+const BOT="0";
+const wins=[
+ [0,1,2],[3,4,5],[6,7,8],
+ [0,3,6],[1,4,7],[2,5,8],
+ [0,4,8],[2,4,6]
 ];
 
-let board = Array(9).fill("");
-let gameActive = true;
-let botThinking = false;
-let botTimer = null;
-let mode = "bot";
+let board=Array(9).fill("");
+let gameActive=true;
+let botThinking=false;
+let botTimer=null;
+let mode="bot";
 
-let socket = null;
-let socketReady = false;
-let pendingMessage = null;
-let roomCode = "";
-let myMark = "";
-let onlineTurn = "X";
-let onlineGameOver = false;
-let onlineConnected = false;
-let waitingForOpponent = false;
-let myPlayerName = "Player";
-let opponentName = "მეგობარი";
-let onlineWinningCells = [];
+let socket=null;
+let socketReady=false;
+let pendingMessage=null;
+let roomCode="";
+let myMark="";
+let onlineTurn="X";
+let onlineGameOver=false;
+let onlineConnected=false;
+let waitingForOpponent=false;
+let myPlayerName="Player";
+let opponentName="მეგობარი";
+let onlineWinningCells=[];
 
-function showScreen(screen) {
-  screens.forEach(s => s.classList.add("hidden"));
-  screen.classList.remove("hidden");
+let myWins=0;
+let enemyWins=0;
+let restartRequested=false;
+let restartVotes={};
+let roundCounted=false;
+let lastRoundSignature="";
+let roomPlayers=[];
+let lastRoomCode="";
+let playerId=null;
+
+function showScreen(screen){
+ screens.forEach(s=>s.classList.add("hidden"));
+ screen.classList.remove("hidden");
 }
 
-function setOnlineStatus(message, color) {
-  onlineStatus.textContent = message;
-  onlineStatus.style.color = color || "#fbbf24";
+function setOnlineStatus(message,color){
+ onlineStatus.textContent=message;
+ onlineStatus.style.color=color||"#fbbf24";
 }
 
-function safeName() {
-  return (nameInput.value || "Player").trim().slice(0,20) || "Player";
+function safeName(){
+ return (nameInput.value||"Player").trim().slice(0,20)||"Player";
 }
 
-function clearBotTimer() {
-  if (botTimer) clearTimeout(botTimer);
-  botTimer = null;
-  botThinking = false;
+function clearBotTimer(){
+ if(botTimer)clearTimeout(botTimer);
+ botTimer=null;
+ botThinking=false;
 }
 
-function showMenu() {
-  clearBotTimer();
-  mode = "bot";
-  showScreen(screens[0]);
+function showMenu(){
+ clearBotTimer();
+ mode="bot";
+ showScreen(screens[0]);
 }
 
-function showOnline() {
-  clearBotTimer();
-  showScreen(screens[2]);
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    setOnlineStatus("● სერვერთან დაკავშირებულია", "#34d399");
+function showOnline(){
+ clearBotTimer();
+ showScreen(screens[2]);
+ if(socket&&socket.readyState===WebSocket.OPEN){
+  setOnlineStatus("● სერვერთან დაკავშირებულია","#34d399");
+ }
+}
+
+function startBotGame(){
+ clearBotTimer();
+ mode="bot";
+ roomCode="";
+ myMark="";
+ onlineGameOver=false;
+ waitingForOpponent=false;
+ waitingPanel.classList.add("hidden");
+ onlineScoreboard.classList.add("hidden");
+ restartStatus.classList.add("hidden");
+ gameTitle.textContent="BOT MATCH";
+ playerXBox.innerHTML='შენ<strong style="color:#38bdf8">X</strong>';
+ playerOBox.innerHTML='ბოტი<strong style="color:#fb7185">0</strong>';
+ resetBotBoard();
+ showScreen(screens[1]);
+}
+
+function getWinner(b){
+ for(const combo of wins){
+  const [a,c,d]=combo;
+  if(b[a]&&b[a]===b[c]&&b[a]===b[d]){
+   return {player:b[a],cells:combo};
   }
+ }
+ return null;
 }
 
-function startBotGame() {
-  clearBotTimer();
-  mode = "bot";
-  roomCode = "";
-  myMark = "";
-  onlineGameOver = false;
-  waitingForOpponent = false;
-  gameTitle.textContent = "BOT MATCH";
-  playerXBox.innerHTML = 'შენ<strong style="color:#38bdf8">X</strong>';
-  playerOBox.innerHTML = 'ბოტი<strong style="color:#fb7185">0</strong>';
-  resetBotBoard();
-  showScreen(screens[1]);
+function renderBot(){
+ cells.forEach((cell,i)=>{
+  cell.textContent=board[i];
+  cell.className="cell";
+  if(board[i])cell.classList.add(board[i]===HUMAN?"x":"o");
+  cell.disabled=!gameActive||botThinking||board[i]!=="";
+ });
 }
 
-function getWinner(b) {
-  for (const combo of wins) {
-    const [a,c,d] = combo;
-    if (b[a] && b[a] === b[c] && b[a] === b[d]) {
-      return {player:b[a], cells:combo};
-    }
-  }
-  return null;
+function finishBotIfNeeded(){
+ const result=getWinner(board);
+ if(result){
+  gameActive=false;
+  result.cells.forEach(i=>cells[i].classList.add("winner"));
+  statusText.textContent=result.player===HUMAN?"🎉 შენ გაიმარჯვე!":"🤖 ბოტმა გაიმარჯვა!";
+  renderBot();
+  return true;
+ }
+ if(board.every(v=>v!=="")){
+  gameActive=false;
+  statusText.textContent="🤝 ფრეა!";
+  renderBot();
+  return true;
+ }
+ return false;
 }
 
-function renderBot() {
-  cells.forEach((cell,i) => {
-    cell.textContent = board[i];
-    cell.className = "cell";
-    if (board[i]) cell.classList.add(board[i] === HUMAN ? "x" : "o");
-    cell.disabled = !gameActive || botThinking || board[i] !== "";
-  });
-}
+function minimax(b,isBot,depth=0){
+ const result=getWinner(b);
+ if(result)return result.player===BOT?10-depth:depth-10;
+ if(b.every(v=>v!==""))return 0;
 
-function finishBotIfNeeded() {
-  const result = getWinner(board);
-  if (result) {
-    gameActive = false;
-    result.cells.forEach(i => cells[i].classList.add("winner"));
-    statusText.textContent = result.player === HUMAN ? "🎉 შენ გაიმარჯვე!" : "🤖 ბოტმა გაიმარჯვა!";
-    renderBot();
-    return true;
-  }
-  if (board.every(v => v !== "")) {
-    gameActive = false;
-    statusText.textContent = "🤝 ფრეა!";
-    renderBot();
-    return true;
-  }
-  return false;
-}
-
-function minimax(b,isBot,depth=0) {
-  const result = getWinner(b);
-  if (result) return result.player === BOT ? 10-depth : depth-10;
-  if (b.every(v => v !== "")) return 0;
-
-  if (isBot) {
-    let best = -Infinity;
-    for (let i=0;i<9;i++) {
-      if (!b[i]) {
-        b[i] = BOT;
-        best = Math.max(best,minimax(b,false,depth+1));
-        b[i] = "";
-      }
-    }
-    return best;
-  }
-
-  let best = Infinity;
-  for (let i=0;i<9;i++) {
-    if (!b[i]) {
-      b[i] = HUMAN;
-      best = Math.min(best,minimax(b,true,depth+1));
-      b[i] = "";
-    }
+ if(isBot){
+  let best=-Infinity;
+  for(let i=0;i<9;i++){
+   if(!b[i]){
+    b[i]=BOT;
+    best=Math.max(best,minimax(b,false,depth+1));
+    b[i]="";
+   }
   }
   return best;
+ }
+ let best=Infinity;
+ for(let i=0;i<9;i++){
+  if(!b[i]){
+   b[i]=HUMAN;
+   best=Math.min(best,minimax(b,true,depth+1));
+   b[i]="";
+  }
+ }
+ return best;
 }
 
-function botMove() {
-  botTimer = null;
-  if (!gameActive || !botThinking || mode !== "bot") return;
-
-  let bestScore = -Infinity;
-  let choices = [];
-  for (let i=0;i<9;i++) {
-    if (board[i] !== "") continue;
-    board[i] = BOT;
-    const score = minimax(board,false);
-    board[i] = "";
-    if (score > bestScore) {
-      bestScore = score;
-      choices = [i];
-    } else if (score === bestScore) {
-      choices.push(i);
-    }
-  }
-
-  if (choices.length) {
-    const choice = choices[Math.floor(Math.random()*choices.length)];
-    board[choice] = BOT;
-  }
-
-  botThinking = false;
-  if (!finishBotIfNeeded()) {
-    statusText.textContent = "შენი სვლაა!";
-    renderBot();
-  }
-}
-
-function humanMove(index) {
-  if (mode !== "bot" || !gameActive || botThinking || board[index] !== "") return;
-  board[index] = HUMAN;
+function botMove(){
+ botTimer=null;
+ if(!gameActive||!botThinking||mode!=="bot")return;
+ let bestScore=-Infinity;
+ let choices=[];
+ for(let i=0;i<9;i++){
+  if(board[i]!=="")continue;
+  board[i]=BOT;
+  const score=minimax(board,false);
+  board[i]="";
+  if(score>bestScore){bestScore=score;choices=[i];}
+  else if(score===bestScore)choices.push(i);
+ }
+ if(choices.length)board[choices[Math.floor(Math.random()*choices.length)]]=BOT;
+ botThinking=false;
+ if(!finishBotIfNeeded()){
+  statusText.textContent="შენი სვლაა!";
   renderBot();
-  if (finishBotIfNeeded()) return;
-
-  botThinking = true;
-  statusText.textContent = "🤖 ბოტი ფიქრობს...";
-  renderBot();
-  botTimer = setTimeout(botMove,350);
+ }
 }
 
-function resetBotBoard() {
-  clearBotTimer();
-  board = Array(9).fill("");
-  gameActive = true;
-  statusText.textContent = "შენი სვლაა!";
-  renderBot();
+function humanMove(index){
+ if(mode!=="bot"||!gameActive||botThinking||board[index]!=="")return;
+ board[index]=HUMAN;
+ renderBot();
+ if(finishBotIfNeeded())return;
+ botThinking=true;
+ statusText.textContent="🤖 ბოტი ფიქრობს...";
+ renderBot();
+ botTimer=setTimeout(botMove,350);
 }
 
-function resetGame() {
-  if (mode === "online") {
-    if (!socketReady || !roomCode) {
-      statusText.textContent = "სერვერთან კავშირი არ არის.";
-      return;
-    }
-    sendSocket({type:"xo-reset",code:roomCode});
-    return;
-  }
-  resetBotBoard();
+function resetBotBoard(){
+ clearBotTimer();
+ board=Array(9).fill("");
+ gameActive=true;
+ statusText.textContent="შენი სვლაა!";
+ restartButton.disabled=false;
+ restartButton.textContent="🔄 Restart";
+ renderBot();
 }
 
-function connectSocket(action) {
-  myPlayerName = safeName();
+function resetGame(){
+ if(mode==="online"){
+  requestOnlineRestart();
+  return;
+ }
+ resetBotBoard();
+}
 
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    sendSocket(action);
-    return;
+function updateOnlineScoreboard(){
+ myWinsElement.textContent=myWins;
+ enemyWinsElement.textContent=enemyWins;
+}
+
+function showWaitingRoom(){
+ waitingForOpponent=true;
+ waitingPanel.classList.remove("hidden");
+ onlineScoreboard.classList.add("hidden");
+ waitingRoomCode.textContent=roomCode||"------";
+ waitingDescription.textContent="გაუზიარე მეგობარს ოთახის კოდი. თამაში დაიწყება, როცა მეორე მოთამაშე შემოვა.";
+ waitingDots.textContent="● ველოდებით მეორე მოთამაშეს...";
+ cells.forEach(cell=>cell.disabled=true);
+}
+
+function hideWaitingRoom(){
+ waitingForOpponent=false;
+ waitingPanel.classList.add("hidden");
+ onlineScoreboard.classList.remove("hidden");
+}
+
+async function copyRoomCode(){
+ if(!roomCode){
+  alert("ოთახის კოდი ჯერ არ არის შექმნილი.");
+  return;
+ }
+ try{
+  await navigator.clipboard.writeText(roomCode);
+  waitingDots.textContent="✓ ოთახის კოდი დაკოპირდა!";
+ }catch{
+  const temp=document.createElement("textarea");
+  temp.value=roomCode;
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand("copy");
+  temp.remove();
+  waitingDots.textContent="✓ ოთახის კოდი დაკოპირდა!";
+ }
+}
+
+function connectSocket(action){
+ myPlayerName=safeName();
+
+ if(socket&&socket.readyState===WebSocket.OPEN){
+  sendSocket(action);
+  return;
+ }
+ if(socket&&socket.readyState===WebSocket.CONNECTING){
+  pendingMessage=action;
+  setOnlineStatus("● სერვერთან დაკავშირება მიმდინარეობს...","#fbbf24");
+  return;
+ }
+
+ const protocol=location.protocol==="https:"?"wss:":"ws:";
+ const url=protocol+"//"+location.host+"/ws";
+
+ try{
+  socket=new WebSocket(url);
+ }catch(error){
+  setOnlineStatus("კავშირის შექმნა ვერ მოხერხდა. შეამოწმე სერვერი.","#fb7185");
+  return;
+ }
+
+ socketReady=false;
+ pendingMessage=action;
+ setOnlineStatus("● სერვერთან დაკავშირება მიმდინარეობს...","#fbbf24");
+
+ socket.addEventListener("open",()=>{
+  socketReady=true;
+  onlineConnected=true;
+  setOnlineStatus("● სერვერთან დაკავშირებულია","#34d399");
+  if(pendingMessage){
+   const msg=pendingMessage;
+   pendingMessage=null;
+   sendSocket(msg);
   }
+ });
 
-  if (socket && socket.readyState === WebSocket.CONNECTING) {
-    pendingMessage = action;
-    setOnlineStatus("● სერვერთან დაკავშირება მიმდინარეობს...", "#fbbf24");
-    return;
-  }
+ socket.addEventListener("message",event=>{
+  let data;
+  try{data=JSON.parse(event.data);}catch{return;}
+  handleSocketMessage(data);
+ });
 
-  const protocol = location.protocol === "https:" ? "wss:" : "ws:";
-  const url = protocol + "//" + location.host + "/ws";
+ socket.addEventListener("error",()=>{
+  setOnlineStatus("კავშირის შეცდომა. გადაამოწმე WebSocket სერვერი.","#fb7185");
+ });
 
-  try {
-    socket = new WebSocket(url);
-  } catch (error) {
-    setOnlineStatus("კავშირის შექმნა ვერ მოხერხდა. შეამოწმე სერვერი.", "#fb7185");
-    return;
-  }
+ socket.addEventListener("close",()=>{
+  socketReady=false;
+  onlineConnected=false;
+  setOnlineStatus("● სერვერთან კავშირი გაწყდა","#fb7185");
+  if(mode==="online")statusText.textContent="სერვერთან კავშირი გაწყდა.";
+ });
+}
 
-  socketReady = false;
-  pendingMessage = action;
-  setOnlineStatus("● სერვერთან დაკავშირება მიმდინარეობს...", "#fbbf24");
+function sendSocket(data){
+ if(!socket||socket.readyState!==WebSocket.OPEN){
+  pendingMessage=data;
+  return;
+ }
+ socket.send(JSON.stringify(data));
+}
 
-  socket.addEventListener("open", () => {
-    socketReady = true;
-    onlineConnected = true;
-    setOnlineStatus("● სერვერთან დაკავშირებულია", "#34d399");
-    if (pendingMessage) {
-      const msg = pendingMessage;
-      pendingMessage = null;
-      sendSocket(msg);
-    }
+function createRoom(){
+ myPlayerName=safeName();
+ myWins=0;
+ enemyWins=0;
+ roundCounted=false;
+ restartRequested=false;
+ restartVotes={};
+ updateOnlineScoreboard();
+ onlineNote.textContent="ოთახი იქმნება...";
+ connectSocket({type:"xo-create",name:myPlayerName});
+}
+
+function joinRoom(){
+ const code=roomCodeInput.value.trim().toUpperCase();
+ if(!code){
+  onlineNote.textContent="ჯერ შეიყვანე ოთახის კოდი.";
+  roomCodeInput.focus();
+  return;
+ }
+ myPlayerName=safeName();
+ onlineNote.textContent="ოთახში შეერთება...";
+ connectSocket({type:"xo-join",code:code,name:myPlayerName});
+}
+
+function requestOnlineRestart(){
+ if(mode!=="online"||!roomCode||!socketReady)return;
+ if(!onlineGameOver)return;
+
+ if(restartRequested)return;
+ restartRequested=true;
+ restartStatus.classList.remove("hidden");
+ restartStatus.textContent="✓ შენი თანხმობა გაიგზავნა. ველოდებით მოწინააღმდეგეს...";
+ restartButton.textContent="✓ თანხმობა გაგზავნილია";
+ restartButton.disabled=true;
+
+ /*
+  სერვერმა უნდა დაამუშაოს xo-restart-vote,
+  შეინახოს ორივე მოთამაშის ხმა და მხოლოდ მაშინ
+  გაასუფთაოს დაფა, როცა ორივე თანახმა იქნება.
+ */
+ sendSocket({type:"xo-restart-vote",code:roomCode});
+}
+
+function updateRestartUI(votes){
+ if(mode!=="online"||!onlineGameOver)return;
+ restartStatus.classList.remove("hidden");
+
+ const mineVoted=!!(votes&&votes[myMark]);
+ const otherMark=myMark==="X"?"O":"X";
+ const otherVoted=!!(votes&&votes[otherMark]);
+
+ if(mineVoted){
+  restartRequested=true;
+  restartButton.textContent="✓ თანხმობა გაგზავნილია";
+  restartButton.disabled=true;
+ }else{
+  restartButton.textContent="🔄 Restart";
+  restartButton.disabled=false;
+ }
+
+ if(mineVoted&&otherVoted){
+  restartStatus.textContent="ორივე თანახმაა — ველოდებით სერვერის განახლებას...";
+ }else if(mineVoted){
+  restartStatus.textContent="✓ შენი თანხმობა მიღებულია. ველოდებით მოწინააღმდეგეს...";
+ }else if(otherVoted){
+  restartStatus.textContent="მოწინააღმდეგე თანახმაა. დააჭირე Restart-ს თამაშის თავიდან დასაწყებად.";
+ }else{
+  restartStatus.textContent="თამაშის თავიდან დასაწყებად ორივემ უნდა დააჭიროთ Restart-ს.";
+ }
+}
+
+function setPlayerBox(element,name,mark){
+ element.replaceChildren(document.createTextNode(name||("მოთამაშე "+mark)));
+ const strong=document.createElement("strong");
+ strong.style.color=mark==="X"?"#38bdf8":"#fb7185";
+ strong.textContent=mark==="X"?"X":"0";
+ element.appendChild(strong);
+}
+
+function handleSocketMessage(data){
+ const type=data.type||data.event;
+
+ if(type==="xo-error"||type==="error"){
+  const message=data.message||data.error||"მოქმედება ვერ შესრულდა.";
+  onlineNote.textContent=message;
+  setOnlineStatus("● "+message,"#fb7185");
+  return;
+ }
+
+ if(type==="xo-created"||type==="xo-joined"||type==="xo-room"){
+  roomCode=String(data.code||data.roomCode||data.room||roomCode).toUpperCase();
+  if(roomCode)roomCodeInput.value=roomCode;
+  if(data.myMark)myMark=data.myMark;
+  if(data.playerId)playerId=data.playerId;
+
+  mode="online";
+  showScreen(screens[1]);
+  gameTitle.textContent="ONLINE · "+roomCode;
+  board=Array(9).fill("");
+  onlineGameOver=false;
+  restartRequested=false;
+  restartVotes={};
+  restartStatus.classList.add("hidden");
+
+  cells.forEach(cell=>{
+   cell.textContent="";
+   cell.className="cell";
+   cell.disabled=true;
   });
 
-  socket.addEventListener("message", event => {
-    let data;
-    try { data = JSON.parse(event.data); }
-    catch { return; }
-    handleSocketMessage(data);
+  showWaitingRoom();
+  statusText.textContent="მოიწვიე მეგობარი და დაელოდე მის შემოსვლას.";
+  return;
+ }
+
+ if(type==="xo-state"){
+  if(data.code||data.roomCode||data.room){
+   roomCode=String(data.code||data.roomCode||data.room).toUpperCase();
+  }
+  if(data.myMark)myMark=data.myMark;
+  if(data.playerMark)myMark=data.playerMark;
+  if(data.playerId)playerId=data.playerId;
+
+  mode="online";
+  gameTitle.textContent=roomCode?"ONLINE · "+roomCode:"ONLINE MATCH";
+
+  const incomingBoard=Array.isArray(data.board)?data.board:null;
+  if(incomingBoard&&incomingBoard.length===9){
+   board=incomingBoard.map(v=>v==="O"?"0":(v||""));
+  }
+
+  onlineTurn=data.turn||data.currentTurn||"X";
+  const winner=data.winner||null;
+  onlineWinningCells=Array.isArray(data.winningCells)?data.winningCells:[];
+
+  const players=Array.isArray(data.players)?data.players:[];
+  roomPlayers=players;
+
+  const mine=players.find(p=>p.id===playerId)||(players.find(p=>p.mark===myMark));
+  const other=players.find(p=>p.id!==playerId&&p.mark!==myMark);
+
+  if(mine&&mine.mark)myMark=mine.mark;
+  if(mine&&mine.name)myPlayerName=mine.name;
+  if(other&&other.name)opponentName=other.name;
+
+  const xPlayer=players.find(p=>p.mark==="X");
+  const oPlayer=players.find(p=>p.mark==="O"||p.mark==="0");
+
+  setPlayerBox(playerXBox,xPlayer?xPlayer.name:"მოთამაშე X","X");
+  setPlayerBox(playerOBox,oPlayer?oPlayer.name:"მოთამაშე 0","O");
+
+  if(players.length<2){
+   showWaitingRoom();
+  }else{
+   hideWaitingRoom();
+   myScoreName.textContent=(myPlayerName||"შენ")+" · შენ";
+   enemyScoreName.textContent=opponentName||"მოწინააღმდეგე";
+  }
+
+  /*
+   თუ სერვერი აბრუნებს საერთო ქულებს, ისინი გამოიყენება.
+   ფორმატი: scores: { X: 2, O: 1 }
+   */
+  if(data.scores){
+   const xWins=Number(data.scores.X)||0;
+   const oWins=Number(data.scores.O)||0;
+   myWins=myMark==="X"?xWins:oWins;
+   enemyWins=myMark==="X"?oWins:xWins;
+   updateOnlineScoreboard();
+  }
+
+  const isDraw=!!data.draw;
+  onlineGameOver=!!winner||isDraw||board.every(v=>v!=="");
+
+  cells.forEach((cell,i)=>{
+   cell.textContent=board[i]==="O"?"0":board[i];
+   cell.className="cell";
+   if(cell.textContent==="X")cell.classList.add("x");
+   if(cell.textContent==="0")cell.classList.add("o");
+   if(onlineWinningCells.includes(i))cell.classList.add("winner");
+
+   cell.disabled=players.length<2||onlineGameOver||
+     !myMark||myMark!==onlineTurn||board[i]!=="";
   });
 
-  socket.addEventListener("error", () => {
-    setOnlineStatus("კავშირის შეცდომა. გადაამოწმე WebSocket სერვერი.", "#fb7185");
+  if(players.length<2){
+   onlineGameOver=false;
+   statusText.textContent="ოთახის კოდი: "+(roomCode||"...")+" — ველოდებით მეგობარს.";
+   return;
+  }
+
+  if(winner){
+   statusText.textContent=(winner===myMark)
+     ?"🎉 შენ გაიმარჯვე!"
+     :"😔 მეტოქემ გაიმარჯვა!";
+
+   /*
+    ადგილობრივი ქულის გაზრდა მხოლოდ ერთხელ ხდება თითო
+    დასრულებულ რაუნდზე. ორივე მოწყობილობაზე ერთნაირი
+    შედეგისთვის სერვერმა უნდა გაავრცელოს საერთო scores.
+   */
+   const signature=String(data.roundId||data.round||"")+
+     ":"+board.join(",")+":"+winner;
+
+   if(!roundCounted&&signature!==lastRoundSignature){
+    if(winner===myMark)myWins++;
+    else enemyWins++;
+    updateOnlineScoreboard();
+    roundCounted=true;
+    lastRoundSignature=signature;
+   }
+
+   const votes=data.restartVotes||data.restartVotesByMark||{};
+   restartVotes=votes;
+   updateRestartUI(votes);
+  }else if(isDraw){
+   statusText.textContent="🤝 ფრეა!";
+   const votes=data.restartVotes||data.restartVotesByMark||{};
+   restartVotes=votes;
+   updateRestartUI(votes);
+  }else{
+   roundCounted=false;
+   restartRequested=false;
+   restartVotes=data.restartVotes||{};
+   restartStatus.classList.add("hidden");
+   restartButton.disabled=false;
+   restartButton.textContent="🔄 Restart";
+   statusText.textContent=myMark===onlineTurn?"შენი სვლაა!":"მეტოქის სვლაა...";
+  }
+  return;
+ }
+
+ if(type==="xo-restart-votes"){
+  restartVotes=data.votes||data.restartVotes||{};
+  updateRestartUI(restartVotes);
+  return;
+ }
+
+ if(type==="xo-opponent-left"||type==="xo-left"){
+  statusText.textContent="მეტოქე გავიდა. შეგიძლია დაელოდო ახალ მოთამაშეს.";
+  onlineGameOver=true;
+  cells.forEach(cell=>cell.disabled=true);
+  showWaitingRoom();
+  return;
+ }
+
+ if(type==="xo-reset"){
+  board=Array(9).fill("");
+  onlineGameOver=false;
+  onlineWinningCells=[];
+  restartRequested=false;
+  restartVotes={};
+  roundCounted=false;
+  restartStatus.classList.add("hidden");
+  restartButton.disabled=false;
+  restartButton.textContent="🔄 Restart";
+  statusText.textContent="თამაში თავიდან დაიწყო.";
+
+  cells.forEach(cell=>{
+   cell.textContent="";
+   cell.className="cell";
+   cell.disabled=true;
   });
-
-  socket.addEventListener("close", () => {
-    socketReady = false;
-    onlineConnected = false;
-    if (mode === "online") {
-      statusText.textContent = "სერვერთან კავშირი გაწყდა.";
-      setOnlineStatus("● სერვერთან კავშირი გაწყდა", "#fb7185");
-    } else {
-      setOnlineStatus("● სერვერთან კავშირი გაწყდა", "#fb7185");
-    }
-  });
+ }
 }
 
-function sendSocket(data) {
-  if (!socket || socket.readyState !== WebSocket.OPEN) {
-    pendingMessage = data;
-    return;
-  }
-  socket.send(JSON.stringify(data));
+function onlineMove(index){
+ if(mode!=="online"||!socketReady||!roomCode||onlineGameOver)return;
+ if(waitingForOpponent)return;
+ if(!myMark||myMark!==onlineTurn||board[index]!=="")return;
+ sendSocket({type:"xo-move",code:roomCode,index:index});
 }
 
-function createRoom() {
-  myPlayerName = safeName();
-  connectSocket({type:"xo-create",name:myPlayerName});
-  onlineNote.textContent = "ოთახი იქმნება...";
-}
-
-function joinRoom() {
-  const code = roomCodeInput.value.trim().toUpperCase();
-  if (!code) {
-    onlineNote.textContent = "ჯერ შეიყვანე ოთახის კოდი.";
-    roomCodeInput.focus();
-    return;
-  }
-  myPlayerName = safeName();
-  connectSocket({type:"xo-join",code:code,name:myPlayerName});
-  onlineNote.textContent = "ოთახში შეერთება...";
-}
-
-function handleSocketMessage(data) {
-  const type = data.type || data.event;
-
-  if (type === "xo-error" || type === "error") {
-    const message = data.message || data.error || "მოქმედება ვერ შესრულდა.";
-    onlineNote.textContent = message;
-    setOnlineStatus("● " + message, "#fb7185");
-    return;
-  }
-
-  if (type === "xo-created" || type === "xo-joined" || type === "xo-room") {
-    roomCode = String(data.code || data.roomCode || data.room || roomCode).toUpperCase();
-    if (roomCode) roomCodeInput.value = roomCode;
-    if (data.myMark) myMark = data.myMark;
-    mode = "online";
-    showScreen(screens[1]);
-    gameTitle.textContent = "ONLINE MATCH";
-    statusText.textContent = "ოთახი მზადაა. ველოდებით მოთამაშეს...";
-    return;
-  }
-
-  if (type === "xo-state") {
-    if (data.code || data.roomCode || data.room) {
-      roomCode = String(data.code || data.roomCode || data.room).toUpperCase();
-    }
-    if (data.myMark) myMark = data.myMark;
-    if (data.playerMark) myMark = data.playerMark;
-
-    mode = "online";
-    showScreen(screens[1]);
-    gameTitle.textContent = roomCode ? "ONLINE · " + roomCode : "ONLINE MATCH";
-
-    const incomingBoard = Array.isArray(data.board) ? data.board : null;
-    if (incomingBoard && incomingBoard.length === 9) {
-      board = incomingBoard.map(v => v === "O" ? "0" : (v || ""));
-    }
-
-    onlineTurn = data.turn || data.currentTurn || "X";
-    const winner = data.winner || null;
-    onlineWinningCells = Array.isArray(data.winningCells) ? data.winningCells : [];
-
-    const players = Array.isArray(data.players) ? data.players : [];
-    const mine = players.find(p => p.id === data.playerId || p.mark === myMark);
-    const other = players.find(p => p.id !== data.playerId && p.mark !== myMark);
-
-    if (mine && mine.mark) myMark = mine.mark;
-
-    const xPlayer = players.find(p => p.mark === "X");
-    const oPlayer = players.find(p => p.mark === "O" || p.mark === "0");
-
-    playerXBox.innerHTML = "";
-    playerOBox.innerHTML = "";
-    playerXBox.append(document.createTextNode(xPlayer ? (xPlayer.name || "მოთამაშე X") : "მოთამაშე X"));
-    const xStrong = document.createElement("strong");
-    xStrong.style.color = "#38bdf8";
-    xStrong.textContent = "X";
-    playerXBox.appendChild(xStrong);
-
-    playerOBox.append(document.createTextNode(oPlayer ? (oPlayer.name || "მოთამაშე 0") : "მოთამაშე 0"));
-    const oStrong = document.createElement("strong");
-    oStrong.style.color = "#fb7185";
-    oStrong.textContent = "0";
-    playerOBox.appendChild(oStrong);
-
-    cells.forEach((cell,i) => {
-      cell.textContent = board[i] === "O" ? "0" : board[i];
-      cell.className = "cell";
-      if (cell.textContent === "X") cell.classList.add("x");
-      if (cell.textContent === "0") cell.classList.add("o");
-      if (onlineWinningCells.includes(i)) cell.classList.add("winner");
-      cell.disabled = onlineGameOver || !!winner || !!data.draw ||
-        !myMark || (myMark !== onlineTurn) || board[i] !== "";
-    });
-
-    onlineGameOver = !!winner || !!data.draw || board.every(v => v !== "");
-    if (winner) {
-      statusText.textContent = (winner === myMark)
-        ? "🎉 შენ გაიმარჯვე!"
-        : (winner === "0" && myMark === "O") ? "🎉 შენ გაიმარჯვე!" : "😔 მეტოქემ გაიმარჯვა!";
-      cells.forEach((cell,i) => {
-        if (onlineWinningCells.includes(i)) cell.classList.add("winner");
-      });
-    } else if (data.draw) {
-      statusText.textContent = "🤝 ფრეა!";
-    } else if (players.length < 2) {
-      statusText.textContent = "ოთახის კოდი: " + (roomCode || "...");
-      onlineGameOver = false;
-      cells.forEach(cell => cell.disabled = true);
-    } else if (myMark && myMark === onlineTurn) {
-      statusText.textContent = "შენი სვლაა! (" + myMark + ")";
-    } else {
-      statusText.textContent = "მეტოქის სვლაა...";
-    }
-    return;
-  }
-
-  if (type === "xo-opponent-left" || type === "xo-left") {
-    statusText.textContent = "მეტოქე გავიდა. შეგიძლია დაელოდო ახალ მოთამაშეს.";
-    onlineGameOver = true;
-    cells.forEach(cell => cell.disabled = true);
-    return;
-  }
-
-  if (type === "xo-reset") {
-    board = Array(9).fill("");
-    onlineGameOver = false;
-    onlineWinningCells = [];
-    statusText.textContent = "თამაში თავიდან დაიწყო.";
-    cells.forEach(cell => {
-      cell.textContent = "";
-      cell.className = "cell";
-      cell.disabled = true;
-    });
-  }
-}
-
-function onlineMove(index) {
-  if (mode !== "online" || !socketReady || !roomCode || onlineGameOver) return;
-  if (!myMark || myMark !== onlineTurn || board[index] !== "") return;
-  sendSocket({type:"xo-move",code:roomCode,index:index});
-}
-
-cells.forEach((cell,index) => {
-  cell.addEventListener("click", () => {
-    if (mode === "online") onlineMove(index);
-    else humanMove(index);
-  });
+cells.forEach((cell,index)=>{
+ cell.addEventListener("click",()=>{
+  if(mode==="online")onlineMove(index);
+  else humanMove(index);
+ });
 });
 
-function leaveGame() {
-  clearBotTimer();
-  if (mode === "online" && socketReady && roomCode) {
-    sendSocket({type:"xo-leave",code:roomCode});
-  }
-  roomCode = "";
-  myMark = "";
-  onlineGameOver = false;
-  waitingForOpponent = false;
-  mode = "bot";
-  showScreen(screens[0]);
+function leaveGame(){
+ clearBotTimer();
+ if(mode==="online"&&socketReady&&roomCode){
+  sendSocket({type:"xo-leave",code:roomCode});
+ }
+ roomCode="";
+ myMark="";
+ onlineGameOver=false;
+ waitingForOpponent=false;
+ restartRequested=false;
+ restartVotes={};
+ waitingPanel.classList.add("hidden");
+ onlineScoreboard.classList.add("hidden");
+ restartStatus.classList.add("hidden");
+ mode="bot";
+ showScreen(screens[0]);
 }
 
-function disconnectAndMenu() {
-  if (socketReady && roomCode) sendSocket({type:"xo-leave",code:roomCode});
-  roomCode = "";
-  myMark = "";
-  onlineGameOver = false;
-  mode = "bot";
-  showScreen(screens[0]);
+function disconnectAndMenu(){
+ if(socketReady&&roomCode){
+  sendSocket({type:"xo-leave",code:roomCode});
+ }
+ roomCode="";
+ myMark="";
+ onlineGameOver=false;
+ waitingForOpponent=false;
+ mode="bot";
+ showScreen(screens[0]);
 }
 
 renderBot();
