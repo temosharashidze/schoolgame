@@ -1,41 +1,49 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GAMEXO — Minecraft</title>
-<meta name="description" content="Play Minecraft on GAMEXO.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAMEXO — Minecraft</title>
+  <meta name="description" content="Play Minecraft in your browser on GAMEXO.">
 
-<style>
-html,body{
- margin:0;padding:0;width:100%;height:100%;
- overflow:hidden;background:#000;
-}
-#game_frame{
- display:block;width:100%;height:100%;border:0;
-}
-</style>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
 
-<script src="./classes.js"></script>
+    #game_frame {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  </style>
 
-<script>
-window.addEventListener("load",function(){
- window.minecraftOpts=[
-  "game_frame",
-  "assets.epk",
-  "CgAACQAHc2VydmVycwoAAAADCAACaXAbd3NzOi8vZ2FtZXhvLm9ubGluZQoABG5hbWUMR0FNRVhPIFN1cnZpdmFsAAh0ZW1wbGF0ZQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEUAF1N1cnZpdmFsIE11bHRpcGxheWVy"
- ];
+  <script src="./classes.js"></script>
 
- if(typeof main==="function"){
-  main();
- }else{
-  document.body.innerHTML=
-   '<p style="color:white;padding:20px;font-family:Arial">Game failed to load. Check classes.js and assets.epk.</p>';
- }
-});
-</script>
+  <script>
+    window.addEventListener("load", function () {
+      window.minecraftOpts = [
+        "game_frame",
+        "assets.epk",
+        "CgAACQAHc2VydmVycwoAAAAHCAACaXAADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
+      ];
+
+      if (typeof main === "function") {
+        main();
+      } else {
+        document.body.innerHTML =
+          '<p style="color:white;padding:20px;font-family:Arial">Game failed to load. Check classes.js and assets.epk.</p>';
+      }
+    });
+  </script>
 </head>
+
 <body id="game_frame"></body>
 </html>
-```
