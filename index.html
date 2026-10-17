@@ -5,9 +5,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="whX79KfW4NhF-EyJHECxY2um8o2sezwDxsFFtRY5x2U">
+
 <title>GAMEXO — Gaming Site</title>
 <meta name="description" content="GAMEXO — ონლაინ გეიმინგ საიტი სხვადასხვა ბრაუზერული თამაშით.">
-<meta name="keywords" content="GAMEXO, gaming, browser games, Coreball, CS2 Upgrader, Rivals">
+<meta name="keywords" content="GAMEXO, gaming, browser games, Coreball, CS2 Upgrader, Rivals, X VS 0">
 <meta name="author" content="GAMEXO">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="GAMEXO — Gaming Site">
@@ -18,45 +19,101 @@
 <style>
 *{box-sizing:border-box}
 html,body{
-  margin:0;min-height:100%;
+  margin:0;
+  min-height:100%;
   font-family:Arial,Helvetica,sans-serif;
   background:radial-gradient(circle at top,#172b46 0,#07101d 48%,#03070d 100%);
   color:white
 }
-body{min-height:100vh;display:flex;justify-content:center;align-items:center;overflow:auto}
-.container{width:min(1100px,92vw);text-align:center;padding:45px 20px}
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:auto
+}
+.container{
+  width:min(1100px,92vw);
+  text-align:center;
+  padding:45px 20px
+}
 .logo{
-  font-size:clamp(42px,8vw,82px);font-weight:1000;letter-spacing:6px;
+  font-size:clamp(42px,8vw,82px);
+  font-weight:1000;
+  letter-spacing:6px;
   text-shadow:0 0 15px #48d9ff,0 0 45px #1687ff
 }
-.subtitle{margin-top:10px;color:#9db5c9;font-size:18px}
-.games{margin-top:45px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.subtitle{
+  margin-top:10px;
+  color:#9db5c9;
+  font-size:18px
+}
+.games{
+  margin-top:45px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:22px
+}
 .game{
-  min-height:230px;border:1px solid #ffffff18;border-radius:24px;padding:25px;
+  min-height:230px;
+  border:1px solid #ffffff18;
+  border-radius:24px;
+  padding:25px;
   background:linear-gradient(145deg,#122238dd,#07111ddd);
   box-shadow:0 20px 60px #0008,inset 0 1px #ffffff12;
-  transition:.25s;display:flex;flex-direction:column;justify-content:space-between
+  transition:.25s;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between
 }
 .game:hover{
-  transform:translateY(-8px);border-color:#4bdcff66;
+  transform:translateY(-8px);
+  border-color:#4bdcff66;
   box-shadow:0 25px 70px #000b,0 0 35px #159cff22
 }
 .icon{font-size:55px}
-.game h2{margin:10px 0 6px;font-size:25px}
-.game p{color:#94a9bb;font-size:14px}
-button{
-  width:100%;border:0;border-radius:13px;padding:14px;color:white;
-  font-size:16px;font-weight:900;cursor:pointer;
-  background:linear-gradient(90deg,#087cff,#00c6ff);
-  box-shadow:0 8px 25px #008cff33;transition:.2s
+.game h2{
+  margin:10px 0 6px;
+  font-size:25px
 }
-button:hover{transform:scale(1.03);filter:brightness(1.12)}
-.footer{margin-top:35px;color:#536a7d;font-size:12px}
+.game p{
+  color:#94a9bb;
+  font-size:14px
+}
+button{
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:14px;
+  color:white;
+  font-size:16px;
+  font-weight:900;
+  cursor:pointer;
+  background:linear-gradient(90deg,#087cff,#00c6ff);
+  box-shadow:0 8px 25px #008cff33;
+  transition:.2s
+}
+button:hover{
+  transform:scale(1.03);
+  filter:brightness(1.12)
+}
+.footer{
+  margin-top:35px;
+  color:#536a7d;
+  font-size:12px
+}
 .creator-credit{
-  position:fixed;right:12px;bottom:10px;z-index:99999;
-  color:rgba(255,255,255,.55);font-family:Arial,Helvetica,sans-serif;
-  font-size:12px;font-weight:700;letter-spacing:1px;
-  pointer-events:none;user-select:none
+  position:fixed;
+  right:12px;
+  bottom:10px;
+  z-index:99999;
+  color:rgba(255,255,255,.55);
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
+  pointer-events:none;
+  user-select:none
 }
 @media(max-width:800px){
   .games{grid-template-columns:1fr}
@@ -64,14 +121,17 @@ button:hover{transform:scale(1.03);filter:brightness(1.12)}
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
+
   <div class="logo">GAMEXO</div>
   <div class="subtitle">აირჩიე თამაში და დაიწყე</div>
 
   <div class="games">
 
+    <!-- COREBALL -->
     <div class="game">
       <div>
         <div class="icon">⚫</div>
@@ -81,6 +141,7 @@ button:hover{transform:scale(1.03);filter:brightness(1.12)}
       <button onclick="location.href='./GAME.html'">PLAY COREBALL</button>
     </div>
 
+    <!-- CS2 UPGRADER -->
     <div class="game">
       <div>
         <div class="icon">🔫</div>
@@ -90,6 +151,7 @@ button:hover{transform:scale(1.03);filter:brightness(1.12)}
       <button onclick="location.href='./GAME2.html'">PLAY CS2</button>
     </div>
 
+    <!-- RIVALS -->
     <div class="game">
       <div>
         <div class="icon">🔫</div>
@@ -99,6 +161,7 @@ button:hover{transform:scale(1.03);filter:brightness(1.12)}
       <button onclick="location.href='./GAME4.html'">PLAY NOW</button>
     </div>
 
+    <!-- CAR BUILDER -->
     <div class="game">
       <div>
         <div class="icon">🏎️</div>
@@ -108,19 +171,20 @@ button:hover{transform:scale(1.03);filter:brightness(1.12)}
       <button onclick="location.href='./GAME5.html'">PLAY CAR BUILDER</button>
     </div>
 
-    <!-- GAME6 -->
+    <!-- X VS 0 -->
     <div class="game">
       <div>
-        <div class="icon">🎮</div>
-        <h2>NEW GAME</h2>
-        <p>ახალი თამაში GAMEXO-ზე.</p>
+        <div class="icon">❌⭕</div>
+        <h2>X VS 0</h2>
+        <p>ითამაშე X და 0 — დაამარცხე მოწინააღმდეგე!</p>
       </div>
-      <button onclick="window.location.assign('./GAME6.html')">PLAY NOW</button>
+      <button onclick="location.href='./GAME6.html'">PLAY NOW</button>
     </div>
 
   </div>
 
   <div class="footer">GAMEXO • Your games hub</div>
+
 </div>
 
 <div class="creator-credit">by TEMX</div>
