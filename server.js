@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const WebSocket = require('ws');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,8 +19,40 @@ app.get('/GAME4.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'GAME4.html'));
 });
 
+app.get('/GAME6.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'GAME6.html'));
+});
+
 const wss = new WebSocket.Server({ noServer: true });
+
+// არსებული GAME4 multiplayer
 const rooms = new Map();
+
+// X VS 0-ის ცალკე ონლაინ ოთახები
+const xoRooms = new Map();
+
+const xoWins = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6]
+];
+
+function makeId() {
+  return crypto.randomBytes(12).toString('hex');
+}
+
+function makeRoomCode() {
+  let code;
+
+  do {
+    code = crypto.randomBytes(4)
+      .toString('hex')
+      .slice(0, 6)
+      .toUpperCase();
+  } while (xoRooms.has(code));
+
+  return code;
+}
 
 function send(ws, data) {
   if (ws && ws.readyState === WebSocket.OPEN) {
@@ -47,15 +80,13 @@ function broadcast(room, data, except = null) {
 }
 
 function updateRoom(room) {
-  const players = getPlayers(room);
-
   broadcast(room, {
     type: 'roster',
     code: room.code,
     mode: room.mode,
     maxPlayers: room.maxPlayers,
-    count: players.length,
-    players
+    count: room.players.size,
+    players: getPlayers(room)
   });
 }
 
@@ -73,7 +104,6 @@ function removePlayer(ws) {
 
   if (room.players.size === 0) {
     rooms.delete(code);
-    console.log('Room closed:', code);
     return;
   }
 
@@ -95,6 +125,104 @@ function removePlayer(ws) {
   updateRoom(room);
 }
 
+// ==========================================
+// X VS 0 ONLINE FUNCTIONS
+// ==========================================
+
+function xoWinner(board) {
+  for (const line of xoWins) {
+    const [a, b, c] = line;
+
+    if (
+      board[a] &&
+      board[a] === board[b] &&
+      board[a] === board[c]
+    ) {
+      return {
+        mark: board[a],
+        cells: line
+      };
+    }
+  }
+
+  return null;
+}
+
+function xoSnapshot(room) {
+  return {
+    type: 'xo-state',
+    code: room.code,
+    board: room.board,
+    turn: room.turn,
+    winner: room.winner,
+    winningCells: room.winningCells,
+    draw: room.draw,
+    started: room.started,
+    players: [...room.players.values()].map(p => ({
+      id: p.id,
+      name: p.name,
+      mark: p.mark
+    }))
+  };
+}
+
+function xoSendState(room) {
+  const state = xoSnapshot(room);
+
+  for (const player of room.players.values()) {
+    send(player.ws, {
+      ...state,
+      playerId: player.id,
+      myMark: player.mark
+    });
+  }
+}
+
+function xoBroadcast(room, data) {
+  for (const player of room.players.values()) {
+    send(player.ws, data);
+  }
+}
+
+function xoRemovePlayer(ws) {
+  const code = ws.xoRoomCode;
+  if (!code) return;
+
+  ws.xoRoomCode = null;
+
+  const room = xoRooms.get(code);
+  if (!room) return;
+
+  room.players.delete(ws.xoPlayerId);
+  ws.xoPlayerId = null;
+
+  if (room.players.size === 0) {
+    xoRooms.delete(code);
+    console.log('X VS 0 room closed:', code);
+    return;
+  }
+
+  // დარჩენილი მოთამაშე იმავე ოთახში რჩება
+  // და შეუძლია ახალი მოწინააღმდეგის მოწვევა.
+  room.board = Array(9).fill('');
+  room.turn = 'X';
+  room.winner = null;
+  room.winningCells = [];
+  room.draw = false;
+  room.started = false;
+
+  xoBroadcast(room, {
+    type: 'xo-opponent-left',
+    message: 'მოწინააღმდეგე გაითიშა. დაელოდე ახალ მოთამაშეს.'
+  });
+
+  xoSendState(room);
+}
+
+// ==========================================
+// WEBSOCKET CONNECTION
+// ==========================================
+
 server.on('upgrade', (req, socket, head) => {
   const url = new URL(
     req.url,
@@ -115,6 +243,8 @@ wss.on('connection', ws => {
   ws.isAlive = true;
   ws.roomCode = null;
   ws.playerId = null;
+  ws.xoRoomCode = null;
+  ws.xoPlayerId = null;
 
   ws.on('pong', () => {
     ws.isAlive = true;
@@ -122,7 +252,7 @@ wss.on('connection', ws => {
 
   send(ws, {
     type: 'server-ready',
-    version: 2
+    version: 3
   });
 
   ws.on('message', raw => {
@@ -136,9 +266,200 @@ wss.on('connection', ws => {
 
     if (!msg || typeof msg !== 'object') return;
 
-    // CREATE ROOM
+    // ======================================
+    // X VS 0: CREATE ROOM
+    // ======================================
+
+    if (msg.type === 'xo-create') {
+      if (ws.roomCode || ws.xoRoomCode) {
+        return send(ws, {
+          type: 'xo-error',
+          message: 'ჯერ დატოვე არსებული ოთახი.'
+        });
+      }
+
+      const code = makeRoomCode();
+      const id = makeId();
+
+      const room = {
+        code,
+        players: new Map(),
+        board: Array(9).fill(''),
+        turn: 'X',
+        winner: null,
+        winningCells: [],
+        draw: false,
+        started: false
+      };
+
+      room.players.set(id, {
+        id,
+        ws,
+        name: String(msg.name || 'Player')
+          .trim().slice(0, 16) || 'Player',
+        mark: 'X'
+      });
+
+      xoRooms.set(code, room);
+
+      ws.xoRoomCode = code;
+      ws.xoPlayerId = id;
+
+      console.log('X VS 0 room created:', code);
+
+      xoSendState(room);
+      return;
+    }
+
+    // ======================================
+    // X VS 0: JOIN ROOM
+    // ======================================
+
+    if (msg.type === 'xo-join') {
+      if (ws.roomCode || ws.xoRoomCode) {
+        return send(ws, {
+          type: 'xo-error',
+          message: 'ჯერ დატოვე არსებული ოთახი.'
+        });
+      }
+
+      const code = String(msg.code || '')
+        .trim().toUpperCase();
+
+      const room = xoRooms.get(code);
+
+      if (!room) {
+        return send(ws, {
+          type: 'xo-error',
+          message: 'ოთახი ვერ მოიძებნა. შეამოწმე კოდი.'
+        });
+      }
+
+      if (room.players.size >= 2) {
+        return send(ws, {
+          type: 'xo-error',
+          message: 'ოთახი უკვე სავსეა.'
+        });
+      }
+
+      const id = makeId();
+
+      room.players.set(id, {
+        id,
+        ws,
+        name: String(msg.name || 'Player')
+          .trim().slice(0, 16) || 'Player',
+        mark: '0'
+      });
+
+      ws.xoRoomCode = code;
+      ws.xoPlayerId = id;
+
+      room.started = true;
+
+      console.log('X VS 0 player joined:', code);
+
+      xoSendState(room);
+      return;
+    }
+
+    // ======================================
+    // X VS 0: GAME ACTIONS
+    // ======================================
+
+    if (
+      msg.type === 'xo-move' ||
+      msg.type === 'xo-reset' ||
+      msg.type === 'xo-leave'
+    ) {
+      const room = xoRooms.get(ws.xoRoomCode);
+      const player = room &&
+        room.players.get(ws.xoPlayerId);
+
+      if (!room || !player) {
+        return send(ws, {
+          type: 'xo-error',
+          message: 'ონლაინ ოთახში არ ხარ.'
+        });
+      }
+
+      if (msg.type === 'xo-leave') {
+        xoRemovePlayer(ws);
+        send(ws, { type: 'xo-left' });
+        return;
+      }
+
+      if (msg.type === 'xo-reset') {
+        if (room.players.size !== 2) {
+          return send(ws, {
+            type: 'xo-error',
+            message: 'ახალი თამაშისთვის ორი მოთამაშეა საჭირო.'
+          });
+        }
+
+        room.board = Array(9).fill('');
+        room.turn = 'X';
+        room.winner = null;
+        room.winningCells = [];
+        room.draw = false;
+        room.started = true;
+
+        xoSendState(room);
+        return;
+      }
+
+      // მხოლოდ ორი მოთამაშის მქონე აქტიურ ოთახში
+      // შეიძლება სვლის გაკეთება.
+      if (
+        !room.started ||
+        room.players.size !== 2 ||
+        room.winner ||
+        room.draw
+      ) {
+        return;
+      }
+
+      const index = Number(msg.index);
+
+      if (
+        !Number.isInteger(index) ||
+        index < 0 ||
+        index > 8
+      ) {
+        return;
+      }
+
+      // სერვერი ამოწმებს სვლის რიგს და ცარიელ უჯრას.
+      if (
+        player.mark !== room.turn ||
+        room.board[index] !== ''
+      ) {
+        return;
+      }
+
+      room.board[index] = player.mark;
+
+      const result = xoWinner(room.board);
+
+      if (result) {
+        room.winner = result.mark;
+        room.winningCells = result.cells;
+      } else if (room.board.every(cell => cell !== '')) {
+        room.draw = true;
+      } else {
+        room.turn = room.turn === 'X' ? '0' : 'X';
+      }
+
+      xoSendState(room);
+      return;
+    }
+
+    // ======================================
+    // EXISTING GAME4 MULTIPLAYER
+    // ======================================
+
     if (msg.type === 'create') {
-      if (ws.roomCode) {
+      if (ws.roomCode || ws.xoRoomCode) {
         return send(ws, {
           type: 'server-error',
           message: 'უკვე ხარ ოთახში'
@@ -209,14 +530,12 @@ wss.on('connection', ws => {
       });
 
       updateRoom(room);
-
-      console.log(`ROOM CREATED ${code} (${mode})`);
+      console.log(`GAME4 ROOM CREATED ${code} (${mode})`);
       return;
     }
 
-    // JOIN ROOM
     if (msg.type === 'join') {
-      if (ws.roomCode) {
+      if (ws.roomCode || ws.xoRoomCode) {
         return send(ws, {
           type: 'server-error',
           message: 'უკვე ხარ ოთახში'
@@ -228,9 +547,7 @@ wss.on('connection', ws => {
       const room = rooms.get(code);
 
       if (!room) {
-        return send(ws, {
-          type: 'room-not-found'
-        });
+        return send(ws, { type: 'room-not-found' });
       }
 
       if (room.started) {
@@ -280,32 +597,19 @@ wss.on('connection', ws => {
 
       broadcast(room, {
         type: 'peer-joined',
-        player: {
-          id,
-          name,
-          team,
-          role: 'player'
-        },
+        player: { id, name, team, role: 'player' },
         players: getPlayers(room)
       }, ws);
 
       broadcast(room, {
         type: 'player-joined',
-        player: {
-          id,
-          name,
-          team,
-          role: 'player'
-        },
+        player: { id, name, team, role: 'player' },
         players: getPlayers(room)
       }, ws);
 
       updateRoom(room);
 
-      console.log(
-        `JOINED ${code}: ${room.players.size}/${room.maxPlayers}`
-      );
-
+      console.log(`GAME4 JOINED ${code}: ${room.players.size}/${room.maxPlayers}`);
       return;
     }
 
@@ -314,10 +618,8 @@ wss.on('connection', ws => {
     if (!room || !ws.playerId) return;
 
     const currentPlayer = room.players.get(ws.playerId);
-
     if (!currentPlayer) return;
 
-    // UPDATE PLAYER NAME
     if (msg.type === 'hello') {
       currentPlayer.name =
         String(msg.name || 'Player').slice(0, 16) || 'Player';
@@ -326,7 +628,6 @@ wss.on('connection', ws => {
       return;
     }
 
-    // START MATCH
     if (msg.type === 'start') {
       if (ws.playerId !== room.hostId) {
         return send(ws, {
@@ -359,7 +660,6 @@ wss.on('connection', ws => {
       return;
     }
 
-    // OLD CLIENT RELAY
     if (msg.type === 'relay') {
       broadcast(room, {
         type: 'relay',
@@ -370,7 +670,6 @@ wss.on('connection', ws => {
       return;
     }
 
-    // PLAYER EVENTS
     if (
       msg.type === 'state' ||
       msg.type === 'hit' ||
@@ -388,19 +687,19 @@ wss.on('connection', ws => {
     }
   });
 
-  ws.on('close', () => removePlayer(ws));
-  ws.on('error', () => removePlayer(ws));
+  ws.on('close', () => {
+    xoRemovePlayer(ws);
+    removePlayer(ws);
+  });
+
+  ws.on('error', () => {
+    xoRemovePlayer(ws);
+    removePlayer(ws);
+  });
 });
 
-function makeId() {
-  return (
-    Date.now().toString(36) +
-    '-' +
-    Math.random().toString(36).slice(2, 9)
-  );
-}
-
-setInterval(() => {
+// WebSocket keep-alive
+const heartbeat = setInterval(() => {
   for (const ws of wss.clients) {
     if (ws.isAlive === false) {
       ws.terminate();
@@ -412,19 +711,23 @@ setInterval(() => {
   }
 }, 25000);
 
+wss.on('close', () => clearInterval(heartbeat));
+
 app.get('/health', (req, res) => {
   res.json({
     ok: true,
-    service: 'SchoolGame 3D Multiplayer',
-    rooms: rooms.size
+    service: 'GAMEXO / SchoolGame 3D Multiplayer',
+    game4Rooms: rooms.size,
+    xoRooms: xoRooms.size
   });
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log('==============================');
-  console.log(' SCHOOLGAME 3D SERVER');
+  console.log(' GAMEXO MULTIPLAYER SERVER');
   console.log('==============================');
   console.log('Port:', PORT);
-  console.log('Game: /GAME4.html');
+  console.log('Game4: /GAME4.html');
+  console.log('Game6: /GAME6.html');
   console.log('WebSocket: /ws');
 });
