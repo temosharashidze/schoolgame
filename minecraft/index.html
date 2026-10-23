@@ -1,62 +1,114 @@
 
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ka">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GAMEXO — Minecraft</title>
-<meta name="description" content="Play Minecraft in your browser on GAMEXO.">
-
 <style>
-html,body{
-  margin:0;padding:0;width:100%;height:100%;
-  overflow:hidden;background:#000;
+html,body,#game_frame{
+  margin:0;width:100%;height:100%;padding:0;
+  overflow:hidden;background:#000;border:0;
 }
-#game_frame{
-  display:block;width:100%;height:100%;border:0;
-}
-#gam exo-servers{
-  position:fixed;z-index:99999;top:12px;right:12px;
-  padding:12px 16px;border:2px solid #55ee88;
-  border-radius:10px;background:#102820;color:#55ee88;
+#server-help{
+  position:fixed;right:10px;top:10px;z-index:99999;
+  padding:12px;background:#123526;color:#fff;
+  border:2px solid #55ee88;border-radius:10px;
   font-weight:bold;cursor:pointer;
 }
 </style>
 
 <script src="./classes.js"></script>
 <script>
-window.addEventListener("load", function () {
-  window.minecraftOpts = [
+window.addEventListener("load",function(){
+  const serverList = [
+    ["ArchMC","wss://arch.mc"],
+    ["Voidsent MC","wss://mc.voidsent.net"],
+    ["Pixel Craft","wss://pcsmp.net"],
+    ["MercuryMC","wss://mercurymc.net"],
+    ["Zentic Network","wss://zentic.cc"],
+    ["TuffNET","wss://tuff.ws"],
+    ["FKAS Survival","wss://eaglercraft.co.uk"],
+    ["DPixel","wss://web.asspixel.net/CAP/"],
+    ["CraftClue Legacy","wss://legacy.craftclue.rocks"],
+    ["DSSX","wss://mc.dssx.uk"],
+    ["ArchMC Legacy","wss://mc.arch.lol"],
+    ["LegendSMP","wss://legxndsmp.minecraft.pe"],
+    ["GG SMP","wss://ggsmp.net/"],
+    ["Clever Teaching","wss://clever-teaching.com/web/"],
+    ["Aeon Network","wss://aeon-network.net/1.8"],
+    ["HeartSMP","wss://play.heartsmp.net"],
+    ["ZythMC","wss://mc.zyth.me"],
+    ["CerealNetwork","wss://cerealnet.work"],
+    ["Venstone","wss://venstone.ddns.net:8082"]
+  ];
+
+  window.minecraftOpts=[
     "game_frame",
     "assets.epk",
     "CgAACQAHc2VydmVycwoAAAAHCAACaXADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
   ];
 
-  // ახალი სერვერების მისამართები.
-  // სერვერის თავსებადობა წინასწარ გარანტირებული არ არის.
-  const extraServers = [
-    ["DPixel", "wss://web.asspixel.net/CAP/"],
-    ["CraftClue Legacy", "wss://legacy.craftclue.rocks"],
-    ["DSSX", "wss://mc.dssx.uk"],
-    ["ArchMC Legacy", "wss://mc.arch.lol"],
-    ["LegendSMP", "wss://legxndsmp.minecraft.pe"],
-    ["GG SMP", "wss://ggsmp.net/"],
-    ["Clever Teaching", "wss://clever-teaching.com/web/"],
-    ["Aeon Network", "wss://aeon-network.net/1.8"],
-    ["HeartSMP", "wss://play.heartsmp.net"],
-    ["ZythMC", "wss://mc.zyth.me"],
-    ["CerealNetwork", "wss://cerealnet.work"],
-    ["Venstone", "wss://venstone.ddns.net:8082"]
-  ];
+  // ვცდილობთ სერვერების სიის NBT მონაცემების გაფართოებას.
+  try {
+    const raw = atob(window.minecraftOpts[2]);
+    const bytes = Uint8Array.from(raw,c=>c.charCodeAt(0));
+    const marker = [9,0,7,115,101,114,118,101,114,115,10];
+    let start = -1;
 
-  // ამ ვერსიაში სერვერების ორიგინალი სია
-  // უცვლელი რჩება, სანამ მისი ზუსტი NBT ფორმატი
-  // უსაფრთხოდ არ განახლდება.
+    for(let i=0;i<=bytes.length-marker.length;i++){
+      if(marker.every((v,j)=>bytes[i+j]===v)){start=i;break;}
+    }
 
-  if (typeof window.main === "function") {
+    if(start!==-1){
+      const offset=start+marker.length;
+      const view=new DataView(bytes.buffer);
+      const oldCount=view.getUint32(offset,false);
+      const encoder=new TextEncoder();
+
+      function str(s){
+        const b=encoder.encode(s);
+        return [(b.length>>8)&255,b.length&255,...b];
+      }
+      function tagString(n,v){return [8,...str(n),...str(v)];}
+      function tagByte(n,v){return [1,...str(n),v];}
+
+      function encodeServer(name,ip){
+        return [
+          ...tagString("ip",ip),
+          ...tagString("name",name),
+          ...tagByte("template",1),
+          ...tagByte("hideAddress",0),
+          ...tagString("forcedMOTD","GAMEXO Server"),
+          0
+        ];
+      }
+
+      const extra=serverList.map(s=>encodeServer(s[0],s[1])).flat();
+      const merged=new Uint8Array(bytes.length+extra.length);
+      merged.set(bytes.subarray(0,bytes.length-1));
+      merged.set(extra,bytes.length-1);
+      merged[merged.length-1]=bytes[bytes.length-1];
+
+      new DataView(merged.buffer).setUint32(offset,oldCount+serverList.length,false);
+
+      let binary="";
+      for(let i=0;i<merged.length;i+=8192){
+        binary+=String.fromCharCode(...merged.subarray(i,i+8192));
+      }
+      window.minecraftOpts[2]=btoa(binary);
+    } else {
+      console.error("NBT server list marker not found.");
+    }
+  } catch(e) {
+    console.error("Server list update failed:",e);
+  }
+
+  if(typeof window.main==="function"){
     window.main();
-  } else {
-    document.body.innerHTML =
+  }else{
+    document.body.innerHTML=
       '<div style="color:white;padding:20px;font-family:Arial">' +
       'Minecraft ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.' +
       '</div>';
@@ -66,11 +118,9 @@ window.addEventListener("load", function () {
 </head>
 <body>
 <div id="game_frame"></div>
-
-<button
-  id="game-servers"
-  onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
-  🌐 GAMEXO SERVERS
+<button id="server-help"
+ onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
+ 🌐 SERVER LIST
 </button>
 </body>
 </html>
