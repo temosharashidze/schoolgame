@@ -2,105 +2,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GAMEXO — Minecraft</title>
-  <meta name="description" content="Play Minecraft in your browser on GAMEXO.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAMEXO — Minecraft</title>
+<meta name="description" content="Play Minecraft in your browser on GAMEXO.">
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
+<style>
+html,body{
+  margin:0;padding:0;width:100%;height:100%;
+  overflow:hidden;background:#000;
+}
+#game_frame{
+  display:block;width:100%;height:100%;border:0;
+}
+#gam exo-servers{
+  position:fixed;z-index:99999;top:12px;right:12px;
+  padding:12px 16px;border:2px solid #55ee88;
+  border-radius:10px;background:#102820;color:#55ee88;
+  font-weight:bold;cursor:pointer;
+}
+</style>
 
-    #game_frame {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
+<script src="./classes.js"></script>
+<script>
+window.addEventListener("load", function () {
+  window.minecraftOpts = [
+    "game_frame",
+    "assets.epk",
+    "CgAACQAHc2VydmVycwoAAAAHCAACaXADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
+  ];
 
-    #game_frame > #game_frame {
-      width: 100%;
-      height: 100%;
-    }
+  // ახალი სერვერების მისამართები.
+  // სერვერის თავსებადობა წინასწარ გარანტირებული არ არის.
+  const extraServers = [
+    ["DPixel", "wss://web.asspixel.net/CAP/"],
+    ["CraftClue Legacy", "wss://legacy.craftclue.rocks"],
+    ["DSSX", "wss://mc.dssx.uk"],
+    ["ArchMC Legacy", "wss://mc.arch.lol"],
+    ["LegendSMP", "wss://legxndsmp.minecraft.pe"],
+    ["GG SMP", "wss://ggsmp.net/"],
+    ["Clever Teaching", "wss://clever-teaching.com/web/"],
+    ["Aeon Network", "wss://aeon-network.net/1.8"],
+    ["HeartSMP", "wss://play.heartsmp.net"],
+    ["ZythMC", "wss://mc.zyth.me"],
+    ["CerealNetwork", "wss://cerealnet.work"],
+    ["Venstone", "wss://venstone.ddns.net:8082"]
+  ];
 
-    #game_frame body {
-      margin: 0;
-    }
+  // ამ ვერსიაში სერვერების ორიგინალი სია
+  // უცვლელი რჩება, სანამ მისი ზუსტი NBT ფორმატი
+  // უსაფრთხოდ არ განახლდება.
 
-    #game_frame {
-      color: white;
-    }
-
-    #game_frame .unused {
-      display: none;
-    }
-
-    #game_frame {
-      position: relative;
-    }
-
-    #game_frame #game_frame {
-      border: 0;
-    }
-
-    #game_frame .game-overlay {
-      position: fixed;
-      z-index: 99999;
-      top: 12px;
-      right: 12px;
-    }
-
-    #game_frame .game-overlay button {
-      padding: 12px 16px;
-      border: 2px solid #55ee88;
-      border-radius: 10px;
-      background: #102820;
-      color: #55ee88;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #game_frame .game-overlay button:hover {
-      background: #1a4932;
-    }
-  </style>
-
-  <script src="./classes.js"></script>
-
-  <script>
-    window.addEventListener("load", function () {
-      window.minecraftOpts = [
-        "game_frame",
-        "assets.epk",
-        "CgAACQAHc2VydmVycwoAAAAHCAACaXADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
-      ];
-
-      if (typeof window.main === "function") {
-        window.main();
-      } else {
-        document.body.innerHTML =
-          '<div style="color:white;padding:20px;font-family:Arial">' +
-          'Minecraft ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.' +
-          '</div>';
-      }
-    });
-  </script>
+  if (typeof window.main === "function") {
+    window.main();
+  } else {
+    document.body.innerHTML =
+      '<div style="color:white;padding:20px;font-family:Arial">' +
+      'Minecraft ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.' +
+      '</div>';
+  }
+});
+</script>
 </head>
-
 <body>
-  <div id="game_frame"></div>
+<div id="game_frame"></div>
 
-  <div class="game-overlay">
-    <button
-      onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
-      🌐 GAMEXO SERVERS
-    </button>
-  </div>
+<button
+  id="game-servers"
+  onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
+  🌐 GAMEXO SERVERS
+</button>
 </body>
 </html>
