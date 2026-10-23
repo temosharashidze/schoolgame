@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PC Forge Simulator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090e18;color:#edf4ff;font-family:Arial,sans-serif}
+header{padding:20px 5%;background:#101827;border-bottom:1px solid #28364b;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:23px;font-weight:900}.logo span{color:#46e6a0}
+header small{color:#46e6a0}
+main{max-width:1200px;margin:auto;padding:25px 16px}
+h1{font-size:clamp(27px,4vw,42px);margin-bottom:8px}
+p{color:#98a9c2;line-height:1.6}
+.hero{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+.budget{padding:17px 22px;background:#111c2b;border:1px solid #2c3c52;border-radius:14px;min-width:170px}
+.budget strong{display:block;color:#46e6a0;font-size:28px;margin-top:7px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.panel{background:#101722;border:1px solid #28364b;border-radius:17px;overflow:hidden}
+.heading{padding:17px 20px;border-bottom:1px solid #28364b;font-weight:bold}
+.stage{padding:20px;background:radial-gradient(ellipse,#1c3550,#0d1420);min-height:350px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.case{position:relative;width:245px;height:290px;flex-shrink:0;background:linear-gradient(130deg,#344357,#111722 65%);border:3px solid #52657c;border-radius:13px;padding:13px;box-shadow:15px 20px 40px #0008;transition:.4s}
+.glass{height:100%;position:relative;border:1px solid #5b779577;background:#0a121de8;border-radius:5px;overflow:hidden}
+.board{position:absolute;left:13px;top:20px;width:145px;height:205px;background:#17312e;border:2px solid #31534b;transition:.3s}
+.cpu{position:absolute;top:25px;left:20px;width:53px;height:53px;background:#8296a9;border:4px solid #516a80;display:grid;place-items:center;color:#101722;font-size:10px;font-weight:bold;box-shadow:0 0 13px var(--rgb);transition:.3s;z-index:2}
+.ram{position:absolute;top:26px;left:83px;width:7px;height:80px;background:var(--rgb);box-shadow:0 0 10px var(--rgb);transition:.3s}
+.gpu{position:absolute;top:123px;left:5px;width:145px;height:48px;background:#283b50;border:2px solid #71849a;border-radius:5px;display:flex;align-items:center;justify-content:space-evenly;gap:3px;transition:width .35s,height .35s,background .35s;z-index:3}
+.fan{width:32px;height:32px;flex:0 0 32px;border:3px solid var(--rgb);border-radius:50%;background:repeating-conic-gradient(#607187 0deg 25deg,#192536 25deg 50deg);animation:spin 2s linear infinite;transition:.3s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ssd{position:absolute;bottom:20px;left:15px;width:50px;height:13px;background:#237f6c;border:1px solid var(--rgb);transition:.3s}
+.psu{position:absolute;bottom:13px;right:10px;width:52px;height:30px;background:repeating-linear-gradient(0deg,#202b3b,#202b3b 3px,#526177 4px);transition:.3s}
+.led{position:absolute;bottom:7px;left:0;width:100%;height:3px;background:var(--rgb);box-shadow:0 0 15px var(--rgb)}
+.off .led{opacity:.05}
+.off .fan{animation:none;border-color:#435064}
+.off .cpu{box-shadow:none;background:#46515d}
+.case.tier-1{box-shadow:0 0 12px #46e6a033,15px 20px 40px #0008}
+.case.tier-2{box-shadow:0 0 20px var(--rgb),15px 20px 40px #0008}
+.case.tier-3{box-shadow:0 0 32px var(--rgb),15px 20px 40px #0008;border-color:var(--rgb)}
+.case.powered .fan{animation-duration:1s}
+.case.powered .gpu{box-shadow:0 0 15px var(--rgb)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.stat{background:#151f2e;padding:12px 5px;border-radius:10px;text-align:center}
+.stat small{display:block;color:#93a5bd;font-size:11px}
+.stat strong{display:block;font-size:19px;margin-top:7px}
+.parts{padding:12px;display:grid;gap:10px}
+.part{padding:13px;background:#151f2e;border:1px solid #293950;border-radius:11px}
+.part-top{display:flex;gap:10px;align-items:center}
+.icon{font-size:25px}
+.part-name{font-weight:bold;font-size:14px}
+.part-info{font-size:12px;color:#91a4be;margin-top:5px}
+select{width:100%;margin-top:10px;padding:10px;background:#0a1220;color:white;border:1px solid #34475f;border-radius:8px}
+button{cursor:pointer;font-weight:bold;border-radius:9px;padding:13px;border:0}
+.primary{width:100%;background:#46e6a0;color:#06271a}
+.secondary{width:100%;background:#202d40;color:#e5efff;border:1px solid #34455e}
+.actions{padding:14px;display:grid;gap:9px}
+.message{margin:0 14px 14px;padding:13px;border:1px solid #34455e;border-radius:9px;font-size:13px;line-height:1.6;color:#c0cee0}
+.good{border-color:#46e6a0;color:#7ff0b9}
+.bad{border-color:#ff697f;color:#ff9baa}
+.rgb{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-top:1px solid #28364b;color:#b5c4d9;font-size:13px}
+input[type=color]{width:40px;height:30px;background:none;border:0;cursor:pointer}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.hero{align-items:stretch;flex-direction:column}.budget{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">PC<span>FORGE</span></div>
+  <small>● BUILD SIMULATOR</small>
+</header>
+<main>
+  <div class="hero">
+    <div>
+      <h1>ააწყვე შენი PC. 🖥️</h1>
+      <p>შეარჩიე ნაწილები, დაიცავი ბიუჯეტი და ჩართე შენი აწყობილი კომპიუტერი.</p>
+    </div>
+    <div class="budget">
+      <small>დარჩენილი ბიუჯეტი</small>
+      <strong id="budget">$2,000</strong>
+      <small>საწყისი ბიუჯეტი: $2,000</small>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="heading">🖥️ შენი კომპიუტერი</div>
+      <div class="stage">
+        <div class="case off" id="case">
+          <div class="glass">
+            <div class="board" id="board">
+              <div class="cpu" id="cpuVisual">CPU</div>
+              <div id="ramVisual"></div>
+            </div>
+            <div class="gpu" id="gpuVisual">
+              <div class="fan"></div><div class="fan"></div>
+            </div>
+            <div class="ssd" id="ssdVisual"></div>
+            <div class="psu" id="psuVisual"></div>
+            <div class="led"></div>
+          </div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>ქულა</small><strong id="score">0</strong></div>
+        <div class="stat"><small>მოხმარება</small><strong id="watts">0 W</strong></div>
+        <div class="stat"><small>ნაწილები</small><strong id="count">0/6</strong></div>
+      </div>
+      <div class="rgb">
+        RGB განათება
+        <input id="color" type="color" value="#46e6a0">
+      </div>
+      <div class="message" id="message">აირჩიე ნაწილები და დაიწყე აწყობა!</div>
+      <div class="actions">
+        <button class="primary" onclick="testPC()">⚡ ჩართე კომპიუტერი</button>
+        <button class="secondary" onclick="resetPC()">↻ თავიდან აწყობა</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="heading">🧩 აირჩიე კომპონენტები</div>
+      <div class="parts" id="parts"></div>
+    </section>
+  </div>
+</main>
+<script>
+const budgetLimit=2000;
+const components=[
+{id:"cpu",name:"პროცესორი",icon:"🧠",options:[
+{name:"Ryzen 5 5600",info:"6 ბირთვი · AM4",price:130,score:22,w:65,socket:"AM4"},
+{name:"Ryzen 7 7800X3D",info:"8 ბირთვი · AM5",price:350,score:45,w:120,socket:"AM5"},
+{name:"Intel Core i9-14900K",info:"24 ბირთვი · LGA1700",price:500,score:48,w:253,socket:"LGA1700"}]},
+{id:"mb",name:"დედაპლატა",icon:"🔌",options:[
+{name:"B450 Gaming",info:"AM4 · DDR4",price:90,score:5,w:35,socket:"AM4",ram:"DDR4"},
+{name:"B650 Gaming",info:"AM5 · DDR5",price:180,score:10,w:45,socket:"AM5",ram:"DDR5"},
+{name:"Z790 Pro",info:"LGA1700 · DDR5",price:230,score:12,w:55,socket:"LGA1700",ram:"DDR5"}]},
+{id:"gpu",name:"ვიდეოკარტა",icon:"🎮",options:[
+{name:"RTX 4060",info:"8 GB · Gaming",price:300,score:28,w:115},
+{name:"RTX 4070 SUPER",info:"12 GB · High-end",price:600,score:48,w:220},
+{name:"RTX 4090",info:"24 GB · Ultra",price:1100,score:75,w:450}]},
+{id:"ram",name:"RAM მეხსიერება",icon:"💾",options:[
+{name:"16 GB DDR4",info:"2 × 8 GB",price:40,score:5,w:8,ram:"DDR4"},
+{name:"32 GB DDR5",info:"2 × 16 GB",price:90,score:10,w:10,ram:"DDR5"},
+{name:"64 GB DDR5",info:"2 × 32 GB",price:170,score:13,w:12,ram:"DDR5"}]},
+{id:"ssd",name:"SSD დისკი",icon:"💿",options:[
+{name:"500 GB NVMe",info:"სწრაფი SSD",price:35,score:3,w:5},
+{name:"1 TB NVMe",info:"PCIe 4.0",price:65,score:5,w:6},
+{name:"2 TB NVMe",info:"High-speed",price:120,score:7,w:8}]},
+{id:"psu",name:"კვების ბლოკი",icon:"⚡",options:[
+{name:"550W Bronze",info:"550 W",price:55,score:1,w:0,capacity:550},
+{name:"750W Gold",info:"750 W",price:100,score:2,w:0,capacity:750},
+{name:"1000W Platinum",info:"1000 W",price:180,score:3,w:0,capacity:1000}]}
+];
+
+let chosen={};
+let powered=false;
+let rgb="#46e6a0";
+
+function item(id){
+ if(chosen[id]===undefined)return null;
+ return components.find(c=>c.id===id).options[chosen[id]];
+}
+function cost(){
+ return Object.keys(chosen).reduce((s,id)=>s+item(id).price,0);
+}
+function usedPower(){
+ return Object.keys(chosen).reduce((s,id)=>s+item(id).w,0);
+}
+function score(){
+ return Object.keys(chosen).reduce((s,id)=>s+item(id).score,0);
+}
+function compatibility(){
+ const errors=[];
+ const cpu=item("cpu"),mb=item("mb"),ram=item("ram"),gpu=item("gpu"),psu=item("psu");
+ if(cpu&&mb&&cpu.socket!==mb.socket)errors.push("პროცესორი და დედაპლატა შეუთავსებელია.");
+ if(ram&&mb&&ram.ram!==mb.ram)errors.push("RAM დედაპლატას არ შეესაბამება.");
+ if(psu&&gpu&&psu.capacity<usedPower()*1.2)errors.push("კვების ბლოკი სუსტია ამ კონფიგურაციისთვის.");
+ if(cost()>budgetLimit)errors.push("ბიუჯეტი გადაჭარბებულია.");
+ return errors;
+}
+
+function renderParts(){
+ document.getElementById("parts").innerHTML=components.map(c=>{
+  const selected=chosen[c.id];
+  const current=item(c.id);
+  const options=c.options.map((o,i)=>{
+   const projected=cost()-(current?current.price:0)+o.price;
+   return `<option value="${i}" ${selected===i?"selected":""} ${projected>budgetLimit&&selected!==i?"disabled":""}>${o.name} — $${o.price}</option>`;
+  }).join("");
+  return `<div class="part">
+    <div class="part-top"><div class="icon">${c.icon}</div><div>
+      <div class="part-name">${c.name}</div>
+      <div class="part-info">${current?current.name+" · "+current.info:"აირჩიე კომპონენტი"}</div>
+    </div></div>
+    <select aria-label="${c.name}" onchange="choose('${c.id}',this.value)">
+      <option value="" disabled ${selected===undefined?"selected":""}>აირჩიე ნაწილი...</option>${options}
+    </select>
+  </div>`;
+ }).join("");
+}
+
+function message(text,type=""){
+ const el=document.getElementById("message");
+ el.textContent=text;
+ el.className="message "+type;
+}
+
+function choose(id,value){
+ if(value==="")return;
+ const index=Number(value);
+ const old=item(id);
+ const next=components.find(c=>c.id===id).options[index];
+ const nextCost=cost()-(old?old.price:0)+next.price;
+
+ if(nextCost>budgetLimit){
+  message("❌ ბიუჯეტი არ არის საკმარისი!","bad");
+  renderParts();
+  return;
+ }
+
+ const previous=chosen[id];
+ chosen[id]=index;
+ const errors=compatibility();
+
+ if(errors.some(e=>e.includes("პროცესორი და დედაპლატა"))||
+    errors.some(e=>e.includes("RAM დედაპლატას"))){
+  if(previous===undefined)delete chosen[id];
+  else chosen[id]=previous;
+  message("❌ "+errors.find(e=>e.includes("შეუთავსებელია")||e.includes("RAM დედაპლატას")),"bad");
+  render();
+  return;
+ }
+
+ powered=false;
+ message(errors.length?"⚠️ "+errors.join(" "):"✅ "+next.name+" დაყენებულია!",errors.length?"bad":"good");
+ render();
+}
+
+function renderVisuals(){
+ const cpu=item("cpu");
+ const gpu=item("gpu");
+ const ram=item("ram");
+ const mb=item("mb");
+ const ssd=item("ssd");
+ const psu=item("psu");
+ const pc=document.getElementById("case");
+ const cpuEl=document.getElementById("cpuVisual");
+ const gpuEl=document.getElementById("gpuVisual");
+
+ // CPU: მოდელის მიხედვით ჩიპის ზომა და წარწერა
+ cpuEl.textContent=cpu
+  ?cpu.name.includes("7800X3D")?"R7 X3D"
+  :cpu.name.includes("14900K")?"CORE i9":"RYZEN 5"
+  :"CPU";
+ cpuEl.style.width=cpu&&cpu.score>=45?"65px":"53px";
+ cpuEl.style.height=cpu&&cpu.score>=45?"60px":"53px";
+ cpuEl.style.fontSize=cpu&&cpu.score>=45?"9px":"10px";
+ cpuEl.style.background=cpu&&cpu.score>=45?rgb:"#8296a9";
+ cpuEl.style.boxShadow=cpu?`0 0 15px ${rgb}`:"none";
+
+ // GPU: სხვადასხვა ზომა და ქულერების რაოდენობა
+ let fanCount=2;
+ if(gpu&&gpu.score>=45)fanCount=3;
+ const gpuWidth=gpu&&gpu.score>=70?178:gpu&&gpu.score>=45?165:145;
+ const gpuHeight=gpu&&gpu.score>=70?62:gpu&&gpu.score>=45?55:48;
+ gpuEl.style.width=gpu?gpuWidth+"px":"145px";
+ gpuEl.style.height=gpu?gpuHeight+"px":"48px";
+ gpuEl.style.top=gpu&&gpu.score>=70?"115px":"123px";
+ gpuEl.style.background=gpu&&gpu.score>=70?"#4a3858":gpu&&gpu.score>=45?"#30475d":"#283b50";
+ gpuEl.style.borderColor=gpu&&gpu.score>=70?rgb:"#71849a";
+ gpuEl.innerHTML=Array.from({length:gpu?fanCount:2},()=>'<div class="fan"></div>').join("");
+ gpuEl.querySelectorAll(".fan").forEach(f=>{
+   const size=gpu&&gpu.score>=70?35:gpu&&gpu.score>=45?30:32;
+   f.style.width=size+"px";
+   f.style.height=size+"px";
+   f.style.flexBasis=size+"px";
+   f.style.borderColor=rgb;
+ });
+
+ // RAM: DDR4 და DDR5 მოდულების ვიზუალი
+ const ramVisual=document.getElementById("ramVisual");
+ ramVisual.innerHTML="";
+ const ramCount=ram&&ram.name.startsWith("64 GB")?4:ram?2:0;
+ for(let i=0;i<ramCount;i++){
+   const stick=document.createElement("div");
+   stick.style.cssText=`position:absolute;top:${25+(i%2)*5}px;left:${80+i*12}px;width:8px;height:${ram.name.startsWith("64 GB")?92:ram.name.startsWith("32 GB")?82:65}px;background:${ram.ram==="DDR5"?rgb:"#3c897b"};border:1px solid #9ffff0;box-shadow:0 0 8px ${rgb};transition:.3s`;
+   ramVisual.appendChild(stick);
+ }
+
+ // დედაპლატა
+ document.getElementById("board").style.background=mb&&mb.ram==="DDR5"?"#17463d":"#17312e";
+ document.getElementById("board").style.borderColor=mb&&mb.ram==="DDR5"?rgb:"#31534b";
+
+ // SSD: ტევადობის მიხედვით იცვლება სიგრძე
+ const ssdEl=document.getElementById("ssdVisual");
+ ssdEl.style.width=ssd&&ssd.name.startsWith("2 TB")?"80px":ssd&&ssd.name.startsWith("1 TB")?"65px":"50px";
+ ssdEl.style.background=ssd?rgb:"#237f6c";
+ ssdEl.style.boxShadow=ssd?`0 0 8px ${rgb}`:"none";
+
+ // PSU: სიმძლავრის მიხედვით ზომა
+ const psuEl=document.getElementById("psuVisual");
+ psuEl.style.width=psu&&psu.capacity>=1000?"64px":psu&&psu.capacity>=750?"58px":"52px";
+ psuEl.style.background=psu&&psu.capacity>=1000
+  ?"repeating-linear-gradient(0deg,#27394b,#27394b 3px,#46e6a0 4px)"
+  :"repeating-linear-gradient(0deg,#202b3b,#202b3b 3px,#526177 4px)";
+
+ // კომპიუტერის დონე: ქულების მიხედვით
+ const tier=score()>=90?3:score()>=60?2:score()>=30?1:0;
+ pc.classList.remove("tier-1","tier-2","tier-3");
+ if(tier)pc.classList.add("tier-"+tier);
+ pc.classList.toggle("powered",powered);
+}
+
+function render(){
+ document.getElementById("budget").textContent="$"+(budgetLimit-cost()).toLocaleString("en-US");
+ document.getElementById("score").textContent=score();
+ document.getElementById("watts").textContent=usedPower()+" W";
+ document.getElementById("count").textContent=Object.keys(chosen).length+"/6";
+ document.getElementById("case").classList.toggle("off",!powered);
+ document.documentElement.style.setProperty("--rgb",rgb);
+ renderParts();
+ renderVisuals();
+}
+
+function testPC(){
+ if(components.some(c=>chosen[c.id]===undefined)){
+  message("❌ ჯერ ყველა კომპონენტი აირჩიე!","bad");
+  return;
+ }
+ const errors=compatibility();
+ if(errors.length){
+  message("❌ ტესტი ვერ გაიარა: "+errors.join(" "),"bad");
+  return;
+ }
+ powered=true;
+ render();
+ let rank="საწყისი დონის PC";
+ if(score()>=90)rank="ულტრა Gaming PC";
+ else if(score()>=65)rank="ძლიერი Gaming PC";
+ else if(score()>=40)rank="კარგი Gaming PC";
+ message("🚀 კომპიუტერი ჩაირთო! "+rank+" · "+score()+" ქულა · ღირებულება $"+cost()+".","good");
+}
+
+function resetPC(){
+ chosen={};
+ powered=false;
+ render();
+ message("🔧 ახალი აწყობა დაიწყო. აირჩიე კომპონენტები!");
+}
+
+document.getElementById("color").addEventListener("input",e=>{
+ rgb=e.target.value;
+ render();
+});
+
+render();
+</script>
+</body>
+</html>
