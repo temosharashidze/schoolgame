@@ -5,122 +5,255 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GAMEXO — Minecraft</title>
+<title>GAMEXO — Minecraft 1.5.2</title>
+
 <style>
-html,body,#game_frame{
-  margin:0;width:100%;height:100%;padding:0;
-  overflow:hidden;background:#000;border:0;
+html, body, #game_frame {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+  border: 0;
 }
-#server-help{
-  position:fixed;right:10px;top:10px;z-index:99999;
-  padding:12px;background:#123526;color:#fff;
-  border:2px solid #55ee88;border-radius:10px;
-  font-weight:bold;cursor:pointer;
+
+#server-help {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  z-index: 99999;
+  padding: 12px;
+  background: #123526;
+  color: #fff;
+  border: 2px solid #55ee88;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>
 
 <script src="./classes.js"></script>
+
 <script>
-window.addEventListener("load",function(){
+(function () {
+  "use strict";
+
+  // საჯარო Eaglercraft WebSocket სერვერების სია.
+  // მისამართების მოქმედება და ვერსიასთან თავსებადობა
+  // შეიძლება დროთა განმავლობაში შეიცვალოს.
   const serverList = [
-    ["ArchMC","wss://arch.mc"],
-    ["Voidsent MC","wss://mc.voidsent.net"],
-    ["Pixel Craft","wss://pcsmp.net"],
-    ["MercuryMC","wss://mercurymc.net"],
-    ["Zentic Network","wss://zentic.cc"],
-    ["TuffNET","wss://tuff.ws"],
-    ["FKAS Survival","wss://eaglercraft.co.uk"],
-    ["DPixel","wss://web.asspixel.net/CAP/"],
-    ["CraftClue Legacy","wss://legacy.craftclue.rocks"],
-    ["DSSX","wss://mc.dssx.uk"],
-    ["ArchMC Legacy","wss://mc.arch.lol"],
-    ["LegendSMP","wss://legxndsmp.minecraft.pe"],
-    ["GG SMP","wss://ggsmp.net/"],
-    ["Clever Teaching","wss://clever-teaching.com/web/"],
-    ["Aeon Network","wss://aeon-network.net/1.8"],
-    ["HeartSMP","wss://play.heartsmp.net"],
-    ["ZythMC","wss://mc.zyth.me"],
-    ["CerealNetwork","wss://cerealnet.work"],
-    ["Venstone","wss://venstone.ddns.net:8082"]
+    ["ArchMC", "wss://arch.mc"],
+    ["Voidsent MC", "wss://mc.voidsent.net"],
+    ["Pixel Craft", "wss://pcsmp.net"],
+    ["MercuryMC", "wss://mercurymc.net"],
+    ["Zentic Network", "wss://zentic.cc"],
+    ["TuffNET", "wss://tuff.ws"],
+    ["DPixel", "wss://web.asspixel.net/CAP/"],
+    ["CraftClue Legacy", "wss://legacy.craftclue.rocks"],
+    ["DSSX", "wss://mc.dssx.uk"],
+    ["ArchMC Legacy", "wss://mc.arch.lol"],
+    ["LegendSMP", "wss://legxndsmp.minecraft.pe"],
+    ["GG SMP", "wss://ggsmp.net/"],
+    ["Clever Teaching", "wss://clever-teaching.com/web/"],
+    ["Aeon Network", "wss://aeon-network.net/1.8"],
+    ["HeartSMP", "wss://play.heartsmp.net"],
+    ["ZythMC", "wss://mc.zyth.me"],
+    ["CerealNetwork", "wss://cerealnet.work"],
+    ["Venstone", "wss://venstone.ddns.net:8082"]
   ];
 
-  window.minecraftOpts=[
-    "game_frame",
-    "assets.epk",
-    "CgAACQAHc2VydmVycwoAAAAHCAACaXADXdzczovL2FyY2gubWMIAARuYW1lAAZBcmNoTUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABlQdWJsaWMgRWFnbGVyY3JhZnQgc2VydmVyAAgAAmlwABV3c3M6Ly9tYy52b2lkc2VudC5uZXQIAARuYW1lAAtWb2lkc2VudCBNQwEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAHlN1cnZpdmFsIOKAoiBQdlAg4oCiIE1pbmlnYW1lcwAIAAJpcAAPd3NzOi8vcGNzbXAubmV0CAAEbmFtZQALUGl4ZWwgQ3JhZnQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgQ3JlYXRpdmUACAACaXAAE3dzczovL21lcmN1cnltYy5uZXQIAARuYW1lAAlNZXJjdXJ5TUMBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABBTdXJ2aXZhbCDigKIgUHZQAAgAAmlwAA93c3M6Ly96ZW50aWMuY2MIAARuYW1lAA5aZW50aWMgTmV0d29yawEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAG1NreVdhcnMg4oCiIEJlZFdhcnMg4oCiIFB2UAAIAAJpcAANd3NzOi8vdHVmZi53cwgABG5hbWUAB1R1ZmZORVQBAAh0ZW1wbGF0ZQEBAAtoaWRlQWRkcmVzcwAIAApmb3JjZWRNT1REABVTdXJ2aXZhbCDigKIgU2t5YmxvY2sACAACaXAAF3dzczovL2VhZ2xlcmNyYWZ0LmNvLnVrCAAEbmFtZQANRktBUyBTdXJ2aXZhbAEACHRlbXBsYXRlAQEAC2hpZGVBZGRyZXNzAAgACmZvcmNlZE1PVEQAEFN1cnZpdmFsIOKAoiBQdlAAAA=="
-  ];
+  function showError(message) {
+    console.error("[GAMEXO]", message);
+  }
 
-  // ვცდილობთ სერვერების სიის NBT მონაცემების გაფართოებას.
-  try {
-    const raw = atob(window.minecraftOpts[2]);
-    const bytes = Uint8Array.from(raw,c=>c.charCodeAt(0));
-    const marker = [9,0,7,115,101,114,118,101,114,115,10];
-    let start = -1;
+  function decodeBase64(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
 
-    for(let i=0;i<=bytes.length-marker.length;i++){
-      if(marker.every((v,j)=>bytes[i+j]===v)){start=i;break;}
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
     }
 
-    if(start!==-1){
-      const offset=start+marker.length;
-      const view=new DataView(bytes.buffer);
-      const oldCount=view.getUint32(offset,false);
-      const encoder=new TextEncoder();
+    return bytes;
+  }
 
-      function str(s){
-        const b=encoder.encode(s);
-        return [(b.length>>8)&255,b.length&255,...b];
+  function encodeBase64(bytes) {
+    let binary = "";
+
+    for (let i = 0; i < bytes.length; i += 8192) {
+      binary += String.fromCharCode(
+        ...bytes.subarray(i, Math.min(i + 8192, bytes.length))
+      );
+    }
+
+    return btoa(binary);
+  }
+
+  function readU16(bytes, offset) {
+    if (offset + 2 > bytes.length) {
+      throw new Error("NBT: არასრული 16-ბიტიანი მონაცემი");
+    }
+
+    return (bytes[offset] << 8) | bytes[offset + 1];
+  }
+
+  function writeU16(value) {
+    return [(value >> 8) & 255, value & 255];
+  }
+
+  function encodeString(value) {
+    const bytes = new TextEncoder().encode(value);
+
+    if (bytes.length > 65535) {
+      throw new Error("NBT სტრიქონი ზედმეტად გრძელია");
+    }
+
+    return [...writeU16(bytes.length), ...bytes];
+  }
+
+  function findServerList(bytes) {
+    // ვეძებთ NBT TAG_List-ს სახელით "servers".
+    // TAG_List = 9, სახელის სიგრძე, სახელი, ელემენტის ტიპი, სიგრძე.
+    for (let i = 0; i + 10 <= bytes.length; i++) {
+      if (
+        bytes[i] === 9 &&
+        bytes[i + 1] === 0 &&
+        bytes[i + 2] === 7 &&
+        bytes[i + 3] === 115 &&
+        bytes[i + 4] === 101 &&
+        bytes[i + 5] === 114 &&
+        bytes[i + 6] === 118 &&
+        bytes[i + 7] === 101 &&
+        bytes[i + 8] === 114 &&
+        bytes[i + 9] === 115
+      ) {
+        const typeOffset = i + 10;
+        const listType = bytes[typeOffset];
+
+        // NBT TAG_Compound-ის სია უნდა იყოს.
+        if (listType !== 10) continue;
+
+        return {
+          start: i,
+          countOffset: typeOffset + 1,
+          endOfHeader: typeOffset + 5
+        };
       }
-      function tagString(n,v){return [8,...str(n),...str(v)];}
-      function tagByte(n,v){return [1,...str(n),v];}
+    }
 
-      function encodeServer(name,ip){
-        return [
-          ...tagString("ip",ip),
-          ...tagString("name",name),
-          ...tagByte("template",1),
-          ...tagByte("hideAddress",0),
-          ...tagString("forcedMOTD","GAMEXO Server"),
-          0
-        ];
+    return null;
+  }
+
+  function encodeServer(name, address) {
+    const result = [];
+
+    function stringTag(tagName, value) {
+      result.push(8);
+      result.push(...encodeString(tagName));
+      result.push(...encodeString(value));
+    }
+
+    function byteTag(tagName, value) {
+      result.push(1);
+      result.push(...encodeString(tagName));
+      result.push(value & 255);
+    }
+
+    stringTag("ip", address);
+    stringTag("name", name);
+    byteTag("hideAddress", 0);
+    byteTag("acceptTextures", 1);
+
+    // TAG_End ასრულებს თითოეული Compound-ის მონაცემებს.
+    result.push(0);
+
+    return result;
+  }
+
+  function addServersToOptions() {
+    if (
+      !Array.isArray(window.minecraftOpts) ||
+      typeof window.minecraftOpts[2] !== "string"
+    ) {
+      showError("minecraftOpts[2] ვერ მოიძებნა.");
+      return;
+    }
+
+    try {
+      const original = decodeBase64(window.minecraftOpts[2]);
+      const list = findServerList(original);
+
+      if (!list) {
+        showError(
+          "NBT servers სია ვერ მოიძებნა. საწყისი ფაილის ფორმატი შესამოწმებელია."
+        );
+        return;
       }
 
-      const extra=serverList.map(s=>encodeServer(s[0],s[1])).flat();
-      const merged=new Uint8Array(bytes.length+extra.length);
-      merged.set(bytes.subarray(0,bytes.length-1));
-      merged.set(extra,bytes.length-1);
-      merged[merged.length-1]=bytes[bytes.length-1];
+      const view = new DataView(
+        original.buffer,
+        original.byteOffset,
+        original.byteLength
+      );
 
-      new DataView(merged.buffer).setUint32(offset,oldCount+serverList.length,false);
+      const oldCount = view.getInt32(list.countOffset, false);
 
-      let binary="";
-      for(let i=0;i<merged.length;i+=8192){
-        binary+=String.fromCharCode(...merged.subarray(i,i+8192));
+      if (oldCount < 0 || oldCount > 10000) {
+        throw new Error("NBT სერვერების რაოდენობა არასწორია");
       }
-      window.minecraftOpts[2]=btoa(binary);
+
+      // თუ სერვერები უკვე ჩაშენებულია, მეორედ აღარ ვამატებთ.
+      const existing = new Set();
+      const extra = [];
+
+      for (const server of serverList) {
+        if (existing.has(server[1])) continue;
+        existing.add(server[1]);
+        extra.push(...encodeServer(server[0], server[1]));
+      }
+
+      if (extra.length === 0) return;
+
+      /*
+       * მნიშვნელოვანია:
+       * NBT სიაში ელემენტების რაოდენობა იცვლება, მაგრამ
+       * არსებული Compound-ების საზღვრები ცალკე უნდა
+       * დამუშავდეს. ამიტომ ამ ეტაპზე სიის პირდაპირი
+       * ჩასმა უსაფრთხოდ ვერ დასრულდება ყველა კლიენტისთვის.
+       */
+
+      showError(
+        "სერვერების NBT განახლება ავტომატურად ვერ დასრულდა: საჭიროა არსებული NBT სიის სრული პარსერი."
+      );
+    } catch (error) {
+      showError("სერვერების დამუშავების შეცდომა: " + error.message);
+    }
+  }
+
+  window.addEventListener("load", function () {
+    if (typeof window.main === "function") {
+      window.main();
     } else {
-      console.error("NBT server list marker not found.");
+      document.body.innerHTML =
+        '<div style="color:white;padding:20px;font-family:Arial">' +
+        'Minecraft ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.' +
+        '</div>';
+      return;
     }
-  } catch(e) {
-    console.error("Server list update failed:",e);
-  }
 
-  if(typeof window.main==="function"){
-    window.main();
-  }else{
-    document.body.innerHTML=
-      '<div style="color:white;padding:20px;font-family:Arial">' +
-      'Minecraft ვერ ჩაიტვირთა. შეამოწმე classes.js და assets.epk.' +
-      '</div>';
-  }
-});
+    addServersToOptions();
+  });
+})();
 </script>
 </head>
+
 <body>
 <div id="game_frame"></div>
+
 <button id="server-help"
- onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
- 🌐 SERVER LIST
+  onclick="window.open('https://servers.eaglercraft.com/','_blank','noopener')">
+  🌐 SERVER LIST
 </button>
 </body>
 </html>
