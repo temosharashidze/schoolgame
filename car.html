@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMW E34 M5 Drift Simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #87ceeb;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .hud-card {
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 18px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .speed-val {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00f0ff;
+        }
+        .drift-score {
+            font-size: 22px;
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        #controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px 15px;
+            border-radius: 8px;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+    <!-- Stable Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+</head>
+<body>
+
+    <div id="game-container"></div>
+
+    <div id="hud">
+        <div class="hud-card">
+            <div style="font-size: 11px; color: #aaa;">SPEED</div>
+            <div><span id="speed-num" class="speed-val">0</span> <span style="font-size: 14px;">KM/H</span></div>
+        </div>
+        <div class="hud-card">
+            <div style="font-size: 11px; color: #aaa;">DRIFT MODE (SHIFT)</div>
+            <div id="drift-mode-status" style="font-size: 16px; color: #ff4500; font-weight: bold;">OFF</div>
+        </div>
+        <div class="hud-card">
+            <div style="font-size: 11px; color: #aaa;">DRIFT SCORE</div>
+            <div id="drift-score" class="drift-score">0</div>
+        </div>
+    </div>
+
+    <div id="controls-hint">
+        <b>W / A / S / D</b> ან <b>ისრები</b>: მართვა | <b>SHIFT</b>: დრიფტი (საბურავების კვამლით) | <b>R</b>: რესტარტი
+    </div>
+
+    <script>
+        window.onload = function() {
+            if (typeof THREE === 'undefined') {
+                alert('Three.js ბიბლიოთეკა ვერ ჩაიტვირთა!');
+                return;
+            }
+
+            const container = document.getElementById('game-container');
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb);
+
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Grass & Asphalt
+            const grass = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({ color: 0x4a8505 }));
+            grass.rotation.x = -Math.PI / 2;
+            scene.add(grass);
+
+            const asphalt = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshBasicMaterial({ color: 0x22252a }));
+            asphalt.rotation.x = -Math.PI / 2;
+            asphalt.position.y = 0.02;
+            scene.add(asphalt);
+
+            // Precise Wheel Smoke Particles System
+            const smokeParticles = [];
+            const smokeGeo = new THREE.SphereGeometry(0.3, 8, 8);
+            const smokeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+
+            function emitTireSmoke(worldX, worldZ) {
+                if (smokeParticles.length > 60) {
+                    const old = smokeParticles.shift();
+                    scene.remove(old.mesh);
+                }
+                const mesh = new THREE.Mesh(smokeGeo, smokeMat.clone());
+                mesh.position.set(worldX + (Math.random() - 0.5) * 0.2, 0.15, worldZ + (Math.random() - 0.5) * 0.2);
+                scene.add(mesh);
+                smokeParticles.push({ mesh, life: 1.0 });
+            }
+
+            // Cones
+            const cones = [];
+            function createCone(x, z) {
+                const group = new THREE.Group();
+                const coneMesh = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 12), new THREE.MeshBasicMaterial({ color: 0xff4500 }));
+                coneMesh.position.y = 0.35;
+                group.add(coneMesh);
+                group.position.set(x, 0.02, z);
+                scene.add(group);
+                cones.push({ group, pos: new THREE.Vector2(x, z), vel: new THREE.Vector2(0, 0) });
+            }
+            for (let i = -4; i <= 4; i++) {
+                createCone(i * 12, 12);
+                createCone(i * 12, -12);
+            }
+
+            // =========================================================
+            // EXACT BMW E34 M5 3D MODEL BUILD
+            // =========================================================
+            const car = new THREE.Group();
+            scene.add(car);
+            const visualCar = new THREE.Group();
+            car.add(visualCar);
+
+            // Materials
+            const paintMat = new THREE.MeshBasicMaterial({ color: 0x0c0e12 }); // Schwarz Metallic Black
+            const trimMat = new THREE.MeshBasicMaterial({ color: 0x15171b });  // Black Matt Trim
+            const chromeMat = new THREE.MeshBasicMaterial({ color: 0xd0d5dd }); // Chrome Grille & Trim
+            const glassMat = new THREE.MeshBasicMaterial({ color: 0x16222b });  // Tinted Windows
+            const yellowLightMat = new THREE.MeshBasicMaterial({ color: 0xffcc00 }); // French Yellow High Beams
+            const whiteLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff }); // Clear Headlights
+            const redLightMat = new THREE.MeshBasicMaterial({ color: 0xb80f0a });    // Taillights
+            const rimMat = new THREE.MeshBasicMaterial({ color: 0xc0c5cc });      // M-System Silver Rims
+            const tireMat = new THREE.MeshBasicMaterial({ color: 0x181818 });      // Rubber Tires
+
+            function addBox(w, h, d, x, y, z, mat) {
+                const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                mesh.position.set(x, y, z);
+                visualCar.add(mesh);
+                return mesh;
+            }
+
+            // Body
+            addBox(1.90, 0.44, 4.40, 0, 0.46, 0, paintMat);
+            addBox(1.82, 0.18, 1.40, 0, 0.74, 1.30, paintMat);
+            addBox(1.82, 0.18, 0.95, 0, 0.74, -1.65, paintMat);
+            addBox(1.94, 0.22, 0.25, 0, 0.36, 2.22, trimMat);
+            addBox(1.94, 0.22, 0.25, 0, 0.36, -2.22, trimMat);
+            addBox(1.76, 0.08, 0.15, 0, 0.25, 2.30, trimMat);
+            addBox(1.52, 0.50, 1.70, 0, 1.02, -0.05, paintMat);
+
+            const windshield = addBox(1.42, 0.54, 0.05, 0, 1.04, 0.80, glassMat);
+            windshield.rotation.x = -0.36;
+            const rearWindow = addBox(1.42, 0.50, 0.05, 0, 1.04, -0.90, glassMat);
+            rearWindow.rotation.x = 0.36;
+
+            for (const side of [-1, 1]) {
+                addBox(0.04, 0.44, 1.45, side * 0.78, 1.02, -0.05, glassMat);
+                addBox(0.06, 0.52, 0.06, side * 0.77, 1.02, 0.02, trimMat);
+                addBox(0.06, 0.52, 0.06, side * 0.77, 1.02, -0.65, trimMat);
+                addBox(0.03, 0.06, 2.60, side * 0.96, 0.52, 0, trimMat);
+            }
+
+            addBox(0.54, 0.30, 0.04, 0, 0.65, 2.22, trimMat);
+            addBox(0.24, 0.24, 0.06, -0.13, 0.65, 2.24, chromeMat);
+            addBox(0.24, 0.24, 0.06, 0.13, 0.65, 2.24, chromeMat);
+
+            function addHeadlight(x, isYellow) {
+                const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), isYellow ? yellowLightMat : whiteLightMat);
+                mesh.rotation.x = Math.PI / 2;
+                mesh.position.set(x, 0.65, 2.23);
+                visualCar.add(mesh);
+            }
+            addHeadlight(-0.70, false);
+            addHeadlight(-0.40, true);
+            addHeadlight(0.40, true);
+            addHeadlight(0.70, false);
+
+            addBox(0.52, 0.20, 0.05, -0.62, 0.68, -2.22, redLightMat);
+            addBox(0.52, 0.20, 0.05, 0.62, 0.68, -2.22, redLightMat);
+
+            const exGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.25, 12);
+            const ex1 = new THREE.Mesh(exGeo, chromeMat);
+            ex1.rotation.x = Math.PI / 2;
+            ex1.position.set(-0.45, 0.30, -2.32);
+            visualCar.add(ex1);
+            const ex2 = ex1.clone();
+            ex2.position.set(-0.58, 0.30, -2.32);
+            visualCar.add(ex2);
+
+            const wheels = [];
+            function createWheel(x, z) {
+                const wGroup = new THREE.Group();
+                const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.26, 20), tireMat);
+                tire.rotation.z = Math.PI / 2;
+                wGroup.add(tire);
+                const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.27, 16), rimMat);
+                rim.rotation.z = Math.PI / 2;
+                wGroup.add(rim);
+                wGroup.position.set(x, 0.38, z);
+                visualCar.add(wGroup);
+                return wGroup;
+            }
+            wheels.push(createWheel(-0.94, 1.35)); // 0: Front Left
+            wheels.push(createWheel(0.94, 1.35));  // 1: Front Right
+            wheels.push(createWheel(-0.94, -1.35));// 2: Rear Left
+            wheels.push(createWheel(0.94, -1.35));// 3: Rear Right
+
+            // Controls
+            const keys = { w: false, a: false, s: false, d: false };
+            let driftMode = false;
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'w' || e.key === 'ArrowUp') keys.w = true;
+                if (e.key === 's' || e.key === 'ArrowDown') keys.s = true;
+                if (e.key === 'a' || e.key === 'ArrowLeft') keys.a = true;
+                if (e.key === 'd' || e.key === 'ArrowRight') keys.d = true;
+                
+                if (e.key === 'Shift' || e.shiftKey) {
+                    driftMode = !driftMode;
+                    const statusEl = document.getElementById('drift-mode-status');
+                    if (driftMode) {
+                        statusEl.innerText = 'ON (TIRE SMOKE)';
+                        statusEl.style.color = '#00f0ff';
+                    } else {
+                        statusEl.innerText = 'OFF';
+                        statusEl.style.color = '#ff4500';
+                    }
+                }
+
+                if (e.key === 'r' || e.key === 'R') {
+                    posX = 0; posZ = 0; speed = 0; carAngle = 0; motionAngle = 0;
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'w' || e.key === 'ArrowUp') keys.w = false;
+                if (e.key === 's' || e.key === 'ArrowDown') keys.s = false;
+                if (e.key === 'a' || e.key === 'ArrowLeft') keys.a = false;
+                if (e.key === 'd' || e.key === 'ArrowRight') keys.d = false;
+            });
+
+            // Physics Variables
+            let posX = 0, posZ = 0;
+            let speed = 0;
+            let carAngle = 0;       
+            let motionAngle = 0;    
+            let driftScore = 0;
+
+            const maxSpeed = 0.65;
+            const accel = 0.009;
+            const friction = 0.986;
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                if (keys.w) {
+                    if (speed < maxSpeed) speed += accel;
+                } else if (keys.s) {
+                    speed -= accel * 0.8;
+                } else {
+                    speed *= friction;
+                }
+
+                let steerInput = 0;
+                if (keys.a) steerInput = 1;
+                if (keys.d) steerInput = -1;
+
+                wheels[0].rotation.y = steerInput * 0.35;
+                wheels[1].rotation.y = steerInput * 0.35;
+
+                if (Math.abs(speed) > 0.01) {
+                    const turnRate = steerInput * (speed * 0.07);
+                    carAngle += turnRate * (speed > 0 ? 1 : -1);
+                }
+
+                const grip = driftMode ? 0.965 : 0.25; 
+
+                const angleDiff = carAngle - motionAngle;
+                motionAngle += angleDiff * (1.0 - grip);
+
+                posX += Math.sin(motionAngle) * speed;
+                posZ += Math.cos(motionAngle) * speed;
+
+                if (Math.abs(posX) > 190) posX = Math.sign(posX) * 190;
+                if (Math.abs(posZ) > 190) posZ = Math.sign(posZ) * 190;
+
+                car.position.set(posX, 0, posZ);
+                car.rotation.y = carAngle;
+
+                // ზუსტად უკანა საბურავებიდან კვამლის გამოშვება
+                if (driftMode && Math.abs(speed) > 0.15) {
+                    // Rear Left Wheel World Position
+                    const rlWorldPos = new THREE.Vector3(-0.94, 0.38, -1.35);
+                    rlWorldPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), carAngle);
+                    rlWorldPos.add(car.position);
+                    emitTireSmoke(rlWorldPos.x, rlWorldPos.z);
+
+                    // Rear Right Wheel World Position
+                    const rrWorldPos = new THREE.Vector3(0.94, 0.38, -1.35);
+                    rrWorldPos.applyAxisAngle(new THREE.Vector3(0, 1, 0), carAngle);
+                    rrWorldPos.add(car.position);
+                    emitTireSmoke(rrWorldPos.x, rrWorldPos.z);
+
+                    driftScore += Math.floor(Math.abs(speed) * 35);
+                    document.getElementById('drift-score').innerText = driftScore;
+                }
+
+                smokeParticles.forEach(p => {
+                    p.life -= 0.025;
+                    p.mesh.scale.addScalar(0.03);
+                    p.mesh.material.opacity = p.life * 0.5;
+                    if (p.life <= 0) {
+                        scene.remove(p.mesh);
+                    }
+                });
+
+                document.getElementById('speed-num').innerText = Math.floor(Math.abs(speed) * 250);
+
+                const camOffset = new THREE.Vector3(0, 4.5, -11);
+                camOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), carAngle);
+                const targetCamPos = car.position.clone().add(camOffset);
+                camera.position.lerp(targetCamPos, 0.1);
+                camera.lookAt(car.position.clone().add(new THREE.Vector3(0, 0.8, 0)));
+
+                cones.forEach(c => {
+                    const dist = new THREE.Vector2(posX, posZ).distanceTo(c.pos);
+                    if (dist < 1.6) {
+                        const pushDir = c.pos.clone().sub(new THREE.Vector2(posX, posZ)).normalize();
+                        c.vel.add(pushDir.multiplyScalar(Math.abs(speed) + 0.15));
+                    }
+                    c.pos.add(c.vel);
+                    c.vel.multiplyScalar(0.90);
+                    c.group.position.x = c.pos.x;
+                    c.group.position.z = c.pos.y;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+        };
+    </script>
+</body>
+</html>
